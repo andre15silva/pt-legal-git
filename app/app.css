@@ -173,6 +173,36 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .notas .small { font-family: var(--font-sans); }
 .fonte { margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted); }
 
+/* Act and Passagem no Parlamento */
+.linha-datas { margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 26px; color: var(--ink-muted); font-variant-numeric: lining-nums; }
+.mudou { display: flex; flex-direction: column; gap: 4px; }
+.mudou p { margin: 0; }
+.mudou-diploma { font-weight: 500; }
+.mudou-frase { font-family: var(--font-serif); font-size: 17px; line-height: 28px; font-variant-numeric: lining-nums; }
+.passagem .lede { margin: 0; font-family: var(--font-serif); font-size: 17px; line-height: 28px; max-width: 66ch; }
+.passos { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--ink); }
+.passo { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 24px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.passo-simples { padding: 6px 0; }
+.passo-data { font-family: var(--font-serif); font-size: 15px; line-height: 24px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
+.passo-corpo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.passo-corpo p { margin: 0; }
+.passo-nome { font-family: var(--font-serif); font-size: 17px; line-height: 24px; font-weight: 600; }
+.passo-simples .passo-nome { font-weight: 400; color: var(--ink-muted); font-size: 16px; }
+.passo-sub { font-size: 14px; line-height: 20px; color: var(--ink); font-weight: 500; }
+.passo-voto { display: flex; flex-direction: column; gap: 2px; padding-top: 4px; }
+.passo-mais summary { cursor: pointer; color: var(--verde); text-decoration: underline; text-underline-offset: .2em; width: fit-content; }
+.passo-mais[open] summary { margin-bottom: 8px; }
+.passo-mais .passo-voto { padding: 8px 0; border-top: 1px solid var(--rule); }
+.matriz-caixa { overflow-x: auto; margin-top: 8px; }
+.matriz { border-collapse: collapse; font-size: 14px; line-height: 20px; min-width: 480px; }
+.matriz caption { text-align: left; font-family: var(--font-serif); font-size: 17px; font-weight: 600; padding-bottom: 6px; }
+.matriz th, .matriz td { text-align: left; padding: 6px 20px 6px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.matriz thead th { font-weight: 500; border-bottom-color: var(--ink); }
+.matriz tbody th { position: sticky; left: 0; background: var(--paper); }
+.fases { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); font-size: 15px; line-height: 22px; }
+.fases li { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 24px; padding: 4px 0; border-bottom: 1px solid var(--rule); }
+.reg-parl { color: var(--ink); }
+
 /* Compare */
 .compare-form { display: flex; flex-direction: column; gap: 12px; padding: 12px 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
 .compare-pair { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
@@ -204,6 +234,7 @@ button.dobra:focus-visible { outline: 2px solid var(--focus); outline-offset: 2p
   .lado-head { display: none; }
 }
 @media (max-width: 760px) {
+  .passo, .fases li { grid-template-columns: minmax(0, 1fr); row-gap: 2px; }
   .top-in, .page, .foot-in { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   :root { --hang: 38px; --hang-al: 28px; }
   .lei { margin-left: 0; }

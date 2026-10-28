@@ -2,7 +2,8 @@
 
 parlamento.pt has no API or index: each dataset page lists one folder per legislatura, and
 each folder page lists the files, behind per-render download tokens. This script scrapes
-those two levels and downloads the JSON files of "Iniciativas" and "Diplomas Aprovados"
+those two levels and downloads the JSON files of "Iniciativas", "Diplomas Aprovados" and
+"Informação base" (deputies, groups and their dates, for the seats on each vote date)
 into data/parlamento/. Existing files are kept unless --refresh is given.
 
     python -I pipeline/fetch_parlamento.py
@@ -20,7 +21,7 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "parlamento")
 BASE = "https://www.parlamento.pt"
-DATASETS = ["DAIniciativas", "DADiplomasAprovados"]
+DATASETS = ["DAIniciativas", "DADiplomasAprovados", "DAInformacaoBase"]
 UA = {"User-Agent": "redacao-phase0/0.1 (+https://github.com/andre15silva/pt-legal-git)"}
 
 

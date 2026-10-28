@@ -36,6 +36,8 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 | What the text box shows | `&ver=texto`, `&ver=mudou` or `&ver=origem` |
 | Compare two redações (`de` and `ate` take an act id, a date or `hoje`) | `#/d/codigo-irc/artigo-87/comparar?de=lei-82-2023&ate=hoje&vista=lado&modo=marcadas` |
 | What one act changed in one article | `#/d/nrau/artigo-15-a/comparar?ato=lei-56-2023` |
+| One act: what it changed and its passage through Parliament | `#/ato/lei-56-2023` |
+| One parliamentary initiative | `#/iniciativa/315386` |
 
 Old links with a redação index (`redacao=3`, `de=1`) still work.
 
@@ -48,10 +50,13 @@ Old links with a redação index (`redacao=3`, `de=1`) still work.
    - It diffs consecutive versions word by word. Each word keeps the index of the version that wrote it; this is the *origem do texto*.
    - A rewritten phrase is one change. A short unchanged run between two replacements joins them when it is not longer than either replacement (the diff-match-patch semantic rule). The compare view uses the same rule, in `app.js`. `node app/test_diff.js` checks it and, when `app/data` exists, checks that every compare view rebuilds both texts exactly.
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
+4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md).
+5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.
 
 ## Known limits
 
 - The text comes from the DR's consolidated legislation, which has no legal value. We have not yet checked it against our own replay of the amending acts (see the plan, Phase 0).
 - The DR gives production of effects only as text notes. The app shows the notes, and warns when the "produção de efeitos" basis is selected.
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
-- The AR open data gives each parliamentary group's vote but not its number of deputies.
+- The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
+- The especialidade votes in committee are only in PDFs (from legislatura XII). The app says that it does not have them.

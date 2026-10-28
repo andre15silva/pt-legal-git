@@ -6,6 +6,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import atos  # noqa: E402
 import build  # noqa: E402
+import passagem  # noqa: E402
 import texto  # noqa: E402
 
 
@@ -94,6 +95,50 @@ class Build(unittest.TestCase):
         build.apply_vigor_rules(b, "artigo-40", cfg)
         self.assertEqual((b["versoes"][0]["vigor"], b["versoes"][0]["vigor_regra"]), (None, "condicional"))
         self.assertEqual(b["notas"][0]["tipo"], "vigor")
+
+
+class Passagem(unittest.TestCase):
+    def test_counts_and_dissent(self):
+        v = passagem.ler_voto({"PS": "favor", "4-PS": "contra", "PSD": "abstencao", "Manuel Alegre (PS)": "contra", "Joacine Katar Moreira (Ninsc)": "favor"})
+        self.assertEqual(v["grupos"], {"PS": "favor", "PSD": "abstencao"})
+        self.assertIn({"grupo": "PS", "sentido": "contra", "n": 4}, v["dissidencia"])
+        self.assertIn({"grupo": "PS", "sentido": "contra", "nome": "Manuel Alegre"}, v["dissidencia"])
+        self.assertEqual(v["fora_de_grupo"], [{"nome": "Joacine Katar Moreira", "sentido": "favor"}])
+
+    def test_electronic_vote(self):
+        v = passagem.ler_voto({"119-PS": "favor", "68-PSD": "contra", "1-PAN": "abstencao"})
+        self.assertEqual(v["grupos"], {"PS": "favor", "PSD": "contra", "PAN": "abstencao"})
+        chk = passagem.verificar(v, "Aprovado", {"PS": 120, "PSD": 77, "PAN": 1})
+        self.assertEqual((chk["ok"], chk["favor"], chk["contra"], chk["metodo"]), (True, 119, 68, "contagens"))
+
+    def test_check_catches_a_wrong_result(self):
+        # Código do Trabalho, proposal 5P of the PCP: recorded as approved, the majority voted against.
+        v = passagem.ler_voto({"BE": "favor", "PEV": "favor", "PCP": "favor", "PS": "contra", "PSD": "contra", "CDS-PP": "contra"})
+        chk = passagem.verificar(v, "Aprovado", {"PS": 121, "PSD": 75, "PCP": 12, "CDS-PP": 12, "BE": 8, "PEV": 2})
+        self.assertFalse(chk["ok"])
+        self.assertIsNone(passagem.verificar(v, "Aprovado", {"PS": 121}))  # a group without seats: no check
+
+    def test_dissent_counts_come_off_the_group(self):
+        v = passagem.ler_voto({"PS": "favor", "2-PS": "abstencao", "PSD": "contra"})
+        chk = passagem.verificar(v, "Aprovado", {"PS": 120, "PSD": 77})
+        self.assertEqual((chk["favor"], chk["abstencao"], chk["contra"]), (118, 2, 77))
+
+    def test_description(self):
+        self.assertEqual(passagem.ler_descricao("Proposta 30P, apresentada pelo PS, de emenda do n.º 1 ao artigo 112.º (Anexo)"),
+                         {"proponente": "PS", "operacao": "emenda", "alvo": "n.º 1 ao artigo 112.º"})
+        d = passagem.ler_descricao("Proposta de alteração do PSD – Eliminação da alínea c) do n.º 2 do artigo 1.º do texto final")
+        self.assertEqual((d["proponente"], d["operacao"]), ("PSD", "eliminação"))
+        self.assertTrue(d["alvo"].startswith("alínea c) do n.º 2 do artigo 1.º"))
+        self.assertIsNone(passagem.ler_descricao("Texto final apresentado pela Comissão de Trabalho"))
+
+    def test_seats_on_a_date(self):
+        comp = passagem.Composicao({"GruposParlamentares": [{"sigla": "PS"}, {"sigla": "PSD"}], "Deputados": [
+            {"DepSituacao": [{"sioDes": "Efetivo", "sioDtInicio": "2022-03-29", "sioDtFim": "2024-03-25"}], "DepGP": [{"gpSigla": "PS", "gpDtInicio": "2022-03-29", "gpDtFim": "2024-03-25"}]},
+            {"DepSituacao": [{"sioDes": "Suplente", "sioDtInicio": "2022-03-29", "sioDtFim": "2024-03-25"}], "DepGP": [{"gpSigla": "PS", "gpDtInicio": "2022-03-29", "gpDtFim": "2024-03-25"}]},
+            {"DepSituacao": [{"sioDes": "Efetivo", "sioDtInicio": "2023-01-01", "sioDtFim": None}], "DepGP": [{"gpSigla": "PPD/PSD", "gpDtInicio": "2022-03-29", "gpDtFim": None}]}]})
+        self.assertEqual(comp.ordem, ["PS", "PSD"])
+        self.assertEqual(comp.assentos("2022-06-01"), {"PS": 1})
+        self.assertEqual(comp.assentos("2023-06-01"), {"PS": 1, "PSD": 1})
 
 
 if __name__ == "__main__":

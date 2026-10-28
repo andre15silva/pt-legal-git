@@ -193,6 +193,8 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
 
 ## 9. Order of work
 
+*Status on 2026-10-28:* step 1 is built. The act and initiative pages are in the same language, with the Passagem layer (step 1 of PASSAGEM.md). Home and diploma use the new tokens but keep their old layout.
+
 1. **The white Nordic tokens (section 8) and the article page skeleton.**
    - Remove the boxes, pills, eyebrows and duplicate facts.
    - Status line, time ruler, one sticky row, Data popover, ruled Atenção, hanging números, the register, citation at the top.

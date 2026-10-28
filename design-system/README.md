@@ -2,7 +2,7 @@ Redação is the history of every article of Portuguese law: what it says on any
 
 ## Principles
 
-1. **The law is the hero.** Statute text is set large, in `statute`, on `paper-raised`, inside a `measure`-wide column. Chrome stays quiet around it.
+1. **The law is the hero.** Statute text is set large, in `statute` on white, inside a `measure`-wide column. Chrome stays quiet around it.
 2. **Every date says which date it is.** Publicação, entrada em vigor and produção de efeitos are different facts. Never print a bare date next to law; label it, or let `DateLens` set it.
 3. **Change is shown twice.** Added text: `ins-ink` on `ins-bg` *and* underline. Removed: `del-ink` on `del-bg` *and* strike-through. Blue and orange are reserved for change and never reused for brand, success or error.
 4. **Provenance on every view.** Each article carries a `SourceNote` with a link to the act in the Diário da República and its verification pill. We are not the official source and say so in one calm sentence.
@@ -42,57 +42,60 @@ Redação is the history of every article of Portuguese law: what it says on any
 
 ## Visual foundations
 
+The visual language is **Hvit** ("white"): white paper, hairline rules, one green accent, serif for facts, sans for actions. The reasons are in the project's `docs/DESIGN-DIRECTION.md`, section 8. The values are in `tokens.json`; `tools/tokens_css.py` writes `tokens.css` from it, and `tools/check_contrast.py tokens.json` checks every pair.
+
 ### Colour
 
-- Ground: `paper`. Reading column, panels and sheets: `paper-raised`. Rails, table heads, inactive tracks: `paper-sunken`.
-- Text: `ink` for law and headings; `ink-muted` for dates, captions and secondary lines. Both hold ≥4.5:1 on all three grounds in both themes.
-- Accent: `verde` (verde-garrafa) is the only brand hue. It marks links, the current version, primary actions and "Em vigor". Text on a solid `verde` fill is `on-verde`. `verde-soft` is its quiet fill.
-- Change: `ins-ink`/`ins-bg` and `del-ink`/`del-bg`. Only for redlines and change counts.
-- Law in the making: `pendente`/`pendente-bg`, always with a dashed outline or the word "Pendente".
-- Trust warnings: `aviso`/`aviso-bg` for "Não verificado", default-date assumptions and retroactive effects ahead.
+- Ground: `paper`, pure white. No tinted panels. `paper-raised` only for floating layers (popovers, sheets, the phone bar). `paper-sunken` only as a hover wash.
+- Rules: `rule` (hairlines between rows and sections, decorative only), `rule-mid` (year ticks, fold rules), `rule-strong` (borders of inputs and outline buttons, ≥3:1).
+- Text: `ink` for law, headings and facts; `ink-muted` for running heads, captions and dates in lists.
+- Accent: `verde` (verde-garrafa) is the only brand hue. It marks links and "you are here" (the current tab, the redação on screen). Text on a solid `verde` fill is `on-verde`.
+- Change: `ins-ink`/`ins-bg` and `del-ink`/`del-bg`. Only for redlines.
+- Law in the making: `pendente`/`pendente-bg`, always with a dashed line or the word.
+- Warnings: the word "Atenção" in `aviso`, with a 3px `aviso-rule` beside the note. `aviso-bg` only for unverified data.
 - Revoked or lapsed provisions: `revogado`, with the word.
-- Origem do texto: `act-0` (versão originária, neutral) and `act-1` … `act-7` for amending acts, assigned in order of first appearance in the legend. These are marks (underlines, swatches, margin bands) at ≥3:1; the text stays `ink`.
-- Never red-and-green. Never the national flag pairing. No gradients.
+- Focus: `focus` is `ink`, never blue, so it never reads as a change.
+- Origem do texto: `act-0` (the original text, neutral) and `act-1` … `act-7` for amending acts, newest first. The set is safe for colour-blind readers. The colour is only a 3px band beside the act's name; the text stays `ink`.
+- Never party colours. Never red-and-green. Never the national flag pairing. No gradients.
 
 ### Type
 
-- **Source Serif 4** (`--font-serif`) for the law and for diploma and article headings: `display` (diploma title, once per page), `title` (single-article heading), `article` (heading inside a diploma), `statute` (19/31, the body of the law), `statute-small` (quoted law in panels).
-- **Atkinson Hyperlegible Next** (`--font-sans`) for the interface: `heading`, `body`, `small`, `label` (uppercase, +0.06em). Chosen for legibility for low-vision and low-literacy readers.
-- **Atkinson Hyperlegible Mono** (`--font-mono`) only for identifiers: ELI paths, content hashes, API fields (`id`).
-- Statute measure: `measure` (68ch). Interface copy ≤ 65ch.
+- **Source Serif 4** (`--font-serif`) states facts: the law (`statute`, 19/30), titles, the status line, dates and the register. Lining tabular figures.
+- **Schibsted Grotesk** (`--font-sans`) offers actions: buttons, tabs, form labels, interface copy. Never uppercase. No tabular figures in sans (they space out the punctuation).
+- **Atkinson Hyperlegible Mono** (`--font-mono`) only for identifiers: ELI paths, hashes, API fields.
+- Statute measure: `measure` (64ch). Números hang `hang` (46px) into the margin.
 - Load from Google Fonts (`components/bundle.css` imports all three).
 
 ### Space, shape and depth
 
-- Spacing steps: `space-1` 4 · `space-2` 8 · `space-3` 12 · `space-4` 16 · `space-6` 24 · `space-8` 32 · `space-12` 48. Side gutter never below `space-4`.
-- Radii are small: `radius-xs` (change tints, swatches), `radius-sm` (buttons, inputs, pills), `radius-md` (panels, sheets). Nothing is pill-shaped except status dots.
-- Borders, not shadows: panels are set off by `rule`. Controls use `rule-strong`, which meets 3:1. `shadow-sheet` only for floating layers (the Origem do texto sheet, popovers, a sticky DateLens).
-- Hairlines in `rule` separate articles; there are no cards around articles.
+- Spacing steps: `space-1` 4 · `space-2` 8 · `space-3` 12 · `space-4` 16 · `space-6` 24 · `space-8` 32 · `space-12` 48 · `space-16` 64. Side gutter never below `space-4`.
+- Radii: 2px for controls, 4px for floating layers. Nothing is pill-shaped.
+- No boxes, cards, pills or eyebrows. Rules separate things. `shadow-sheet` only for floating layers.
 
 ### Layout
 
-- Article view: a three-zone page on desktop: Índice rail (`paper-sunken`) · statute column (`paper-raised`, `measure`) · context rail (history, origin, pending initiatives). On phone the rails become bottom sheets, and the statute column stays full width with a `space-4` gutter.
-- The `DateLens` sits at the top of every diploma view and sticks under the header when scrolled (`top: env(safe-area-inset-top)`, with `scroll-padding-top` so focus is never hidden).
+- Article view on desktop: the text column (`measure`) and the register of redações (`register`, 300px) with a 64px gap. One sticky row (`row`, 48px) holds the version stepper and the tools.
+- On a phone the register goes under the text and the sticky row becomes a 56px bar at the bottom.
 - Targets ≥ `target` (44px) on touch.
 
 ### States and interaction
 
-- Focus: a solid 2px `focus` outline at 2px offset on every interactive element; ≥3:1 on every surface in both themes.
-- Hover: `paper-sunken` fill on quiet controls; underline thickening on links.
-- Selected: `verde-soft` fill with a `verde` border and bold label.
+- Focus: a solid 2px `focus` outline at 2px offset on every interactive element.
+- Hover: underline thickening on links; `paper-sunken` wash on quiet controls.
+- Selected: `verde` text with a 2px `verde` underline (tabs), or a `verde` rule beside the row (register).
 - Motion: none needed. Version switches swap instantly; respect `prefers-reduced-motion` everywhere.
 
 ### Accessibility
 
 - WCAG 2.2 AA minimum; aim for the acessibilidade.gov.pt *selo* (Prata or above).
-- Redlines: hidden "[início de texto acrescentado] … [fim …]" markers, a "Ler versão final" mode, and keyboard "alteração anterior / seguinte" with a polite live region.
-- Every chart has a table (see `VoteBar`). Every colour has a word or glyph.
-- `lang="pt-PT"`; real heading hierarchy (Parte › Título › Capítulo › Secção › Artigo); `<abbr>` for n.º, al., DL, CRP.
+- Redlines: hidden "[início de texto acrescentado] … [fim …]" markers, and keyboard "alteração anterior / seguinte" with a polite live region.
+- Every table of votes has words, not colours. Every colour has a word or glyph.
+- `lang="pt-PT"`; real heading hierarchy; `<abbr>` for n.º, al., DL, CRP.
 - Print: redlines print as [+…+] / [−…−], with the version date, permalink and the non-official notice in the header.
 
 ## Iconography
 
-There is no icon set yet. Status is carried by the Unicode glyphs inside `StatusPill`, `ProcessTrack` and `VoteBar` (● ◔ ⊘ + ◌ ✓ ! § ✕ –), always next to a word. When an icon set is added, use a 1.5px-stroke outline set at 20px. Never use the armillary sphere, the national coat of arms, or the Diário da República / INCM marks: Redação must never look like an official publication.
+There is no icon set. Status is a word, sometimes with a Unicode glyph next to it (● ◔ ⊘ + ◌ ✓ ! § ✕ –). Never use the armillary sphere, the national coat of arms, or the Diário da República / INCM marks: Redação must never look like an official publication.
 
 ## Components
 
@@ -104,10 +107,14 @@ There is no icon set yet. Status is carried by the Unicode glyphs inside `Status
 | `Redline` | Comparing two redações ("comparar redações") |
 | `TextOrigin` | Which act wrote each phrase ("origem do texto") |
 | `DateLens` | Setting the page's point in time and date basis |
-| `VersionBar` | "Redação 4 de 8": the place in an article's history, previous and next |
-| `VersionTimeline` | "A história desta lei" |
+| `TimeRuler` | The redações of an article on a line of years, to pick one by date |
+| `VersionBar` | The one sticky row: "‹ Anterior", "Seguinte ›", the status and the tools |
+| `Register` | The ruled list of redações, with the current one marked |
+| `Popover` | A small floating layer that opens from a button and closes with Esc |
+| `VersionTimeline` | "A história desta lei" (older pages) |
 | `ProcessTrack` | An iniciativa's path through Parliament |
-| `VoteBar` | A vote, by sentido and by grupo parlamentar |
+| `VoteBar` | A vote, by sentido and by grupo parlamentar (older pages) |
+| `Votacao` | A vote in words: the groups under A favor, Contra and Abstenção, dissent, absences and the seat check |
 | `Citation` | Copyable citation of the exact version shown |
 | `SourceNote` | Provenance and the non-official notice |
 

@@ -73,6 +73,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .rd-origin-pop { margin: var(--space-2) 0 var(--space-3) var(--space-6); max-width: 560px; padding: var(--space-3) var(--space-4); background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; gap: var(--space-2); font-size: 15px; line-height: 22px; }
 .rd-origin-pop p { margin: 0; }
 .rd-origin-pop-text { font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.rd-origin-pop-nota { font-size: 14px; line-height: 20px; color: var(--ink-muted); padding-top: var(--space-2); border-top: 1px solid var(--rule); }
 .rd-origin-pop-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
 .rd-origin-note { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 .rd-origin-note strong { color: var(--ink); font-weight: 500; }
@@ -198,6 +199,9 @@ a.rd-reg-act:hover { color: var(--verde); text-decoration: underline; text-under
 .rd-votos dt { color: var(--ink-muted); }
 .rd-votos dd { margin: 0; }
 .rd-votos-nota { margin: var(--space-1) 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.rd-votacao { display: flex; flex-direction: column; gap: 4px; }
+.rd-votos-aviso { margin: 4px 0 0; padding-left: 12px; border-left: 3px solid var(--aviso-rule); font-size: 14px; line-height: 20px; }
+.rd-votos-aviso strong { color: var(--aviso); font-weight: 600; }
 
 /* Citation: a plain section. */
 .rd-cite { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; max-width: 640px; }

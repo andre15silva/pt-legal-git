@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Citation"},{"name":"SourceNote"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Votacao"},{"name":"Citation"},{"name":"SourceNote"}]} */
 (function () {
   var React = window.React;
   var h = React.createElement;
@@ -86,7 +86,7 @@
 
   // ---- TextOrigin -----------------------------------------------------------
   // paragraphs: [{number?, kind?: 'n'|'al'|'rev', spans: [{text, act}]}]
-  // acts: [{index, label, date, href?, hrefLabel?, diffHref?, beforeHref?}]
+  // acts: [{index, label, date, href?, hrefLabel?, diffHref?, beforeHref?, nota?}] (nota: a short line under "Escrito por")
   // The chips mark words. They do not change the text. Choosing a phrase opens a popover under
   // its paragraph with links to the change that wrote it (diffHref), to the text before that
   // change (beforeHref) and to the redação it made (href).
@@ -132,6 +132,7 @@
               })),
             sel && para === pi ? h('div', { className: 'rd-origin-pop', role: 'group', 'aria-label': 'Origem do texto' },
               h('p', { className: 'rd-origin-pop-text' }, about(sel)),
+              sel.nota ? h('p', { className: 'rd-origin-pop-nota' }, sel.nota) : null,
               links(sel).length ? h('p', { className: 'rd-origin-pop-links' }, links(sel)) : null) : null);
         })),
       h('div', { className: 'rd-origin-key' },
@@ -367,6 +368,43 @@
         }))));
   }
 
+  // ---- Votacao ---------------------------------------------------------------
+  // One vote, in words and without colour: three rows (A favor, Contra, Abstenção) in this
+  // order, groups in the Assembleia's own order (ordem), never sorted by sentido or size.
+  // Deputy counts only when the record has them. Dissent goes in the group's line. Groups the
+  // record lists as absent say "Ausente". Groups missing from the record say "sem registo".
+  // props: {grupos: {GP: sentido}, ordem: [GP], contagens?, dissidencia?, foraDeGrupo?,
+  //   ausentes?, semRegisto? (groups with seats that day and no record), unanime?, resultado?, verificacao?}
+  var SENTIDOS = [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']];
+  var PALAVRA = { favor: 'a favor', contra: 'contra', abstencao: 'abstenção' };
+  function Votacao(props) {
+    var g = props.grupos || {}, cont = props.contagens || {}, dis = props.dissidencia || [], fora = props.foraDeGrupo || [];
+    var ordem = (props.ordem || []).slice();
+    Object.keys(g).forEach(function (k) { if (ordem.indexOf(k) < 0) ordem.push(k); });
+    var ausentes = props.ausentes || [];
+    function grupo(k) {
+      var n = cont[k] && cont[k][g[k]];
+      var extra = dis.filter(function (d) { return d.grupo === k; }).map(function (d) {
+        return d.nome ? d.nome + ' votou ' + PALAVRA[d.sentido] : d.n + (d.n === 1 ? ' deputado votou ' : ' deputados votaram ') + PALAVRA[d.sentido];
+      });
+      return k + (n ? ' ' + n : '') + (extra.length ? ' (' + extra.join(', ') + ')' : '');
+    }
+    var linhas = SENTIDOS.map(function (s) {
+      var gs = ordem.filter(function (k) { return g[k] === s[0]; }).map(grupo);
+      fora.filter(function (x) { return x.sentido === s[0]; }).forEach(function (x) { gs.push(x.nome + ' (não inscrito)'); });
+      return [s[1], gs.length ? gs.join(', ') : 'nenhum grupo'];
+    });
+    var semRegisto = props.unanime ? [] : props.semRegisto || [];
+    var v = props.verificacao;
+    return h('div', { className: 'rd-votacao' },
+      props.unanime ? h('p', { className: 'rd-votos-nota' }, (props.resultado || 'Aprovado') + ' por unanimidade.' + (ausentes.length ? ' Ausentes: ' + ausentes.join(', ') + '.' : ''))
+        : h('dl', { className: 'rd-votos' }, linhas.map(function (l) { return [h('dt', { key: l[0] + 't' }, l[0]), h('dd', { key: l[0] + 'd' }, l[1])]; }),
+          ausentes.length ? [h('dt', { key: 'at' }, 'Ausente'), h('dd', { key: 'ad' }, ausentes.join(', '))] : null,
+          semRegisto.length ? [h('dt', { key: 'st' }, 'Sem registo'), h('dd', { key: 'sd' }, semRegisto.join(', '))] : null),
+      v && !v.ok ? h('p', { className: 'rd-votos-aviso' }, h('strong', null, 'Atenção: '), 'o resultado registado não corresponde aos votos registados. Consulte o Diário da Assembleia da República.') : null,
+      v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, (v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ') + v.favor + ' a favor, ' + v.contra + ' contra, ' + v.abstencao + ' abstenções.') : null);
+  }
+
   // ---- Citation --------------------------------------------------------------
   function Citation(props) {
     var sc = React.useState('Copiar citação');
@@ -402,6 +440,6 @@
         props.verification ? h(StatusPill, { status: props.verification }) : null));
   }
 
-  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
+  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
   window.Redacao = Object.assign(window.Redacao || {}, api);
 })();

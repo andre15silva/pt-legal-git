@@ -120,7 +120,10 @@ All entry points lead to one component, **Passagem no Parlamento**. Its address 
 
 ## 5. Plan
 
-**Step 1. Structured data only (S–M).**
+**Step 1. Structured data only (S–M).** Built on 2026-10-28.
+
+*Result:* `pipeline/passagem.py` writes `app/data/passagem.json`. It has 56 passages for the corpus acts. Of 329 votes with group positions, 320 pass the seat check, 8 cannot be checked, and 1 fails. The failure is a real record error: in Lei n.º 7/2009, the PCP proposal 5P is recorded as "Aprovado" with 22 votes for and 208 against. The act page shows the Atenção line under that vote.
+
 
 *Pipeline:*
 - Emit `votacoes` and `passagem` per act. Each vote carries: stage, date, description, positions per group, counts, dissent, `ausencias` (dropped today), unanimity and source.

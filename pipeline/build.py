@@ -26,6 +26,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "pipeline"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import atos  # noqa: E402
+import passagem  # noqa: E402
 import texto  # noqa: E402
 from parlamento import normalise as normalise_iniciativa  # noqa: E402
 
@@ -210,6 +211,11 @@ def build_article(f: dict, first: dict | None, entries: list[dict], original: di
         versions.append({"ato": aid, "tipo": info["tipo"] if info else "original", "artigo_do_ato": info and info.get("artigo_do_ato"),
                          "publicacao": (info and info.get("publicacao")) or d10(fv.get("DataVersao")) or original["publicacao"],
                          "vigor": (info and info.get("vigor")) or d10(fv.get("DataEntradaVigor")), "texto": texto.normalise(fv.get("Texto"))})
+    # An act cannot enter into force before it is published. A retificação takes the date of the
+    # act it corrects, so it can; any other earlier date is a DR data error (DL 162/2014 has 1992).
+    for v in versions:
+        if v["vigor"] and v["publicacao"] and v["vigor"] < v["publicacao"] and not v["ato"].startswith("declaracao-de-ret"):
+            v["vigor"] = None
     # Order by the date each version took effect; unknown entry dates fall back to publication.
     versions.sort(key=lambda v: (v["vigor"] or v["publicacao"] or NO_DATE))
     spans = texto.blame([v["texto"] for v in versions])
@@ -232,11 +238,13 @@ def build_article(f: dict, first: dict | None, entries: list[dict], original: di
 
 # --- Parliament -------------------------------------------------------------------------------
 
-def link_parliament(reg: Registry, pdir: str) -> dict:
+def link_parliament(reg: Registry, pdir: str) -> tuple[dict, dict]:
+    """Initiatives behind each act, and each act's passage through Parliament (passagem.py)."""
     out: dict[str, dict] = {}
+    por_ato: dict[str, list] = {}
     if not os.path.isdir(pdir):
         sys.stderr.write(f"sem dados do Parlamento em {pdir}: atos sem iniciativa\n")
-        return out
+        return out, {}
     diplomas = {}
     for path in glob.glob(os.path.join(pdir, "Diplomas*_json.txt")):
         with open(path, encoding="utf-8-sig") as fh:
@@ -266,12 +274,15 @@ def link_parliament(reg: Registry, pdir: str) -> dict:
             doc = {"id": iid, "legislatura": ini.legislature, "tipo": ini.kind, "numero": ini.number, "titulo": ini.title,
                    "autores": ini.authors, "eventos": ini.events, "conjuntas": ini.joint_with,
                    "votacoes": [{"data": v.date, "fase": v.phase, "resultado": v.result, "unanime": v.unanimous,
-                                 "posicoes": v.positions, "descricao": v.description} for v in ini.votes],
+                                 "posicoes": v.positions, "ausentes": v.absent, "descricao": v.description} for v in ini.votes],
                    "ato": ids[iid], "link": f"https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID={iid}"}
             out[iid] = doc
+            por_ato.setdefault(ids[iid], []).append((raw_ini, ini))
             reg.acts[ids[iid]].setdefault("iniciativas", []).append(
                 {"id": iid, "designacao": f"{ini.kind} n.º {ini.number}/{ini.legislature}", "titulo": ini.title, "autores": ini.authors})
-    return out
+    comps = passagem.carregar_composicoes(pdir)
+    passagens = {aid: passagem.passagem(inis, aid, comps.get(inis[0][1].legislature)) for aid, inis in por_ato.items()}
+    return out, passagens
 
 
 def copy_design_system() -> None:
@@ -303,8 +314,11 @@ def main() -> int:
         summaries.append(summary)
         search.extend([cfg["slug"], n["artigo"], n["rotulo"], n["epigrafe"], n["estado"]] for n in index["arvore"] if n["tipo"] == "artigo")
         sys.stderr.write(f"{cfg['slug']}: {summary['n_artigos']} artigos\n")
-    iniciativas = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"))
+    iniciativas, passagens = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"))
     write(os.path.join(OUT, "iniciativas.json"), iniciativas)
+    write(os.path.join(OUT, "passagem.json"), passagens)
+    falhas = sum(p["verificacao"].get("falha", 0) for p in passagens.values())
+    print(f"{len(passagens)} passagens; {falhas} votações com resultado que não bate certo com os assentos")
     for a in reg.acts.values():
         a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
     write(os.path.join(OUT, "atos.json"), reg.acts)
