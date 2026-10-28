@@ -191,11 +191,12 @@ Bootstrap: for diplomas we have not replayed yet, serve the DR consolidated per-
 | M3 | Alteration-ordinal chain consistent with Lei 74/98 art. 6.º, n.º 1 ("k.ª alteração" = k−1 known amenders) | 100% or listed as a gap |
 | M4 | Share of tokens attributed to a specific effect | ≥ 95% for post-1991 acts |
 | M5 | Date provenance mix: explícita / supletiva / transitória / desconhecida | Always reported, never hidden |
-| M6 | Iniciativa → ato linkage rate | ≥ 99% (measured: 136/136 for the XVII legislature via `TextosAprovados`; 99.4% across all legislaturas) |
+| M6 (gate) | Release blocked when M1 or M2 drops below target, as sejm2git does with `--fail-under` | CI |
+| M7 | Iniciativa → ato linkage rate | ≥ 99% (measured: 136/136 for the XVII legislature via `TextosAprovados`; 99.4% across all legislaturas) |
 
 ## 3. Text normalisation
 
-- The canonical form is a JSON tree with AKN-style eIds: `art_87__para_2`, `art_5-A__para_2__point_b__subpoint_ii`. Markdown and AKN XML are renders.
+- The canonical form is a JSON tree with AKN-style eIds, aligned with the draft AKN-PT profile (`dapl-sggov/akn-pt`, with ELI-PT URIs on data.dre.pt). Track that profile as it moves towards institutional validation. Example eIds: `art_87__para_2`, `art_5-A__para_2__point_b__subpoint_ii`. Markdown and AKN XML are renders.
 - Unicode NFC. `º` (U+00BA), never `°`. Unify `n.º`/`n.o` and `n.os`/`n.<sup>os</sup>`. Number dashes `1 -`, `1 –`, `1 —` → `1 —`. Keep `«»`. Collapse whitespace. Repair PDF hyphenation. Keep pre-1990 spelling as published (*efectuado*, *direcção*), since spelling changes are not amendments.
 - Tables (CIRS brackets, OE maps) are structured cells, never flattened text.
 
@@ -247,7 +248,7 @@ Verificacao: consolidado-DR exata (3/3 números)
 | Git concept | Meaning in `lei-pt` |
 |---|---|
 | `main` | Text in force today. Only commits with vigência ≤ today, in vigência order. Never rewritten. |
-| `prospetivo` | Rebuilt daily: `main` plus published-but-not-yet-in-force effects. |
+| `prospetivo` | Rebuilt daily: `main` plus published-but-not-yet-in-force effects (houritsu's `upcoming` branch is the same idea). |
 | `iniciativas/XVII/PPL-16` | The proposal's text applied to `main`. **Never merged**: the law that results is a separate commit that links back with `Iniciativa:`. Archived at caducidade. |
 | `edicoes/2026-10-28` | A full valid-time-ordered reconstruction as known on that date. Retroactive corrections show up between editions, not by rewriting `main`. |
 | tags | `crp/rev-1982`, `crp/rev-1989`, … `crp/rev-2005`; `republicacao/<diploma>/<data>`; `alteracao/<diploma>/<n>` |

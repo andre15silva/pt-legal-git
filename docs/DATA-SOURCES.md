@@ -10,6 +10,9 @@ Probed live on 2026-10-28. Full reports: [Diário da República](research/source
 | **parlamento.pt open data** | Initiatives, process events, per-group votes, link to the published law | Per-legislature JSON/XML files, discovered by scraping catalogue pages | Structured metadata; texts only as DOCX/PDF | **Parliamentary layer** |
 | **legalize-pt** (legalize.dev, MIT pipeline) | Bootstrap and cross-check: about 172k acts as Markdown, one commit per consolidated version | `git clone` | Markdown + YAML front matter, ELI-derived names | **Bootstrap, not truth** |
 | **PGDL** (pgdlisboa.pt) | Cross-check: article versions and older whole versions | Static HTML | Per-article pages | Verification only |
+| **api.votoaberto.org** (fsmunoz/parlamentodb) | Alternative source for votes: a REST API over the AR open data | REST | Initiative, vote | Compare with our parser |
+| **AKN-PT** (dapl-sggov/akn-pt) | Draft national Akoma Ntoso and ELI-PT profile | Specification | n/a | Align identifiers and export |
+| **timimata/lex** | Open PT-PT legal QA benchmark with dated questions | Dataset | Article versions (Código do Trabalho, NRAU) | Evaluation |
 | **Tribunal Constitucional, DGSI** | Rulings with força obrigatória geral; case-law links | HTML | Unstructured | Phase 4 |
 
 ## Diário da República
@@ -79,7 +82,7 @@ Both are implemented in [`tools/link_dr.py`](../tools/link_dr.py). The vote pars
 ## legalize-pt
 
 - `git clone https://github.com/legalize-dev/legalize-pt`. Layout: `pt/<year>/<identifier>.md`; regional legislation is in `pt-20` (Açores) and `pt-30` (Madeira). Front matter includes the ELI, `publication_date`, `rank`, `status`, `dre_id` and thesaurus subjects. Commit trailers: `Norm`, `Disposition`, `Source`, `Affected articles`, `Change`.
-- **One date per version** (entry into force, or publication for bootstraps), no efficacy, no parliamentary data, no verification.
+- **One date per version, and in practice the publication date.** The README says commits use the entry-into-force date. But the commit we inspected (a revocation published 2026-10-27 and effective from 2026-10-28) is dated 2026-10-27 and lists "Affected articles: N/A". No efficacy, no parliamentary data, no verification.
 - **Staleness found:** in the snapshot inspected (HEAD 2026-10-27), `pt/1988/DRE-1988-442-B-519003.md` (Código do IRC) contains the **1988 text** (taxa 36,5 %, original numbering) although its front matter says `last_updated: 2025-12-30`. The DR consolidates the CIRC under a different key (`lei/2014-64205634`, from the 2014 reform's republication). Mirrors that follow the original act's ID miss renumbered republications. Lei 74/98's file shows a similar mismatch (`last_updated: 2008-01-01` against a 2014 consolidated source).
 - **Use:** bootstrap metadata and the title-matching fallback; a third comparator in verification. Report the issues upstream.
 

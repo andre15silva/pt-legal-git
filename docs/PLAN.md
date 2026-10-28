@@ -17,7 +17,9 @@ Underneath, the law is held as a tri-temporal norm graph and exported as a real 
 ## 2. Why now, and why us
 
 - **The data is reachable.** parlamento.pt publishes initiatives, events and per-group votes as JSON/XML per legislature. The DR exposes per-article consolidated versions, with entry-into-force dates and the amending act, through its web app's JSON endpoints. DL 83/2016 guarantees free, open access to DR content. See [DATA-SOURCES.md](DATA-SOURCES.md).
-- **A raw git mirror already exists, and that frees us to do the hard part.** legalize-pt (MIT) mirrors about 172k DR acts as Markdown with one commit per consolidated version. It has one date per change, no parliamentary layer and no verification. In the snapshot we inspected, its Código do IRC file still holds the 1988 text (36,5% rate) under a 2025 "last updated" stamp. We reuse it as a bootstrap and a cross-check, and build what it lacks.
+- **"Portuguese law in git" is already a commodity, so we must not build another mirror.** At least five projects mirror the DR consolidation as Markdown: legalize-pt, LawCodex/pt, LawAgents/pt, Ansvar's MCP server and the lauyer CLI. Abroad, the bill-as-branch idea also exists: sejm2git (Poland) and us-congress-pipeline (US) model bills as branches with votes in commit trailers, and houritsu (Japan) dates commits by entry into force. See [RELATED-WORK.md](RELATED-WORK.md).
+- **What nobody does for Portugal is the part that needs evidence.** None of these projects replays Portuguese amending acts and publishes how well the result matches the official text. None keeps publication, entry-into-force and effect dates apart: legalize-pt commits by publication date, and in the snapshot we inspected its Código do IRC file still holds the 1988 text. None joins Parliament's initiatives and votes to the articles they changed.
+- **Our positioning:** *the first project to replay Portuguese amending acts against the official consolidation and publish its match rate, with separate publication, entry-into-force and effect dates, and with every change linked to its parliamentary initiative and votes.* We do not claim to be "the first git for Portuguese law".
 - **LLMs need it.** The TU Munich results cited by Lexifina (24% → 87% accuracy when the temporally correct statute is retrieved; LLM-regenerated history is not reliable) make a checkable, date-explicit corpus valuable infrastructure for Portuguese legal AI.
 
 ## 3. Who it is for
@@ -58,6 +60,10 @@ Goal: hard numbers on feasibility before building the product.
 - [x] First replay test: Lei 13/2023 → Código do Trabalho, **90/97 articles exact** with 5 rules.
 - [ ] Replay spike on the CRP (7 revisions, each republished, so every version has an official checkpoint): compute M1/M2.
 - [ ] Talk to INCM (DR) and the AR open-data team about bulk access, and to legalize.dev about cooperating.
+- [ ] Align identifiers and the AKN export with the draft **AKN-PT / ELI-PT profile** (`dapl-sggov/akn-pt`, led by DAPL/SGGOV). Contact its authors early.
+- [ ] Evaluate against **timimata/lex**, an open PT-PT legal QA benchmark with dated questions and every Código do Trabalho article version since 2009.
+- [ ] Decide whether to use **api.votoaberto.org** (fsmunoz/parlamentodb) for votes or keep our own parser. Compare the two on the XVII legislature.
+- [ ] Study **sejm2git**'s fidelity dashboard and copy its CI gate (the build fails when the match rate drops).
 
 **Exit criteria:** M1 ≥ 95% on the CRP; DR client stable for 2 weeks (it survives a deploy that changes its API hashes); a written position from INCM on reuse of the consolidated texts.
 
@@ -71,7 +77,7 @@ Goal: hard numbers on feasibility before building the product.
 - Ato view (the "commit"): what an act changed, its dates with the rules used, links to the DR.
 - Search with a colloquial synonym layer, plus "A minha situação" entry points for 6 life events.
 - Public `lei-pt` git export (CC0), refreshed daily.
-- A public verification report per diploma (M1–M6).
+- A public verification report per diploma (M1–M7).
 
 **Success:** M1 ≥ 97%, M2 ≥ 99%, zero unflagged date assumptions. Five practitioners, five citizens and two parliamentary advisers complete the top tasks unaided in usability tests (WCAG 2.2 AA, screen-reader tested).
 
@@ -112,7 +118,7 @@ Goal: hard numbers on feasibility before building the product.
 - **"Quem escreveu esta frase?"** Tap any sentence of the Código do Trabalho and see the act, the initiative and the vote.
 - **"O IRC desce para 17%… em 2028."** The CIRC art. 87.º example as a public explainer of what entry into force and production of effects mean.
 - **"A Constituição em 7 revisões"** as an interactive redline for students.
-- **`git clone` the Portuguese Constitution.**
+- **A public match-rate report:** every diploma with its replay score against the official text, and every mismatch with its cause.
 
 ## 8. Top risks
 
@@ -129,6 +135,7 @@ Goal: hard numbers on feasibility before building the product.
 | | |
 |---|---|
 | [STAKEHOLDERS.md](STAKEHOLDERS.md) | Synthesis of the six stakeholder panels |
+| [RELATED-WORK.md](RELATED-WORK.md) | Related projects worldwide and in Portugal; what we copy and what we avoid |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Data model, pipeline, git export, API/MCP, stack |
 | [DATA-SOURCES.md](DATA-SOURCES.md) | What the DR and parlamento.pt actually expose, with probes |
 | [DESIGN.md](DESIGN.md) | Design principles, information architecture, screens, design system |

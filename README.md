@@ -23,6 +23,7 @@ Lei n.º 64/2025 rewrote the Código do IRC's general rate from 20 % to **17 %**
 | [docs/PLAN.md](docs/PLAN.md) | **Start here.** Product, principles, phased roadmap, organisation, risks |
 | [docs/STAKEHOLDERS.md](docs/STAKEHOLDERS.md) | Synthesis of six stakeholder panels: practitioners, Parliament and drafters, journalists and civic tech, citizens and accessibility, compliance/tax/legal AI, legal informatics |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Data model (vigência × eficácia × knowledge × system time), hybrid ingestion and verification pipeline, git export spec, API and MCP, stack |
+| [docs/RELATED-WORK.md](docs/RELATED-WORK.md) | Survey of law-as-git and point-in-time projects worldwide and in Portugal, and what we copy or avoid |
 | [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) | What the DR and parlamento.pt actually expose (probed live), legalize-pt, Lei 74/98 rules, rights |
 | [docs/DESIGN.md](docs/DESIGN.md) | Screens, information architecture, vocabulary, visual identity, accessibility |
 | [docs/ESTILO.md](docs/ESTILO.md) | PTS (Português Técnico Simplificado): our pt-PT adaptation of ASD-STE100 for all product copy |
