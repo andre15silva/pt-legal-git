@@ -303,15 +303,16 @@
       return function () { document.removeEventListener('keydown', tecla); };
     }, []);
     var index = r.data ? r.data[0] : null;
-    var res = index && qs[0] ? search(index, qs[0]).slice(0, 8) : [];
+    // Situations first (at most 2), then articles: one list for the arrow keys.
+    var res = index && qs[0] ? situacoes(index, qs[0]).slice(0, 2).map(function (x) { return { sit: x }; }).concat(search(index, qs[0]).slice(0, 8)) : [];
     var nomes = {};
     if (index) index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
     var aberto = ab[0] && qs[0].length > 0;
     var cur = Math.min(at[0], Math.max(0, res.length - 1));
-    function ir(x) { ab[1](false); qs[1](''); location.hash = link(['d', x[0], x[1]]); }
+    function ir(x) { ab[1](false); qs[1](''); location.hash = x.sit ? link(['situacao', x.sit.slug]) : link(['d', x[0], x[1]]); }
     return h('div', { className: 'pesq', role: 'search' },
       h('label', { htmlFor: 'pesq', className: 'rd-sr' }, 'Pesquisar um artigo'),
-      h('input', { id: 'pesq', ref: ref, type: 'search', className: 'pesq-campo', placeholder: 'Pesquisar: art 87 circ, licença parental…', autoComplete: 'off', value: qs[0],
+      h('input', { id: 'pesq', ref: ref, type: 'search', className: 'pesq-campo', placeholder: 'Pesquisar: art 87 circ, inquilino, férias…', autoComplete: 'off', value: qs[0],
         role: 'combobox', 'aria-expanded': aberto, 'aria-controls': 'pesq-lista', 'aria-autocomplete': 'list', 'aria-activedescendant': aberto && res.length ? 'pesq-' + cur : undefined,
         onChange: function (e) { qs[1](e.target.value); ab[1](true); at[1](0); },
         onFocus: function () { ab[1](true); },
@@ -324,11 +325,13 @@
         } }),
       aberto ? h('div', { className: 'pesq-caixa' },
         res.length ? h('ul', { id: 'pesq-lista', role: 'listbox', 'aria-label': 'Artigos encontrados', className: 'pesq-lista' }, res.map(function (x, k) {
-          return h('li', { key: x[0] + x[1], id: 'pesq-' + k, role: 'option', 'aria-selected': k === cur, className: k === cur ? 'is-on' : '',
-            onMouseDown: function (e) { e.preventDefault(); ir(x); }, onMouseEnter: function () { at[1](k); } },
-            h('span', { className: 'pesq-art' }, x[2]), x[3] ? h('span', { className: 'pesq-ep' }, ' ' + x[3]) : null,
+          var at_ = { id: 'pesq-' + k, role: 'option', 'aria-selected': k === cur, className: (k === cur ? 'is-on' : '') + (x.sit ? ' pesq-sit' : ''),
+            onMouseDown: function (e) { e.preventDefault(); ir(x); }, onMouseEnter: function () { at[1](k); } };
+          if (x.sit) return h('li', Object.assign({ key: 's' + x.sit.slug }, at_), h('span', { className: 'pesq-art' }, x.sit.titulo), h('span', { className: 'pesq-dip' }, 'Situação'));
+          return h('li', Object.assign({ key: x[0] + x[1] }, at_),
+            h('span', { className: 'pesq-art' }, x[2]), x[3] ? h('span', { className: 'pesq-ep' }, ' ' + epigrafe(x[3])) : null,
             h('span', { className: 'pesq-dip' }, nomes[x[0]] ? nomes[x[0]].sigla : x[0]));
-        })) : h('p', { id: 'pesq-lista', className: 'pesq-vazio' }, index ? 'Nenhum artigo. Escreva o número e a sigla: «87 circ», «crp 1».' : 'A carregar…')) : null);
+        })) : h('p', { id: 'pesq-lista', className: 'pesq-vazio' }, index ? 'Nenhum artigo. Escreva o número e a sigla («87 circ», «crp 1») ou palavras como «renda» ou «férias».' : 'A carregar…')) : null);
   }
   function Shell(props) {
     return h('div', { className: 'shell' },
@@ -367,26 +370,58 @@
 
   // ---- Home ---------------------------------------------------------------------------------
   var SIGLAS = { crp: 'constituicao', constituicao: 'constituicao', 'constituição': 'constituicao', ct: 'codigo-do-trabalho', trabalho: 'codigo-do-trabalho',
-    circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau', arrendamento: 'nrau', rendas: 'nrau',
+    circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau',
     cc: 'codigo-civil-locacao', civil: 'codigo-civil-locacao', 'locação': 'codigo-civil-locacao', locacao: 'codigo-civil-locacao',
-    cirs: 'codigo-irs', irs: 'codigo-irs', formulario: 'lei-formulario', 'formulário': 'lei-formulario', '74/98': 'lei-formulario' };
+    cirs: 'codigo-irs', irs: 'codigo-irs', formulario: 'lei-formulario', 'formulário': 'lei-formulario', '74/98': 'lei-formulario',
+    cp: 'codigo-penal', penal: 'codigo-penal', cpc: 'codigo-processo-civil', cpp: 'codigo-processo-penal',
+    csc: 'codigo-sociedades-comerciais', sociedades: 'codigo-sociedades-comerciais', civa: 'codigo-iva', iva: 'codigo-iva',
+    lgt: 'lei-geral-tributaria', ebf: 'estatuto-beneficios-fiscais' };
   function fold(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  // Everyday words (pipeline/temas.json): "inquilino" finds "arrendatário", "horas extra" finds
+  // "trabalho suplementar". Each word or phrase of the query becomes a group of alternatives; an
+  // article matches when its epígrafe has one alternative of every group.
+  function grupos(index, q) {
+    var f = ' ' + fold(q).replace(/[º.]/g, ' ').replace(/\s+/g, ' ').trim() + ' ', out = [];
+    var sin = (index.temas && index.temas.sinonimos) || [];
+    // Longest phrases first, so "aumento da renda" wins over "renda".
+    var frases = [];
+    sin.forEach(function (x) { x.palavras.forEach(function (p) { frases.push([fold(p), x.termos.concat(p.indexOf(' ') < 0 ? [fold(p)] : [])]); }); });
+    frases.sort(function (a, b) { return b[0].length - a[0].length; });
+    frases.forEach(function (x) {
+      var k = f.indexOf(' ' + x[0] + ' ');
+      if (k < 0) return;
+      out.push(x[1]);
+      f = f.slice(0, k) + ' ' + f.slice(k + x[0].length + 1);
+    });
+    return { grupos: out, resto: f.trim() };
+  }
   function search(index, q) {
-    var words = fold(q).replace(/[º.]/g, ' ').split(/\s+/).filter(Boolean);
-    if (!words.length) return [];
-    var diploma = null, num = null, rest = [];
+    var g = grupos(index, q);
+    var words = g.resto.split(/\s+/).filter(Boolean);
+    if (!words.length && !g.grupos.length) return [];
+    var diploma = null, num = null, rest = g.grupos.slice();
     words.forEach(function (w) {
       if (SIGLAS[w]) diploma = SIGLAS[w];
       else if (/^\d+(-[a-z])?$/.test(w)) num = w;
-      else if (!/^(art|artigo|do|da|de|o|a|n)$/.test(w)) rest.push(w);
+      else if (!/^(art|artigo|do|da|de|o|a|n|e|um|uma|os|as|no|na|em|para|com|por|que|se|me|eu|fui|ser)$/.test(w)) rest.push([w]);
     });
+    if (!diploma && !num && !rest.length) return [];
     return index.pesquisa.filter(function (r) {
       if (diploma && r[0] !== diploma) return false;
       if (num && fold(r[2]).replace(/[º.]/g, '').replace(/\s+/g, ' ').trim() !== 'artigo ' + num) return false;
       var e = fold(r[3]);
-      return rest.every(function (w) { return e.indexOf(w) >= 0; });
-    }).slice(0, 30);
+      return rest.every(function (alt) { return alt.some(function (w) { return e.indexOf(w) >= 0; }); });
+    }).sort(function (a, b) { return (a[4] === 'revogado') - (b[4] === 'revogado'); }).slice(0, 30);
   }
+  // Life situations whose words appear in the query.
+  function situacoes(index, q) {
+    var f = ' ' + fold(q).replace(/\s+/g, ' ').trim() + ' ';
+    if (f.trim().length < 3) return [];
+    return ((index.temas && index.temas.situacoes) || []).filter(function (s) {
+      return s.palavras.some(function (p) { return f.indexOf(' ' + fold(p)) >= 0; }) || fold(s.titulo).indexOf(f.trim()) >= 0;
+    });
+  }
+  function epigrafe(e) { return (e || '').replace(/^\((.*)\)$/, '$1'); }
   function Home() {
     var r = useData(['index.json', 'atos.json']);
     var qs = useState('');
@@ -394,7 +429,7 @@
     var index = r.data[0], atos = r.data[1];
     var nomes = {};
     index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
-    var results = search(index, qs[0]);
+    var results = search(index, qs[0]), sits = situacoes(index, qs[0]);
     var recent = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.length; })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; }).slice(0, 8);
@@ -405,13 +440,21 @@
         h('form', { role: 'search', className: 'search', onSubmit: function (e) { e.preventDefault(); } },
           h('label', { htmlFor: 'q', className: 'search-label' }, 'Pesquisar um artigo'),
           h('input', { id: 'q', type: 'search', className: 'rd-input search-input', value: qs[0], autoComplete: 'off',
-            placeholder: 'Por exemplo: «art 87 circ», «licença parental», «crp 1»', onChange: function (e) { qs[1](e.target.value); } })),
+            placeholder: 'Por exemplo: «art 87 circ», «inquilino», «horas extra», «crp 1»', onChange: function (e) { qs[1](e.target.value); } })),
         qs[0] ? h('section', { 'aria-live': 'polite', className: 'results' },
-          h('p', { className: 'muted' }, results.length ? results.length + (results.length === 1 ? ' artigo encontrado' : ' artigos encontrados') : 'Não encontrámos artigos. Escreva o número do artigo e a sigla do diploma (CRP, CT, CIRC, NRAU) ou uma palavra da epígrafe.'),
+          sits.length ? h('ul', { className: 'sit-res' }, sits.map(function (x) {
+            return h('li', { key: x.slug }, h('a', { href: link(['situacao', x.slug]) }, h('strong', null, x.titulo)), h('span', { className: 'muted' }, ' · ' + x.artigos.length + ' artigos'));
+          })) : null,
+          h('p', { className: 'muted' }, results.length ? results.length + (results.length === 1 ? ' artigo encontrado' : ' artigos encontrados') : 'Não encontrámos artigos. Escreva o número do artigo e a sigla do diploma (CRP, CT, CIRC, NRAU) ou palavras como «despedimento», «renda», «férias».'),
           h('ul', { className: 'list' }, results.map(function (x) {
-            return h('li', { key: x[0] + x[1] }, h('a', { href: link(['d', x[0], x[1]]) }, h('strong', null, x[2]), x[3] ? ' ' + x[3] : ''),
+            return h('li', { key: x[0] + x[1] }, h('a', { href: link(['d', x[0], x[1]]) }, h('strong', null, x[2]), x[3] ? ' ' + epigrafe(x[3]) : ''),
               h('span', { className: 'muted' }, ' · ' + nomes[x[0]].sigla), x[4] === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))) : null),
+      index.temas && index.temas.situacoes.length ? h('section', { className: 'situacoes', 'aria-labelledby': 'sit' },
+        h('h2', { id: 'sit', className: 'h2' }, 'Situações'),
+        h('ul', { className: 'sit-lista' }, index.temas.situacoes.map(function (x) {
+          return h('li', { key: x.slug }, h('a', { className: 'sit-link', href: link(['situacao', x.slug]) }, x.titulo), h('p', null, x.texto));
+        }))) : null,
       h('div', { className: 'duas duas-largo' },
         h('section', { 'aria-labelledby': 'dipl' },
           h('h2', { id: 'dipl', className: 'h2' }, 'Diplomas'),
@@ -431,11 +474,50 @@
           })))));
   }
 
+  // ---- Situação: the articles for one life situation (pipeline/temas.json) ------------------
+  function Situacao(props) {
+    var r = useData(['index.json', 'pendentes.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var index = r.data[0], x = ((index.temas || {}).situacoes || []).filter(function (s) { return s.slug === props.slug; })[0];
+    if (!x) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos esta situação.'));
+    document.title = x.titulo + ' · Redação';
+    var nomes = {}, ep = {};
+    index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
+    index.pesquisa.forEach(function (p) { ep[p[0] + '/' + p[1]] = p; });
+    var porDip = [];
+    x.artigos.forEach(function (a) {
+      var g = porDip.filter(function (z) { return z.slug === a[0]; })[0];
+      if (!g) porDip.push(g = { slug: a[0], arts: [] });
+      g.arts.push(a[1]);
+    });
+    return h('div', { className: 'pagina-ato' },
+      h(Crumbs, { items: [['Diplomas', '#/'], ['Situações'], [x.titulo]] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, x.titulo),
+        h('p', { className: 'lead' }, x.texto),
+        h('p', { className: 'muted small' }, 'Uma seleção de artigos para começar. Não é aconselhamento jurídico: a lei tem outras regras e exceções.')),
+      porDip.map(function (g) {
+        var d = nomes[g.slug] || { titulo: g.slug };
+        var propostas = pendentesDe(r.data[1], g.slug, null);
+        return h('section', { key: g.slug, className: 'secao', 'aria-labelledby': 'sit-' + g.slug },
+          h('h2', { id: 'sit-' + g.slug }, h('a', { href: link(['d', g.slug]) }, d.titulo)),
+          h('ul', { className: 'toc-list sit-arts' }, g.arts.map(function (a) {
+            var p = ep[g.slug + '/' + a] || [g.slug, a, a, ''];
+            var prop = propostas.some(function (i) { return i.diplomas[g.slug].artigos.indexOf(a) >= 0; });
+            return h('li', { key: a }, h('a', { className: 'toc-row', href: link(['d', g.slug, a]) },
+              h('span', { className: 'toc-n' }, p[2].replace(/^Artigo\s*/, '')),
+              h('span', { className: 'toc-ep' }, epigrafe(p[3]), prop ? h('span', { className: 'toc-parl' }, h('span', { 'aria-hidden': 'true' }, '◌ '), 'proposta em curso') : null)));
+          })));
+      }));
+  }
+
   // ---- Diploma -------------------------------------------------------------------------------
   function Diploma(props) {
-    var r = useData(['d/' + props.slug + '.json', 'atos.json']);
+    var r = useData(['d/' + props.slug + '.json', 'atos.json', 'pendentes.json']);
     if (!r.data) return h(Loading, { error: r.error });
-    var d = r.data[0], atos = r.data[1];
+    var d = r.data[0], atos = r.data[1], propostas = pendentesDe(r.data[2], props.slug, null);
+    var emCurso = {};
+    propostas.forEach(function (i) { i.diplomas[d.slug].artigos.forEach(function (a) { emCurso[a] = true; }); });
     var em = validDate(props.q.em), base = props.q.base;
     var acts = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); })
@@ -475,11 +557,12 @@
             return h('li', { key: i, className: rev ? 'toc-rev' : '' },
               h('a', { className: 'toc-row', href: link(['d', d.slug, n.artigo], { em: em, base: base }) },
                 h('span', { className: 'toc-n' }, n.rotulo.replace(/^Artigo\s*/, '')),
-                h('span', { className: 'toc-ep' }, n.epigrafe || (rev ? '' : '—')),
+                h('span', { className: 'toc-ep' }, n.epigrafe || (rev ? '' : '—'),
+                  emCurso[n.artigo] ? h('span', { className: 'toc-parl' }, h('span', { 'aria-hidden': 'true' }, '◌ '), 'proposta em curso') : null),
                 h('span', { className: 'toc-meta' }, faixa(n), h('span', { className: n.n > 1 || rev ? '' : 'rd-sr' }, rev ? 'Revogado' : n.n > 1 ? n.n + ' redações' : '1 redação'))));
             };
             // When the code sits in an annex (the CIRC), the approving law's own articles fold away.
-            var anexo = d.arvore.map(function (n) { return /^Anexo/i.test(n.rotulo || ''); }).indexOf(true);
+            var anexo = d.inicio_codigo != null ? d.inicio_codigo : d.arvore.map(function (n) { return /^Anexo/i.test(n.rotulo || ''); }).indexOf(true);
             var regua = h('div', { className: 'regua-atos', 'aria-hidden': 'true' },
               h('div', { className: 'ra-linha' }, acts.map(function (a, k) { return h('span', { key: k, className: 'ra-t' + (/Retifica/.test(a.designacao) ? ' ra-ret' : ''), style: { left: pos(a.publicacao) + '%' }, title: a.designacao }); })),
               h('div', { className: 'ra-anos' }, h('span', { className: 'ra-ini', style: { left: '0%' } }, ini.slice(0, 4)),
@@ -488,10 +571,30 @@
             if (anexo <= 0) return h(React.Fragment, null, regua, cab, h('ul', { className: 'toc-list' }, d.arvore.map(linha)));
             var lei = d.arvore.slice(0, anexo).filter(function (n) { return n.tipo === 'artigo'; }).length;
             return h(React.Fragment, null, regua, cab,
-              h('details', { className: 'dobra toc-lei' }, h('summary', null, 'Os ' + lei + ' artigos ' + (pela(d.designacao) === 'pelo' ? 'do ' : 'da ') + d.designacao + ' que aprovam o código'),
+              h('details', { className: 'dobra toc-lei' }, h('summary', null, 'Os ' + lei + ' artigos ' + (pela(d.designacao) === 'pelo' ? 'do ' : 'da ') + d.designacao + (d.inicio_historia ? ' que republicam o código' : ' que aprovam o código')),
                 h('ul', { className: 'toc-list' }, d.arvore.slice(0, anexo).map(linha))),
               h('ul', { className: 'toc-list' }, d.arvore.slice(anexo).map(function (n, i) { return linha(n, anexo + i); })));
           })()),
+        h('div', { className: 'dip-lado' },
+        propostas.length ? h('section', { className: 'no-parl', 'aria-labelledby': 'parl' },
+          h('h2', { id: 'parl', className: 'h2' }, 'No Parlamento'),
+          h('p', { className: 'muted small' }, (propostas.length === 1 ? 'Uma iniciativa em curso propõe' : propostas.length + ' iniciativas em curso propõem') + ' alterar ' + (d.genitivo || 'este diploma').replace(/^d([ao]s?) /, '$1 ') + '. Ainda não ' + (propostas.length === 1 ? 'é' : 'são') + ' lei.'),
+          (function () {
+          // The four most recent stay open; the others fold, so the list of acts stays in view.
+          var item = function (i) {
+            var x = i.diplomas[d.slug], arts = x.artigos.concat(x.novos);
+            return h('li', { key: i.id },
+              h('p', { className: 'parl-nome' }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao), h('span', { className: 'muted' }, ', ' + dePropos(i))),
+              h('p', { className: 'parl-titulo', 'data-citacao': '' }, i.titulo),
+              h('p', { className: 'parl-fase' }, i.fase_texto + ' ' + desdeFase(i)),
+              arts.length ? h('p', { className: 'parl-arts' }, arts.length === 1 ? 'Artigo ' : 'Artigos ', artigosLista(d.slug, arts.slice(0, 12), true), arts.length > 12 ? ' e mais ' + (arts.length - 12) : '', '.')
+                : h('p', { className: 'parl-arts muted' }, i.texto_lido ? 'Não encontrámos no texto os artigos que altera.' : 'Ainda não lemos o texto desta iniciativa.'));
+          };
+          return h(React.Fragment, null, h('ul', { className: 'parl-lista' }, propostas.slice(0, 4).map(item)),
+            propostas.length > 4 ? h('details', { className: 'dobra' }, h('summary', null, 'Mais ' + (propostas.length - 4) + (propostas.length - 4 === 1 ? ' iniciativa' : ' iniciativas')),
+              h('ul', { className: 'parl-lista' }, propostas.slice(4).map(item))) : null);
+          })(),
+          h('p', { className: 'fonte' }, 'Fonte: Assembleia da República, dados abertos, e o texto de cada iniciativa.')) : null,
         h('section', { 'aria-labelledby': 'alt' },
           h('h2', { id: 'alt', className: 'h2' }, 'Atos que o alteraram'),
           h('ol', { className: 'list' }, acts.map(function (a) {
@@ -499,7 +602,7 @@
             return h('li', { key: a.id }, h('a', { href: link(['ato', a.id]) }, a.designacao),
               h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + n + (n === 1 ? ' artigo' : ' artigos')));
           })),
-          h('p', { className: 'muted small lista-nota' }, acts.length + ' atos, do mais recente para o mais antigo.'))));
+          h('p', { className: 'muted small lista-nota' }, acts.length + ' atos, do mais recente para o mais antigo.')))));
   }
 
   // ---- Article --------------------------------------------------------------------------------
@@ -742,7 +845,7 @@
     // The diploma's index first; the article's own file only when the index lists it.
     var ri = useData(['d/' + props.slug + '.json']);
     var existe = ri.data && ri.data[0].arvore.some(function (x) { return x.artigo === props.id; });
-    var r = useData(existe ? ['d/' + props.slug + '.json', 'atos.json', 'passagem.json', 'd/' + props.slug + '/' + props.id + '.json'] : []);
+    var r = useData(existe ? ['d/' + props.slug + '.json', 'atos.json', 'passagem.json', 'd/' + props.slug + '/' + props.id + '.json', 'pendentes.json'] : []);
     var cp = useState(0);
     var df = useState(0);   // the change in focus in Alterações
     var fl = useState(false);  // the phone sheet
@@ -751,6 +854,7 @@
     if (existe && !r.data) return h(Loading, { error: r.error });
     var atos = existe ? r.data[1] : {}, ps = existe ? r.data[2] : {}, q = props.q;
     var art = existe ? r.data[3] : null;
+    var propostas = existe ? pendentesDe(r.data[4], props.slug, props.id) : [];
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo. Volte ao índice do diploma.'), h('a', { href: link(['d', d.slug]) }, d.titulo));
     var n = art.versoes.length, last = n - 1;
     var base = { vigor: 1, publicacao: 1 }[q.base] ? q.base : 'vigor';
@@ -950,7 +1054,8 @@
           h('h2', { id: 'historia', tabIndex: -1 }, 'Redações'),
           h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: itensRegisto }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
-          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)),
+          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null,
+          propostas.length ? h(NoParlamento, { lista: propostas, id: 'parl' }) : null)),
       cur ? h(Folha, { id: 'folha', aberta: fl[0], onFechar: function () { fl[1](false); }, titulo: ordinal(sel.i) + ' redação de ' + n },
         h('p', { className: 'folha-estado' }, h('em', null, f[0], f[1]), h('br'), intervalo(art, sel.i, base, hojeIdx)),
         h('section', { className: 'folha-sec', 'aria-labelledby': 'folha-data' }, h('h3', { id: 'folha-data' }, 'Ver noutra data'),
@@ -962,9 +1067,78 @@
                 h('span', { className: 'folha-ord' }, ordinal(i)), h('span', { className: 'rd-reg-band rd-c-act-' + corDe(art, i), 'aria-hidden': 'true' }),
                 h('span', { className: 'folha-ato' }, nomeAto(v, atos, d)), h('span', { className: 'folha-dt' }, curta(startOf(v, 'vigor')))));
           }))),
+        propostas.length ? h('section', { className: 'folha-sec' }, h(NoParlamento, { lista: propostas, id: 'parl-folha', nivel: 'h3' })) : null,
         h('p', { className: 'folha-acoes' }, h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } },
           h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')))) : null);
   }
+  // ---- Bills now in Parliament (pipeline/pendentes.py) ----------------------------------------------
+  // A bill that is not law yet: where it stands, its generalidade vote, and what it would change.
+  function IniciativaPendente(props) {
+    var ini = props.ini, nomes = {};
+    props.diplomas.forEach(function (x) { nomes[x.slug] = x; });
+    document.title = ini.designacao + ' · Redação';
+    var p = { ordem_grupos: ini.ordem_grupos };
+    return h('div', { className: 'pagina-ato' },
+      h(Crumbs, { items: [['Diplomas', '#/'], [ini.designacao]] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, ini.designacao),
+        h('p', { className: 'lead', 'data-citacao': '' }, ini.titulo),
+        h('p', { className: 'parl-estado' }, h(R.StatusPill, { status: 'pendente' }, 'Em curso'), ' ', ini.fase_texto + ' ' + desdeFase(ini))),
+      h('div', { className: 'duas' },
+        h('div', { className: 'coluna' },
+          h('section', { className: 'secao', 'aria-labelledby': 'muda' },
+            h('h2', { id: 'muda' }, 'O que propõe alterar'),
+            h('ul', { className: 'parl-muda' }, Object.keys(ini.diplomas).map(function (slug) {
+              var x = ini.diplomas[slug], dd = nomes[slug] || { titulo: slug };
+              return h('li', { key: slug },
+                h('p', null, h('a', { href: link(['d', slug]) }, dd.titulo)),
+                x.artigos.length ? h('p', null, x.artigos.length === 1 ? 'Altera o artigo ' : 'Altera os artigos ', artigosLista(slug, x.artigos, true), '.') : null,
+                x.novos.length ? h('p', null, x.novos.length === 1 ? 'Acrescenta ou altera o artigo ' : 'Acrescenta ou altera os artigos ', artigosLista(slug, x.novos, false), ', que não temos.') : null,
+                !x.artigos.length && !x.novos.length ? h('p', { className: 'muted' }, ini.texto_lido ? 'Não encontrámos no texto os artigos que altera.' : 'Ainda não lemos o texto desta iniciativa.') : null);
+            })),
+            h('p', { className: 'fonte' }, 'Lemos os artigos no texto da iniciativa. Confirme no texto, que é o que conta.')),
+          h('section', { className: 'secao', 'aria-labelledby': 'geral-h' },
+            h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
+            ini.generalidade ? h(BlocoVoto, { v: ini.generalidade, ordem: ordemDe(p, [ini.generalidade]), titulo: ini.designacao, designacao: ini.designacao })
+              : h('p', { className: 'lede' }, ini.fase === 'sem_votacao' ? 'Esta iniciativa voltou à comissão sem votação na generalidade.' : 'Ainda não foi votada na generalidade.'))),
+        h('aside', { className: 'factos', 'aria-label': 'Autores e fontes' },
+          h('dl', null,
+            h('dt', null, 'Apresentada por'), h('dd', null, quemPropos(ini)),
+            ini.entrada ? [h('dt', { key: 'et' }, 'Entrada'), h('dd', { key: 'ed' }, extenso(ini.entrada))] : null),
+          h('p', { className: 'factos-links' },
+            h('a', { href: ini.link, target: '_blank', rel: 'noopener' }, 'Assembleia da República ↗'),
+            ini.texto ? [h('br', { key: 'b' }), h('a', { key: 't', href: ini.texto, target: '_blank', rel: 'noopener' }, 'Texto da iniciativa ↗')] : null))),
+      h('section', { className: 'secao', 'aria-labelledby': 'ev' },
+        h('h2', { id: 'ev' }, 'Todas as fases'),
+        h('ol', { className: 'fases' }, ini.eventos.map(function (e, i) { return h('li', { key: i }, h('span', { className: 'fase-data' }, curta(e[0])), h('span', null, e[1])); }))));
+  }
+  // The pending bills that name this article, or every pending bill on the diploma (artigo null).
+  function pendentesDe(pd, slug, artigo) {
+    return ((pd && pd.por_diploma[slug]) || []).map(function (k) { return pd.iniciativas[k]; }).filter(function (i) {
+      var x = i.diplomas[slug];
+      return !artigo || x.artigos.indexOf(artigo) >= 0 || x.novos.indexOf(artigo) >= 0;
+    });
+  }
+  function NoParlamento(props) {
+    var H = props.nivel || 'h2', n = props.lista.length;
+    return h('section', { className: 'no-parl', 'aria-labelledby': props.id },
+      h(H, { id: props.id, className: props.nivel ? null : 'h2' }, 'No Parlamento'),
+      h('p', { className: 'muted small' }, n === 1 ? 'Uma iniciativa em curso propõe alterar este artigo. Ainda não é lei.' : n + ' iniciativas em curso propõem alterar este artigo. Ainda não são lei.'),
+      h('ul', { className: 'parl-lista' }, props.lista.map(function (i) {
+        return h('li', { key: i.id },
+          h('p', { className: 'parl-nome' }, h(R.StatusPill, { status: 'pendente' }, 'Em curso'), ' ', h('a', { href: link(['iniciativa', i.id]) }, i.designacao)),
+          h('p', { className: 'parl-fase' }, i.fase_texto + ' ' + desdeFase(i)));
+      })));
+  }
+  function desdeFase(i) { return i.fase_data ? '(' + curta(i.fase_data) + ')' : ''; }
+  // "os artigos 170.º, 178.º e 193.º" from article ids, with links to the ones we have.
+  function artigosLista(slug, ids, comLink) {
+    return ids.map(function (a, k) {
+      var r = a.replace(/^artigo-/, '').replace(/^(\d+)(?:-([a-z]+))?$/, function (m, n, l) { return n + '.º' + (l ? '-' + l.toUpperCase() : ''); });
+      return [k ? (k === ids.length - 1 ? ' e ' : ', ') : '', comLink ? h('a', { key: a, href: link(['d', slug, a]) }, r) : r];
+    });
+  }
+
   // ---- Votação na generalidade -------------------------------------------------------------------
   function lista(xs) { return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' e ' + xs[xs.length - 1]; }
   function quemPropos(ini) {
@@ -1191,9 +1365,10 @@
 
   // ---- Initiative (the "pull request") ---------------------------------------------------------
   function Iniciativa(props) {
-    var r = useData(['iniciativas.json', 'atos.json', 'passagem.json']);
+    var r = useData(['iniciativas.json', 'atos.json', 'passagem.json', 'pendentes.json', 'index.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var ini = r.data[0][props.id], atos = r.data[1], ps = r.data[2];
+    if (!ini && r.data[3].iniciativas[props.id]) return h(IniciativaPendente, { ini: r.data[3].iniciativas[props.id], diplomas: r.data[4].diplomas });
     if (!ini) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos esta iniciativa.'));
     var p = ps[ini.ato], ato = atos[ini.ato], nome = ini.tipo + ' n.º ' + ini.numero + '/' + ini.legislatura;
     var esta = p ? p.iniciativas.filter(function (i) { return i.id === props.id; })[0] : null;
@@ -1330,6 +1505,7 @@
     else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
+    else if (s[0] === 'situacao' && s[1]) view = h(Situacao, { slug: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else if (s[0] === 'verificacao') view = h(Verificacao);
     else view = h(Home);

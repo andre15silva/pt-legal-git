@@ -44,6 +44,22 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 .list li { line-height: 22px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
 .list { border-top: 1px solid var(--ink); }
 .lista-nota { margin: 8px 0 0; }
+/* Bills now in Parliament: on the diploma, the article and the bill's own page. */
+.dip-lado { display: flex; flex-direction: column; gap: 48px; min-width: 0; }
+.no-parl { display: flex; flex-direction: column; gap: 12px; }
+.art-registo .no-parl { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.no-parl h2, .no-parl h3 { margin: 0; }
+.parl-lista { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+.parl-lista li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
+.parl-lista p, .parl-muda p { margin: 0; }
+.parl-nome { font-size: 15px; line-height: 22px; }
+.parl-titulo { font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.parl-fase, .parl-arts { font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.parl-arts a { color: inherit; }
+.parl-estado { margin: 16px 0 0; font-size: 15px; line-height: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.parl-muda { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.parl-muda li { display: flex; flex-direction: column; gap: 4px; font-size: 16px; line-height: 24px; }
+.toc-parl { display: block; font-family: var(--font-sans); font-size: 13px; line-height: 18px; color: var(--pendente); }
 .state, .vazio { padding: 16px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .state p, .vazio p { margin: 0 0 8px; }
 .prose { max-width: 66ch; }
@@ -56,6 +72,15 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 .search-label { font-weight: 500; }
 .search-input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 17px; }
 .results { max-width: 860px; }
+/* Life situations (pipeline/temas.json): a grid of entry points on the home page. */
+.situacoes { margin-top: 64px; }
+.sit-lista { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 32px; border-top: 1px solid var(--ink); }
+.sit-lista li { padding: 14px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
+.sit-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.sit-link { font-family: var(--font-serif); font-size: 19px; line-height: 26px; font-weight: 500; }
+.sit-res { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sit-arts { margin-top: 8px; }
+.pesq-sit .pesq-art { font-weight: 600; }
 .cards { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
 .card { display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .card p { margin: 0; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
@@ -235,7 +260,8 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 
 .secao { border-top: 1px solid var(--rule); padding-top: 24px; margin-top: 64px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .art-texto .secao { margin-top: 44px; }
-.duas > .secao { margin-top: 0; }
+.duas > .secao, .duas > .coluna > .secao:first-child { margin-top: 0; }
+.coluna { min-width: 0; }
 /* Home and diploma: a ledger and a side ledger, wider than the article's text column. */
 .duas-largo { grid-template-columns: minmax(0, 1fr) 300px; margin-top: 64px; }
 .meta { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 16px 48px; }

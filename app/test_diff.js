@@ -74,4 +74,22 @@ if (fs.existsSync(dir)) {
     }
   }
 }
-console.log('ok: ' + cases.length + ' diff cases, 9 URL cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));
+// Search in everyday words (pipeline/temas.json): the words people use find the law's words.
+const { search } = window.RedacaoApp;
+const temas = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'pipeline', 'temas.json'), 'utf8'));
+const indice = { temas, pesquisa: [
+  ['codigo-civil-locacao', 'artigo-1100', 'Artigo 1100.º', 'Denúncia pelo arrendatário', 'vigente'],
+  ['codigo-do-trabalho', 'artigo-268', 'Artigo 268.º', 'Pagamento de trabalho suplementar', 'vigente'],
+  ['codigo-do-trabalho', 'artigo-338', 'Artigo 338.º', 'Proibição de despedimento sem justa causa', 'vigente'],
+  ['codigo-irs', 'artigo-68', 'Artigo 68.º', 'Taxas gerais', 'vigente'],
+  ['codigo-irc', 'artigo-87', 'Artigo 87.º', 'Taxas', 'vigente'],
+] };
+const ids = q => search(indice, q).map(r => r[1]).join(',');
+assert.strictEqual(ids('inquilino'), 'artigo-1100');
+assert.strictEqual(ids('horas extra'), 'artigo-268');
+assert.strictEqual(ids('fui despedido'), 'artigo-338');
+assert.strictEqual(ids('escalões'), 'artigo-68');
+assert.strictEqual(ids('art 87 circ'), 'artigo-87');
+assert.strictEqual(ids('de'), '');
+
+console.log('ok: ' + cases.length + ' diff cases, 9 URL cases, 6 search cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));

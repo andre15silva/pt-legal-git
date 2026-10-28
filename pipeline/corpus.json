@@ -57,7 +57,8 @@
           "tipo": "lei-constitucional",
           "key": "1-2005-243729"
         }
-      ]
+      ],
+      "iniciativas": "^Projeto de Revisão Constitucional|Constituição da República|\\bda Constituição\\b"
     },
     {
       "slug": "codigo-do-trabalho",
@@ -123,7 +124,8 @@
           "fonte": "Lei n.º 7/2009, artigo 14.º, n.º 2",
           "condicional": true
         }
-      ]
+      ],
+      "iniciativas": "C[óo]digo do Trabalho|Lei n\\.º 7/2009"
     },
     {
       "slug": "codigo-irc",
@@ -146,7 +148,8 @@
       "nota_efeitos": {
         "texto": "A Lei n.º 2/2014 aplica-se aos períodos de tributação que começam, ou aos factos tributários que ocorrem, a partir de 1 de janeiro de 2014.",
         "fonte": "Lei n.º 2/2014, artigo 14.º"
-      }
+      },
+      "iniciativas": "C[óo]digo do (?:Imposto sobre o Rendimento das Pessoas Coletivas|IRC)\\b"
     },
     {
       "slug": "nrau",
@@ -172,7 +175,8 @@
           "regra": "explicita",
           "fonte": "Lei n.º 6/2006, artigo 65.º, n.º 1"
         }
-      ]
+      ],
+      "iniciativas": "Novo Regime do Arrendamento Urbano|\\bNRAU\\b|Lei n\\.º 6/2006"
     },
     {
       "slug": "codigo-civil-locacao",
@@ -192,7 +196,9 @@
         "regra": "explicita",
         "fonte": "Decreto-Lei n.º 47344, artigo 2.º, n.º 1"
       },
-      "parte": "Só o capítulo da locação: artigos 1022.º a 1113.º."
+      "parte": "Só o capítulo da locação: artigos 1022.º a 1113.º.",
+      "iniciativas": "C[óo]digo Civil",
+      "iniciativas_titulo": "arrendamento|loca[çc]|senhori|inquilin"
     },
     {
       "slug": "codigo-irs",
@@ -211,7 +217,8 @@
         "data": "2015-01-01",
         "regra": "explicita",
         "fonte": "Lei n.º 82-E/2014, artigo 19.º"
-      }
+      },
+      "iniciativas": "C[óo]digo do (?:Imposto sobre o Rendimento das Pessoas Singulares|IRS)\\b"
     },
     {
       "slug": "lei-formulario",
@@ -226,6 +233,142 @@
         "data": "1998-11-16",
         "regra": "supletiva",
         "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2 (redação original)"
+      },
+      "iniciativas": "Lei n\\.º 74/98|[Ll]ei formulário"
+    },
+    {
+      "slug": "codigo-penal",
+      "titulo": "Código Penal",
+      "sigla": "CP",
+      "frag_id": "34437675",
+      "tipo": "decreto-lei",
+      "key": "1995-34437675",
+      "codigo_no_anexo": "CÓDIGO PENAL",
+      "genitivo": "do Código Penal",
+      "iniciativas": "C[óo]digo Penal",
+      "vigor_original": {
+        "data": "1995-10-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 48/95, artigo 13.º"
+      },
+      "inicio_historia": {
+        "rotulo": "Revisão",
+        "nota": "O histórico deste código começa na revisão pelo Decreto-Lei n.º 48/95, de 15 de março, que o republicou. O Código Penal é de 1982 (Decreto-Lei n.º 400/82, de 23 de setembro). As redações anteriores a 1995 ainda não estão no Redação."
+      }
+    },
+    {
+      "slug": "codigo-processo-civil",
+      "titulo": "Código de Processo Civil",
+      "sigla": "CPC",
+      "frag_id": "34580575",
+      "tipo": "lei",
+      "key": "2013-34580575",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código de Processo Civil",
+      "iniciativas": "C[óo]digo de Processo Civil",
+      "vigor_original": {
+        "data": "2013-09-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 41/2013, artigo 8.º"
+      }
+    },
+    {
+      "slug": "codigo-processo-penal",
+      "titulo": "Código de Processo Penal",
+      "sigla": "CPP",
+      "frag_id": "34570075",
+      "tipo": "decreto-lei",
+      "key": "1987-34570075",
+      "codigo_no_anexo": "CÓDIGO DE PROCESSO PENAL",
+      "genitivo": "do Código de Processo Penal",
+      "iniciativas": "C[óo]digo d[eo] Processo Penal",
+      "vigor_original": {
+        "data": "1988-01-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 78/87, artigo 7.º, n.º 1, que fixava 1 de junho de 1987; a Lei n.º 17/87, de 1 de junho, adiou a data para 1 de janeiro de 1988"
+      }
+    },
+    {
+      "slug": "codigo-sociedades-comerciais",
+      "titulo": "Código das Sociedades Comerciais",
+      "sigla": "CSC",
+      "frag_id": "34443975",
+      "tipo": "decreto-lei",
+      "key": "1986-34443975",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código das Sociedades Comerciais",
+      "iniciativas": "C[óo]digo das Sociedades Comerciais",
+      "vigor_original": {
+        "data": "1986-11-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 262/86, artigo 2.º, n.º 1"
+      },
+      "notas_vigor": [
+        {
+          "artigos": [
+            "artigo-35"
+          ],
+          "texto": "Na redação original, a data de entrada em vigor deste artigo ficou para diploma legal próprio.",
+          "fonte": "Decreto-Lei n.º 262/86, artigo 2.º, n.º 2",
+          "condicional": true
+        }
+      ]
+    },
+    {
+      "slug": "codigo-iva",
+      "titulo": "Código do Imposto sobre o Valor Acrescentado",
+      "sigla": "CIVA",
+      "frag_id": "34500675",
+      "tipo": "decreto-lei",
+      "key": "2008-34500675",
+      "codigo_no_anexo": "Anexo IV",
+      "genitivo": "do Código do IVA",
+      "iniciativas": "C[óo]digo do (?:Imposto sobre o Valor Acrescentado|IVA)\\b",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2008-06-25",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2 (o Decreto-Lei n.º 102/2008 não fixa data no texto consolidado)"
+      },
+      "inicio_historia": {
+        "rotulo": "Republicação",
+        "nota": "O histórico deste código começa na republicação pelo Decreto-Lei n.º 102/2008, de 20 de junho, que também renumerou os artigos. O Código do IVA é de 1984 (Decreto-Lei n.º 394-B/84, de 26 de dezembro). As redações anteriores a 2008 ainda não estão no Redação."
+      }
+    },
+    {
+      "slug": "lei-geral-tributaria",
+      "titulo": "Lei Geral Tributária",
+      "sigla": "LGT",
+      "frag_id": "34438775",
+      "tipo": "decreto-lei",
+      "key": "1998-34438775",
+      "codigo_no_anexo": true,
+      "genitivo": "da Lei Geral Tributária",
+      "iniciativas": "Lei Geral Tribut[áa]ria",
+      "vigor_original": {
+        "data": "1999-01-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 398/98, artigo 6.º"
+      }
+    },
+    {
+      "slug": "estatuto-beneficios-fiscais",
+      "titulo": "Estatuto dos Benefícios Fiscais",
+      "sigla": "EBF",
+      "frag_id": "34554075",
+      "tipo": "decreto-lei",
+      "key": "1989-34554075",
+      "codigo_no_anexo": true,
+      "genitivo": "do Estatuto dos Benefícios Fiscais",
+      "iniciativas": "Estatuto dos Benef[íi]cios Fiscais",
+      "vigor_original": {
+        "data": "1989-07-06",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, no quinto dia após a publicação)"
+      },
+      "nota_efeitos": {
+        "texto": "O Estatuto produz efeitos desde 1 de janeiro de 1989, antes da entrada em vigor.",
+        "fonte": "Decreto-Lei n.º 215/89, artigo 1.º, n.º 2"
       }
     }
   ]

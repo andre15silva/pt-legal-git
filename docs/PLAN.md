@@ -87,7 +87,7 @@ Goal: hard numbers on feasibility before building the product.
 ### Phase 2: Parliament, "a lei em construção" (2–3 months)
 
 - Iniciativa view (the "pull request"): ProcessTrack, documents, VoteBar per vote, joint initiatives, the resulting act.
-- A pending overlay on every article: "3 iniciativas pendentes alteram este artigo".
+- A pending overlay on every article: "3 iniciativas pendentes alteram este artigo". *Built: the diploma, article and initiative pages list the bills in Parliament that name each article, read from the bills' own texts (`pipeline/pendentes.py`).*
 - Simulation: an initiative or texto de substituição applied to the current text, watermarked.
 - A conflict matrix for concurrent initiatives on the same article (legislative staff's #3 job).
 - Origem do texto extended to initiative and votes: "this phrase came from PPL 16/XVII; votação final global 17/10/2025".

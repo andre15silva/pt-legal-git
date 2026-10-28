@@ -112,12 +112,14 @@
       return ['Escrito por: ', h('strong', { key: 's' }, a.label), a.date ? ', publicação a ' + dataPorExtenso(a.date) + '.' : '.'];
     }
     // The spans of one paragraph, each a phrase button. pi: the block the popover opens under.
-    function frases(spans, pi) {
+    // marcas: marks only, no buttons (table cells: a few digits are too small to tap; the
+    // margin note and the legend choose the act instead).
+    function frases(spans, pi, marcas) {
       return spans.map(function (s, si) {
         var a = byIndex[s.act] || { label: '' };
         var toggle = function () { var off = focus === s.act && para === pi; setFocus(off ? null : s.act); setPara(off ? null : pi); };
         // Punctuation alone is not a phrase: it keeps its mark but is not a target.
-        if (!/[\p{L}\p{N}]/u.test(s.text)) return h('span', { key: si, className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim') }, s.text);
+        if (marcas || !/[\p{L}\p{N}]/u.test(s.text)) return h('span', { key: si, className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim') }, s.text);
         return h('span', {
           key: si, role: 'button', tabIndex: 0,
           className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim', focus === s.act && 'is-focus'),
@@ -139,7 +141,7 @@
       return h('p', { key: ri, className: cx('rd-statute', 'rd-p-tab', cab && 'rd-p-tab-cab'), style: { gridTemplateColumns: 'minmax(0, 2fr) repeat(' + Math.max(1, cels.length - 1) + ', minmax(0, 1fr))' } },
         cels.map(function (c, k) {
           return h('span', { key: k, className: cx('rd-cel', /^[\d\s,.%€−-]+$/.test(txt[k]) && txt[k] && 'rd-cel-num') },
-            k ? h('span', { className: 'rd-sr' }, '; ') : null, frases(c, pi));
+            k ? h('span', { className: 'rd-sr' }, '; ') : null, frases(c, pi, true));
         }));
     }
     // Rows of one table make one block, with one note beside it: a note per row would not fit.

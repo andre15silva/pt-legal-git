@@ -233,7 +233,7 @@ The gate (M6) is a test: `pipeline/test_pipeline.py` fails when M2 drops below 9
 
 - The canonical form is a JSON tree with AKN-style eIds, aligned with the draft AKN-PT profile (`dapl-sggov/akn-pt`, with ELI-PT URIs on data.dre.pt). Track that profile as it moves towards institutional validation. Example eIds: `art_87__para_2`, `art_5-A__para_2__point_b__subpoint_ii`. Markdown and AKN XML are renders.
 - Unicode NFC. `º` (U+00BA), never `°`. Unify `n.º`/`n.o` and `n.os`/`n.<sup>os</sup>`. Number dashes `1 -`, `1 –`, `1 —` → `1 —`. Keep `«»`. Collapse whitespace. Repair PDF hyphenation. Keep pre-1990 spelling as published (*efectuado*, *direcção*), since spelling changes are not amendments.
-- Tables (CIRS brackets, OE maps) are structured cells, never flattened text.
+- Tables (CIRS brackets, OE maps) are structured cells, never flattened text. *Prototype: one line per row, cells split by `│`, merged cells filled so rows of a table line up (`pipeline/texto.py`); the app draws them as a grid.*
 
 ## 4. Git export (`lei-pt`)
 

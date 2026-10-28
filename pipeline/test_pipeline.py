@@ -1,5 +1,6 @@
 """Offline tests for the pipeline: python -I -m unittest discover -s pipeline"""
 import os
+import re
 import sys
 import unittest
 
@@ -7,6 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import atos  # noqa: E402
 import build  # noqa: E402
 import passagem  # noqa: E402
+import pendentes  # noqa: E402
 import verificacao  # noqa: E402
 import replay  # noqa: E402
 import texto  # noqa: E402
@@ -232,6 +234,47 @@ class Replay(unittest.TestCase):
 
 @unittest.skipUnless(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json")),
                      "run pipeline/build.py first")
+
+class Pendentes(unittest.TestCase):
+    """Bills in Parliament: which articles of a diploma a bill's text amends."""
+    CP = re.compile(r"C[óo]digo Penal")
+    CPP = re.compile(r"C[óo]digo d[eo] Processo Penal")
+    TEXTO = """A Assembleia da República decreta o seguinte:
+                    Artigo 1.º
+                      Objeto
+A presente lei altera o Código Penal e o Código de Processo Penal.
+                    Artigo 2.º
+            Alteração ao Código Penal
+São alterados os artigos 170º, 178.º e 193.º do Código Penal, aprovado pelo Decreto-Lei n.º
+400/82, de 23 de setembro, que passam a ter a seguinte redação:
+                  “Artigo 170º
+                   Assédio
+1 - [...].
+                   Artigo 3.º
+                   [...]”
+                    Artigo 3.º
+         Aditamento ao Código de Processo Penal
+É aditado ao Código de Processo Penal o artigo 7.º- A, com a seguinte redação:
+                    Artigo 4.º
+            Alteração ao NRAU
+Os artigos 15.º-EA, 15.º I e 15.ºJ do NRAU passam a ter a seguinte redação:
+"""
+
+    def test_articles_of_each_code(self):
+        self.assertEqual(pendentes.artigos(self.TEXTO, self.CP), ["artigo-170", "artigo-178", "artigo-193"])
+        self.assertEqual(pendentes.artigos(self.TEXTO, self.CPP), ["artigo-7-a"])
+
+    def test_letters_without_dash(self):
+        self.assertEqual(pendentes.artigos(self.TEXTO, re.compile(r"NRAU")), ["artigo-15-ea", "artigo-15-i", "artigo-15-j"])
+
+    def test_quoted_article_is_not_the_bills(self):
+        # "Artigo 3.º" inside the quoted wording is not the bill's article 3.
+        self.assertEqual([c for c, _ in pendentes._blocos(self.TEXTO)][:3], ["Objeto", "Alteração ao Código Penal", "Aditamento ao Código de Processo Penal"])
+
+    def test_part_of_a_code(self):
+        self.assertTrue(pendentes.no_intervalo("artigo-1083-a", {"de": 1022, "ate": 1113}))
+        self.assertFalse(pendentes.no_intervalo("artigo-824", {"de": 1022, "ate": 1113}))
+
 class Gate(unittest.TestCase):
     """M6: the build is not good enough when a verification metric drops below its floor."""
     def test_floors(self):

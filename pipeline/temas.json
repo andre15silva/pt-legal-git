@@ -1,0 +1,135 @@
+{
+  "_nota": "Search in everyday words. 'sinonimos': words people use, and the words the law uses in article headings. 'situacoes': entry points by life situation, each a short list of articles. pipeline/build.py checks that every article exists and copies this into app/data/index.json.",
+  "sinonimos": [
+    {"palavras": ["inquilino", "inquilina", "inquilinos"], "termos": ["arrendatario"]},
+    {"palavras": ["proprietario", "dono da casa", "senhoria"], "termos": ["senhorio"]},
+    {"palavras": ["renda", "rendas"], "termos": ["renda"]},
+    {"palavras": ["aumento da renda", "subir a renda", "aumentar a renda"], "termos": ["actualizacao de rendas", "atualizacao de rendas", "valor da renda"]},
+    {"palavras": ["sair de casa", "despejar", "despejado", "despejada"], "termos": ["despejo"]},
+    {"palavras": ["fim do contrato", "acabar o contrato", "rescindir", "rescisao"], "termos": ["denuncia", "resolucao", "cessacao", "oposicao a renovacao"]},
+    {"palavras": ["despedido", "despedida", "despedir", "mandado embora"], "termos": ["despedimento"]},
+    {"palavras": ["indemnizacao por despedimento"], "termos": ["compensacao"]},
+    {"palavras": ["horas extra", "horas extraordinarias", "horas a mais"], "termos": ["trabalho suplementar"]},
+    {"palavras": ["salario", "ordenado", "vencimento"], "termos": ["retribuicao"]},
+    {"palavras": ["salario minimo"], "termos": ["retribuicao minima"]},
+    {"palavras": ["decimo terceiro mes", "subsidio de natal"], "termos": ["subsidio de natal"]},
+    {"palavras": ["subsidio de ferias"], "termos": ["retribuicao do periodo de ferias"]},
+    {"palavras": ["licenca de maternidade", "licenca de paternidade", "licenca de parto", "ter um filho"], "termos": ["licenca parental"]},
+    {"palavras": ["baixa", "baixa medica"], "termos": ["falta", "doenca"]},
+    {"palavras": ["trabalhar em casa", "trabalho remoto", "remoto"], "termos": ["teletrabalho"]},
+    {"palavras": ["periodo de experiencia", "periodo a experiencia"], "termos": ["periodo experimental"]},
+    {"palavras": ["demissao", "despedir-me", "sair da empresa", "sair do emprego"], "termos": ["denuncia"]},
+    {"palavras": ["escaloes", "escalao", "taxa de irs"], "termos": ["taxas gerais"]},
+    {"palavras": ["recibos verdes", "trabalhador independente", "freelancer"], "termos": ["categoria b"]},
+    {"palavras": ["despesas de saude", "medico", "farmacia"], "termos": ["despesas de saude"]},
+    {"palavras": ["propinas", "escola", "educacao"], "termos": ["educacao", "formacao"]},
+    {"palavras": ["vender casa", "venda de casa"], "termos": ["mais-valias"]},
+    {"palavras": ["criptomoedas", "cripto", "bitcoin"], "termos": ["criptoativos"]},
+    {"palavras": ["empresa", "abrir empresa", "criar empresa", "lda"], "termos": ["sociedade por quotas", "constituicao", "quota"]},
+    {"palavras": ["socio", "socios"], "termos": ["socio"]},
+    {"palavras": ["queixa-crime", "apresentar queixa", "fazer queixa"], "termos": ["queixa"]},
+    {"palavras": ["preso", "presa", "prisao"], "termos": ["prisao preventiva", "detencao"]},
+    {"palavras": ["bater", "agressao", "agredido"], "termos": ["ofensa a integridade fisica"]},
+    {"palavras": ["roubaram", "roubado"], "termos": ["roubo", "furto"]},
+    {"palavras": ["burlado", "fraude", "golpe"], "termos": ["burla"]},
+    {"palavras": ["perseguido", "stalking"], "termos": ["perseguicao"]},
+    {"palavras": ["conduzir bebado", "alcool", "taxa de alcool"], "termos": ["embriaguez"]},
+    {"palavras": ["impostos", "imposto"], "termos": ["imposto", "taxas"]},
+    {"palavras": ["fatura", "faturas", "factura"], "termos": ["fatura"]},
+    {"palavras": ["liberdade de expressao"], "termos": ["liberdade de expressao"]},
+    {"palavras": ["greve"], "termos": ["greve"]}
+  ],
+  "situacoes": [
+    {
+      "slug": "despedimento",
+      "titulo": "Fui despedido",
+      "texto": "Quando o despedimento é permitido, o que o empregador tem de fazer e o que pode pedir se for ilícito.",
+      "palavras": ["despedido", "despedida", "despedimento", "despedir"],
+      "artigos": [
+        ["codigo-do-trabalho", "artigo-338"], ["codigo-do-trabalho", "artigo-351"], ["codigo-do-trabalho", "artigo-357"],
+        ["codigo-do-trabalho", "artigo-359"], ["codigo-do-trabalho", "artigo-366"], ["codigo-do-trabalho", "artigo-367"],
+        ["codigo-do-trabalho", "artigo-381"], ["codigo-do-trabalho", "artigo-386"], ["codigo-do-trabalho", "artigo-389"],
+        ["codigo-do-trabalho", "artigo-390"], ["constituicao", "artigo-53"]
+      ]
+    },
+    {
+      "slug": "arrendar",
+      "titulo": "Arrendar uma casa",
+      "texto": "O contrato, a renda e os seus aumentos, as obras, e como o contrato acaba.",
+      "palavras": ["arrendar", "arrendamento", "inquilino", "senhorio", "renda", "casa"],
+      "artigos": [
+        ["codigo-civil-locacao", "artigo-1069"], ["codigo-civil-locacao", "artigo-1076"], ["codigo-civil-locacao", "artigo-1077"],
+        ["codigo-civil-locacao", "artigo-1083"], ["codigo-civil-locacao", "artigo-1096"], ["codigo-civil-locacao", "artigo-1097"],
+        ["codigo-civil-locacao", "artigo-1098"], ["codigo-civil-locacao", "artigo-1101"], ["codigo-civil-locacao", "artigo-1111"],
+        ["nrau", "artigo-15"], ["nrau", "artigo-14"]
+      ]
+    },
+    {
+      "slug": "filho",
+      "titulo": "Vou ter um filho",
+      "texto": "As licenças da mãe e do pai, as faltas para assistência e o horário flexível.",
+      "palavras": ["filho", "filha", "bebe", "gravida", "gravidez", "maternidade", "paternidade", "parental"],
+      "artigos": [
+        ["codigo-do-trabalho", "artigo-39"], ["codigo-do-trabalho", "artigo-40"], ["codigo-do-trabalho", "artigo-41"],
+        ["codigo-do-trabalho", "artigo-43"], ["codigo-do-trabalho", "artigo-49"], ["codigo-do-trabalho", "artigo-51"],
+        ["codigo-do-trabalho", "artigo-56"], ["codigo-do-trabalho", "artigo-63"], ["constituicao", "artigo-68"]
+      ]
+    },
+    {
+      "slug": "ferias-e-faltas",
+      "titulo": "Férias, faltas e horas extra",
+      "texto": "Quantos dias de férias, que faltas são justificadas e como se paga o trabalho suplementar.",
+      "palavras": ["ferias", "faltas", "falta", "horas extra", "horario"],
+      "artigos": [
+        ["codigo-do-trabalho", "artigo-237"], ["codigo-do-trabalho", "artigo-238"], ["codigo-do-trabalho", "artigo-241"],
+        ["codigo-do-trabalho", "artigo-249"], ["codigo-do-trabalho", "artigo-255"], ["codigo-do-trabalho", "artigo-226"],
+        ["codigo-do-trabalho", "artigo-228"], ["codigo-do-trabalho", "artigo-268"], ["codigo-do-trabalho", "artigo-263"],
+        ["codigo-do-trabalho", "artigo-264"]
+      ]
+    },
+    {
+      "slug": "irs",
+      "titulo": "Entregar o IRS",
+      "texto": "Os escalões, as deduções e os prazos da declaração.",
+      "palavras": ["irs", "declaracao", "escaloes", "deducoes", "reembolso"],
+      "artigos": [
+        ["codigo-irs", "artigo-68"], ["codigo-irs", "artigo-22"], ["codigo-irs", "artigo-25"],
+        ["codigo-irs", "artigo-78-b"], ["codigo-irs", "artigo-78-c"], ["codigo-irs", "artigo-78-d"],
+        ["codigo-irs", "artigo-78-e"], ["codigo-irs", "artigo-57"], ["codigo-irs", "artigo-58"], ["codigo-irs", "artigo-60"]
+      ]
+    },
+    {
+      "slug": "empresa",
+      "titulo": "Criar uma empresa",
+      "texto": "A sociedade por quotas e a unipessoal: firma, capital, quotas e gerentes.",
+      "palavras": ["empresa", "sociedade", "lda", "unipessoal", "quota"],
+      "artigos": [
+        ["codigo-sociedades-comerciais", "artigo-200"], ["codigo-sociedades-comerciais", "artigo-201"], ["codigo-sociedades-comerciais", "artigo-219"],
+        ["codigo-sociedades-comerciais", "artigo-228"], ["codigo-sociedades-comerciais", "artigo-246"], ["codigo-sociedades-comerciais", "artigo-252"],
+        ["codigo-sociedades-comerciais", "artigo-270-a"], ["codigo-sociedades-comerciais", "artigo-270-f"]
+      ]
+    },
+    {
+      "slug": "crime",
+      "titulo": "Fui vítima de um crime",
+      "texto": "A queixa, ser assistente no processo e alguns crimes comuns.",
+      "palavras": ["crime", "vitima", "queixa", "roubo", "furto", "burla", "violencia"],
+      "artigos": [
+        ["codigo-processo-penal", "artigo-49"], ["codigo-processo-penal", "artigo-68"], ["codigo-processo-penal", "artigo-69"],
+        ["codigo-penal", "artigo-113"], ["codigo-penal", "artigo-152"], ["codigo-penal", "artigo-153"],
+        ["codigo-penal", "artigo-203"], ["codigo-penal", "artigo-210"], ["codigo-penal", "artigo-217"]
+      ]
+    },
+    {
+      "slug": "arguido",
+      "titulo": "Fui constituído arguido",
+      "texto": "O que significa ser arguido, os seus direitos e as medidas de coação.",
+      "palavras": ["arguido", "arguida", "detido", "detida", "preso"],
+      "artigos": [
+        ["codigo-processo-penal", "artigo-57"], ["codigo-processo-penal", "artigo-58"], ["codigo-processo-penal", "artigo-61"],
+        ["codigo-processo-penal", "artigo-141"], ["codigo-processo-penal", "artigo-191"], ["codigo-processo-penal", "artigo-202"],
+        ["codigo-processo-penal", "artigo-215"], ["constituicao", "artigo-32"]
+      ]
+    }
+  ]
+}

@@ -19,13 +19,16 @@ It uses the [Redação design system](../design-system/) components and follows 
 The data is not committed. Build it locally from the official sources:
 
 ```bash
-python -I pipeline/fetch.py              # DR consolidated texts: about 8 minutes for the 4 diplomas, cached in data/cache/
+python -I pipeline/fetch.py              # DR consolidated texts: about 8 minutes per large code, cached in data/cache/
 python -I pipeline/fetch_parlamento.py   # AR open data: Iniciativas and Diplomas Aprovados, about 900 MB
+python -I pipeline/pendentes.py          # texts of the bills now in Parliament (needs pdftotext, from poppler)
 python -I pipeline/build.py              # writes app/data/ and copies the design system to app/ds/
 python3 -m http.server 8000 -d app       # then open http://localhost:8000
 ```
 
 `app/data/d/<slug>.json` holds a diploma's índice and metadata. `app/data/d/<slug>/<artigo>.json` holds one article's history. A page loads only the files it shows: the Código do Trabalho índice is 144 KB, not 1.6 MB.
+
+The corpus has 14 diplomas: the Constitution, the Código do Trabalho, the Código Civil (locação), the NRAU, the Códigos do IRS, do IRC and do IVA, the Lei Geral Tributária, the Estatuto dos Benefícios Fiscais, the Código Penal, the Códigos de Processo Civil and de Processo Penal, the Código das Sociedades Comerciais and the Lei n.º 74/98. We left out the Código da Estrada: the DR's consolidated text of it starts in 2020 and stops at Decreto-Lei n.º 102-B/2020.
 
 Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.json). Each entry needs the DR consolidation ID (`frag_id`, `tipo`, `key`, all taken from the consolidated-text URL). Where the DR leaves a date out, the entry records the entry-into-force rule for the original text, with the provision that sets it.
 
@@ -40,7 +43,8 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 | Against any other redação, side by side | `&com=lei-82-2023&lado=1` |
 | Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
 | One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
-| One parliamentary initiative | `#/iniciativa/315386` |
+| One parliamentary initiative (or a bill now in Parliament) | `#/iniciativa/315386` |
+| A life situation and its articles | `#/situacao/despedimento` |
 | The check of the text against the official republications | `#/verificacao` |
 
 Old links still work: a redação index (`redacao=3`) and the old compare page (`/comparar?de=…&ate=…&vista=lado`), which redirects to the Alterações view.
@@ -56,7 +60,9 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
 4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md). For now the app shows only the votação na generalidade: each initiative's own vote, and the vote on the committee's texto de substituição when there is one.
 5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.
-6. `verificacao.py` compares each version with the official republications listed in `corpus.json` (for the Constitution: the 1976 text and the 7 revisions, fetched by `fetch.py`). Each version gets a verdict (igual, só na forma, desatualizada, divergente); `data/verificacao.json` holds the report. `replay.py` then applies each revision's instructions to the previous official text and measures how much of the next one it reproduces (M1).
+6. `pendentes.py` finds the bills now in Parliament (current legislatura) that would change a diploma: Projetos and Propostas de Lei not yet law, not rejected on the generalidade vote, not withdrawn, and not replaced by a text that became law. The bill's title names the diploma (the `iniciativas` pattern in `corpus.json`). The bill's text names the articles: each of its articles that amends the diploma says so in its first sentence ("São alterados os artigos 170.º e 178.º do Código Penal"). The diploma page lists the bills and marks the articles they would change; the article page lists the bills that name it. `data/pendentes.json` holds them.
+7. [`pipeline/temas.json`](../pipeline/temas.json) holds the words people use and the words the law uses ("inquilino" and "arrendatário", "horas extra" and "trabalho suplementar"), and a few life situations, each a short list of articles. Search uses both; the build checks that every article exists.
+8. `verificacao.py` compares each version with the official republications listed in `corpus.json` (for the Constitution: the 1976 text and the 7 revisions, fetched by `fetch.py`). Each version gets a verdict (igual, só na forma, desatualizada, divergente); `data/verificacao.json` holds the report. `replay.py` then applies each revision's instructions to the previous official text and measures how much of the next one it reproduces (M1).
 
 ## Known limits
 
@@ -65,4 +71,6 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
 - Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. The pipeline writes each row as one line, `│ cell │ cell │ cell`, filling merged cells (colspan, rowspan) with empty cells so the rows of a table have the same number of cells. The app shows the rows as a grid: text in the first column, numbers right-aligned. Changes inside a cell are marked as in any line. In Origem do texto the rows of one table share one margin note.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
+- Bills in Parliament: we read the articles from the first sentence of each article of the bill. A bill that changes only a list or an annex (the IVA rate lists), or whose PDF has no text layer, is listed on the diploma without articles. A bill that changes a part of a code we do not have (Código Civil outside the locação) is left out.
+- Some codes start their history at a republication or revision: the CIRC (2014), the CIRS (2015), the CIVA (2008) and the Código Penal (1995). The page says so on the first redação.
 - The especialidade votes in committee are only in PDFs (from legislatura XII). The app says that it does not have them.

@@ -4,8 +4,10 @@
 
 Inputs:  data/raw/<slug>.json (pipeline/fetch.py), data/parlamento/*_json.txt
          (pipeline/fetch_parlamento.py), pipeline/corpus.json.
-Outputs: app/data/index.json (corpus and search list), app/data/d/<slug>.json (structure
-         and every article's history), app/data/atos.json (acts), app/data/iniciativas.json.
+Outputs: app/data/index.json (corpus and search list), app/data/d/<slug>.json (structure),
+         app/data/d/<slug>/<artigo>.json (one article's history), app/data/atos.json (acts),
+         app/data/iniciativas.json, app/data/passagem.json, app/data/pendentes.json (bills
+         now in Parliament), app/data/verificacao.json.
 
 Every article's history is a list of versions, oldest first. Each version records the act
 that produced it, its publication and entry-into-force dates, its text, and the word-level
@@ -27,6 +29,7 @@ sys.path.insert(0, os.path.join(ROOT, "pipeline"))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import atos  # noqa: E402
 import passagem  # noqa: E402
+import pendentes  # noqa: E402
 import texto  # noqa: E402
 import fetch  # noqa: E402
 import verificacao  # noqa: E402
@@ -76,15 +79,26 @@ class Registry:
         return info["id"]
 
 
-def assign_ids(items: list[tuple[list[dict], dict]], codigo_no_anexo: bool) -> list[str]:
+def e_anexo_do_codigo(p: dict, codigo_no_anexo) -> bool:
+    """The annex that holds the code: any "Anexo" (True), or the one named in corpus.json
+    ("Anexo IV" in the CIVA's DL 102/2008, "CÓDIGO PENAL" in DL 48/95)."""
+    if p["tipo"] != ANEXO:
+        return False
+    if isinstance(codigo_no_anexo, str):
+        return p["nome"].strip().upper() == codigo_no_anexo.upper()
+    return p["nome"].lower().startswith("anexo")
+
+
+def assign_ids(items: list[tuple[list[dict], dict]], codigo_no_anexo) -> list[str]:
     """Readable, unique article ids: 'artigo-87', 'artigo-87-a'.
 
     For codes approved in an annex (CT, CIRC), the code's articles get the plain ids and the
-    approving law's articles get 'lei-…'. Elsewhere an id gets a prefix only when two articles
-    share a number, for example a republished annex next to the diploma's own articles.
+    approving law's articles get 'lei-…'; articles of other annexes get the annex's name. Elsewhere
+    an id gets a prefix only when two articles share a number, for example a republished annex
+    next to the diploma's own articles.
     """
     def in_anexo(stack):
-        return [p for p in stack if p["tipo"] == ANEXO and p["nome"].lower().startswith("anexo")]
+        return [p for p in stack if p["tipo"] == ANEXO and (p["nome"].lower().startswith("anexo") or e_anexo_do_codigo(p, codigo_no_anexo))]
     base = [slugify(f["ConsolidacaoFragmento"]["Name"]) for _, f in items]
     counts: dict[str, int] = {}
     for b in base:
@@ -93,7 +107,8 @@ def assign_ids(items: list[tuple[list[dict], dict]], codigo_no_anexo: bool) -> l
     for (stack, _), b in zip(items, base):
         anexos = in_anexo(stack)
         if codigo_no_anexo:
-            aid = b if anexos else "lei-" + b
+            codigo = [p for p in anexos if e_anexo_do_codigo(p, codigo_no_anexo)]
+            aid = b if codigo else slugify(anexos[-1]["nome"]) + "-" + b if anexos else "lei-" + b
         elif counts[b] > 1 and anexos:
             aid = slugify(anexos[-1]["nome"]) + "-" + b
         else:
@@ -141,21 +156,35 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
         if m.get("SumarioDiplomaLegis") and not reg.acts[aid]["sumario"]:
             reg.acts[aid]["sumario"] = m["SumarioDiplomaLegis"].strip()
 
+    for f in now:  # the DR leaves Name empty on some new articles; FullName ends with it
+        cf = f["ConsolidacaoFragmento"]
+        if not cf.get("Name"):
+            cf["Name"] = (cf.get("FullName") or "").split(" > ")[-1]
     if cfg.get("artigos"):
         now = parte(now, cfg)
-    nodes, items, stack = [], [], []
+    nodes, items, stack, inicio_codigo = [], [], [], None
+    cna = cfg.get("codigo_no_anexo")
     for f in now:
         fv, cf = f["FragmentoVersao"], f["ConsolidacaoFragmento"]
         tipo, nivel = fv["TipoFragmentoId"], f["Nivel"]
         stack = [p for p in stack if p["nivel"] < nivel]
+        este = {"nivel": nivel, "tipo": tipo, "nome": cf["Name"]}
+        # so_anexo: keep the approving act and the code's annex only (the CIVA's DL 102/2008 also
+        # republishes the RITI and tables of correspondence).
+        if cfg.get("so_anexo") and any(p["tipo"] == ANEXO and not e_anexo_do_codigo(p, cna) for p in stack + [este]):
+            if tipo != ARTIGO:
+                stack.append(este)
+            continue
         if tipo != ARTIGO:
             if nivel > 0 and tipo != 7:  # skip the diploma root and the signatures
+                if cna and inicio_codigo is None and e_anexo_do_codigo(este, cna):
+                    inicio_codigo = len(nodes)
                 nodes.append({"nivel": nivel, "tipo": "divisao", "rotulo": cf["Name"], "epigrafe": (fv.get("Epigrafe") or "").strip()})
-            stack.append({"nivel": nivel, "tipo": tipo, "nome": cf["Name"]})
+            stack.append(este)
             continue
         nodes.append(None)
         items.append((list(stack), f))
-    ids = iter(assign_ids(items, bool(cfg.get("codigo_no_anexo"))))
+    ids = iter(assign_ids(items, cna))
     tree, it, artigos = [], iter(items), {}
     for node in nodes:
         if node is not None:
@@ -179,6 +208,7 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
 
     index = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "genitivo": cfg.get("genitivo"),
              "vigor_original": cfg.get("vigor_original"), "inicio_historia": cfg.get("inicio_historia"), "parte": cfg.get("parte"), "designacao": original["designacao"],
+             "inicio_codigo": inicio_codigo,
              "ato_original": original["id"], "publicacao": original["publicacao"], "link": original["link"],
              "eli": frag.get("ELI") or None, "sumario": reg.acts[original["id"]]["sumario"], "arvore": tree, "artigos": artigos}
     summary = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "designacao": original["designacao"],
@@ -353,6 +383,20 @@ def link_parliament(reg: Registry, pdir: str) -> tuple[dict, dict]:
     return out, passagens
 
 
+def temas(ids: dict[str, set[str]]) -> dict:
+    """Everyday words and life situations for search (pipeline/temas.json). Situations keep
+    only the articles of diplomas in this build; a missing article is an error in temas.json."""
+    with open(os.path.join(ROOT, "pipeline", "temas.json"), encoding="utf-8") as fh:
+        t = json.load(fh)
+    t.pop("_nota", None)
+    for s in t["situacoes"]:
+        falta = [a for a in s["artigos"] if a[0] in ids and a[1] not in ids[a[0]]]
+        if falta:
+            raise ValueError(f"temas.json, {s['slug']}: artigos que não existem: {falta}")
+        s["artigos"] = [a for a in s["artigos"] if a[0] in ids]
+    return t
+
+
 def copy_design_system() -> None:
     """The app loads the Redação design system's tokens and components from app/ds/."""
     src = os.path.join(ROOT, "design-system")
@@ -367,7 +411,7 @@ def main() -> int:
     with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
         corpus = json.load(fh)
     reg = Registry()
-    summaries, search, relatorios = [], [], {}
+    summaries, search, relatorios, ids = [], [], {}, {}
     for cfg in corpus["diplomas"]:
         path = os.path.join(ROOT, "data", "raw", cfg["slug"] + ".json")
         if not os.path.exists(path):
@@ -383,16 +427,25 @@ def main() -> int:
         if index.get("verificacao"):
             relatorios[cfg["slug"]] = index["verificacao"]
         search.extend([cfg["slug"], n["artigo"], n["rotulo"], n["epigrafe"], n["estado"]] for n in index["arvore"] if n["tipo"] == "artigo")
+        ids[cfg["slug"]] = {n["artigo"] for n in index["arvore"] if n["tipo"] == "artigo"}
         sys.stderr.write(f"{cfg['slug']}: {summary['n_artigos']} artigos\n")
     iniciativas, passagens = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"))
     write(os.path.join(OUT, "iniciativas.json"), iniciativas)
     write(os.path.join(OUT, "passagem.json"), passagens)
+    # Bills now in Parliament that would change these diplomas (pipeline/pendentes.py).
+    pdir = os.path.join(ROOT, "data", "parlamento")
+    pend = pendentes.pendentes([c for c in corpus["diplomas"] if c["slug"] in ids], ids,
+                               passagem.carregar_composicoes(pdir) if os.path.isdir(pdir) else {})
+    pend["consultado_em"] = corpus["consultado_em"]
+    write(os.path.join(OUT, "pendentes.json"), pend)
+    print(f"{len(pend['iniciativas'])} iniciativas pendentes")
     falhas = sum(p["verificacao"].get("falha", 0) for p in passagens.values())
     print(f"{len(passagens)} passagens; {falhas} votações com resultado que não bate certo com os assentos")
     for a in reg.acts.values():
         a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
     write(os.path.join(OUT, "atos.json"), reg.acts)
-    write(os.path.join(OUT, "index.json"), {"consultado_em": corpus["consultado_em"], "diplomas": summaries, "pesquisa": search})
+    write(os.path.join(OUT, "index.json"), {"consultado_em": corpus["consultado_em"], "diplomas": summaries, "pesquisa": search,
+                                            "temas": temas(ids)})
     # The check against official republications, per diploma, for the Verificação page.
     write(os.path.join(OUT, "verificacao.json"), {"consultado_em": corpus["consultado_em"], "diplomas": {
         x["slug"]: {"titulo": x["titulo"], "sigla": x["sigla"], "relatorio": relatorios.get(x["slug"])} for x in summaries}})
