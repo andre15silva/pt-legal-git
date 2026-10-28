@@ -194,6 +194,8 @@ Bootstrap: for diplomas we have not replayed yet, serve the DR consolidated per-
 | M6 (gate) | Release blocked when M1 or M2 drops below target, as sejm2git does with `--fail-under` | CI |
 | M7 | Iniciativa → ato linkage rate | ≥ 99% (measured: 136/136 for the XVII legislature via `TextosAprovados`; 99.4% across all legislaturas) |
 
+**Decision on 2026-10-28: the app uses the DR consolidated text for now.** It is the only source with every version of every article and its dates. The caveat is stated on the app's "Sobre os dados" page: the consolidated text has no legal value and can differ from the official texts. Where a republication exists (the CRP), each version shows the result of the check below. Replacing consolidated text with our replay waits until M1 is high enough.
+
 ### First measurement: the DR consolidated CRP against its 8 official texts (2026-10-28)
 
 `pipeline/verificacao.py` compares every consolidated version of every CRP article with the official texts in its period: the 1976 text and the republication in each of the 7 revisions. Results are in `app/data/verificacao.json` and on the app's Verificação page.
