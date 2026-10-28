@@ -104,6 +104,7 @@ There is no icon set yet. Status is carried by the Unicode glyphs inside `Status
 | `Redline` | Comparing two redações ("comparar redações") |
 | `TextOrigin` | Which act wrote each phrase ("origem do texto") |
 | `DateLens` | Setting the page's point in time and date basis |
+| `VersionBar` | "Redação 4 de 8": the place in an article's history, previous and next |
 | `VersionTimeline` | "A história desta lei" |
 | `ProcessTrack` | An iniciativa's path through Parliament |
 | `VoteBar` | A vote, by sentido and by grupo parlamentar |

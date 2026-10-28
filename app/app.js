@@ -45,10 +45,18 @@
       .map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&') : '';
     return '#/' + segs.map(encodeURIComponent).join('/') + (qs ? '?' + qs : '');
   }
+  // A new page scrolls to the top. Another redação of the same article keeps the reader's place.
+  var lastPath = null;
   function useRoute() {
     var st = useState(parseHash());
     useEffect(function () {
-      function on() { st[1](parseHash()); window.scrollTo(0, 0); }
+      lastPath = location.hash.split('?')[0];
+      function on() {
+        var path = location.hash.split('?')[0];
+        st[1](parseHash());
+        if (path !== lastPath) window.scrollTo(0, 0);
+        lastPath = path;
+      }
       window.addEventListener('hashchange', on);
       return function () { window.removeEventListener('hashchange', on); };
     }, []);
@@ -66,6 +74,8 @@
   function curta(iso) { if (!iso) return ''; var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function hoje() { var d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
   function validDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || '') ? s : null; }
+  function diaAntes(iso) { var d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
+  function abrev(iso) { if (!iso) return ''; var p = iso.split('-'); return Number(p[2]) + ' ' + MESES[Number(p[1]) - 1].slice(0, 3) + '. ' + p[0]; }
 
   // ---- The law in time --------------------------------------------------------------------
   // The date a version counts from, for the chosen basis. A version with no known entry date
@@ -81,6 +91,44 @@
   function pending(versoes, date) {
     return versoes.filter(function (v) { return v.publicacao && v.publicacao <= date && v.vigor && v.vigor > date; });
   }
+  // A redação is named in URLs by the act that made it, so a link still works when the pipeline
+  // adds a redação before it. An act that made two redações of one article falls back to the index.
+  function versionKey(art, i) {
+    var a = art.versoes[i].ato;
+    return art.versoes.filter(function (v) { return v.ato === a; }).length === 1 ? a : String(i);
+  }
+  // A redação from a URL value: an index, an act id, a date or "hoje". -1 when none matches.
+  function resolve(art, value, base) {
+    if (value == null || value === '') return -1;
+    if (/^\d+$/.test(value)) return +value < art.versoes.length ? +value : -1;
+    if (value === 'hoje') value = hoje();
+    if (validDate(value)) { var p = pick(art.versoes, value, base || 'vigor'); return p ? p.i : -1; }
+    return art.versoes.map(function (v) { return v.ato; }).lastIndexOf(value);
+  }
+  // When redação i applies: from its start to the day before the next redação starts.
+  // fim is null for the last redação and 'mesma' when the next one starts on the same day.
+  function periodo(art, i, base) {
+    var s = startOf(art.versoes[i], base), next = art.versoes[i + 1];
+    if (!next) return { inicio: s, fim: null };
+    var ns = startOf(next, base);
+    return { inicio: s, fim: ns <= s ? 'mesma' : diaAntes(ns) };
+  }
+  // Share of words two redações have in common, from 0 to 1. A low value after a constitutional
+  // revision usually means the article number now holds another provision.
+  var semCache = {};
+  function semelhanca(key, a, b) {
+    if (semCache[key] == null) {
+      var same = 0, total = 0;
+      diff(a, b).forEach(function (s) {
+        var w = (s.text.match(/[\p{L}\p{N}_]+/gu) || []).length;
+        total += s.op === 'eq' ? 2 * w : w;
+        if (s.op === 'eq') same += 2 * w;
+      });
+      semCache[key] = total ? same / total : 1;
+    }
+    return semCache[key];
+  }
+  var DIFERENTE = 0.35;
   var TIPO = { original: 'Texto original', alterado: 'Alterado', aditado: 'Aditado', revogado: 'Revogado', retificado: 'Retificado',
     suspenso: 'Suspenso', repristinado: 'Repristinado', inconstitucional: 'Declarado inconstitucional', renumerado: 'Renumerado' };
   function texto(v) { return v.linhas.map(function (l) { return l.map(function (s) { return s[1]; }).join(''); }).join('\n'); }
@@ -100,7 +148,7 @@
       var ver = art.versoes[o], ato = atos[ver.ato] || { designacao: ver.ato };
       if (ver.tipo === 'original') {
         color[o] = 0;
-        acts.push({ index: 0, label: 'Texto original', date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver o texto original' });
+        acts.push({ index: 0, versao: o, label: 'Texto original', date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver o texto original' });
         return;
       }
       var k = amending.indexOf(o);
@@ -110,7 +158,7 @@
         return;
       }
       color[o] = extra > 0 ? k - extra : k + 1;
-      acts.push({ index: color[o], label: ato.designacao, date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver a redação dada por esta alteração' });
+      acts.push({ index: color[o], versao: o, label: ato.designacao, date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver a redação dada por esta alteração' });
     });
     acts.sort(function (a, b) { return a.index === 0 ? -1 : b.index === 0 ? 1 : (a.date || '') < (b.date || '') ? -1 : 1; });
     var paragraphs = v.linhas.map(function (l) {
@@ -320,11 +368,14 @@
     var r = useData(['d/' + props.slug + '.json', 'atos.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var d = r.data[0], atos = r.data[1];
+    var em = validDate(props.q.em), base = props.q.base;
     var acts = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; });
     return h('div', { className: 'stack' },
       h(Crumbs, { items: [['Diplomas', '#/'], [d.titulo]] }),
+      em ? h('div', { className: 'note note-data', role: 'region', 'aria-label': 'Data escolhida' },
+        h('p', null, 'Os artigos abrem como estavam a ', h('strong', null, extenso(em)), '. ', h('a', { href: link(['d', d.slug]) }, 'Voltar a hoje'))) : null,
       h('div', { className: 'title-block' },
         h('p', { className: 'eyebrow' }, d.designacao + ' · ' + d.sigla),
         h('h1', { className: 'display' }, d.titulo),
@@ -338,7 +389,7 @@
             var pad = { paddingLeft: Math.max(0, n.nivel - 1) * 16 + 'px' };
             if (n.tipo !== 'artigo') return h('li', { key: i, className: 'toc-div', style: pad }, n.rotulo, n.epigrafe ? ' — ' + n.epigrafe : '');
             return h('li', { key: i, style: pad, className: n.estado === 'revogado' ? 'toc-rev' : '' },
-              h('a', { href: link(['d', d.slug, n.artigo]) }, n.rotulo, n.epigrafe ? ' ' + n.epigrafe : ''),
+              h('a', { href: link(['d', d.slug, n.artigo], { em: em, base: base }) }, n.rotulo, n.epigrafe ? ' ' + n.epigrafe : ''),
               n.n > 1 ? h('span', { className: 'muted' }, ' · ' + n.n + ' redações') : null,
               n.estado === 'revogado' ? ' ' : null, n.estado === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))),
@@ -353,49 +404,124 @@
   }
 
   // ---- Article --------------------------------------------------------------------------------
+  // What the text box shows. The choice stays in the URL (ver=) and in this browser.
+  var VER = [['texto', 'Texto'], ['mudou', 'O que mudou'], ['origem', 'Origem das palavras']];
+  function verGuardado() { try { return localStorage.getItem('redacao-ver'); } catch (e) { return null; } }
+  function guardarVer(v) { try { localStorage.setItem('redacao-ver', v); } catch (e) { /* private window */ } }
+  function nomeAto(v, atos) { return v.tipo === 'original' ? 'Texto original' : (atos[v.ato] || { designacao: v.ato }).designacao; }
+  function intervalo(art, i, base, hojeIdx) {
+    var v = art.versoes[i], p = periodo(art, i, base), desde = extenso(p.inicio);
+    var semVigor = base !== 'publicacao' && !v.vigor ? ' (data de publicação)' : '';
+    if (hojeIdx == null || i > hojeIdx) return 'entra em vigor a ' + desde;
+    if (p.fim === 'mesma') return 'começou a ' + desde + ', a mesma data da redação seguinte';
+    if (!p.fim || i === hojeIdx) return 'em vigor desde ' + desde + semVigor;
+    return 'em vigor de ' + desde + semVigor + ' a ' + extenso(p.fim);
+  }
   function Artigo(props) {
     var r = useData(['d/' + props.slug + '.json', 'atos.json']);
     if (!r.data) return h(Loading, { error: r.error });
-    var d = r.data[0], atos = r.data[1];
+    var d = r.data[0], atos = r.data[1], q = props.q;
     var art = d.artigos[props.id];
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo. Volte ao índice do diploma.'), h('a', { href: link(['d', d.slug]) }, d.titulo));
-    var date = validDate(props.q.em) || hoje();
-    var base = { vigor: 1, efeitos: 1, publicacao: 1 }[props.q.base] ? props.q.base : 'vigor';
-    // redacao=n opens version n even when the next version starts on the same date
+    var n = art.versoes.length, last = n - 1;
+    var base = { vigor: 1, efeitos: 1, publicacao: 1 }[q.base] ? q.base : 'vigor';
+    // redacao= opens one redação (by act id, or index in old links) even when the next one starts
+    // on the same date. Without it, the date chooses. Without a date, the lens shows the start
+    // of the redação on screen.
+    var ri = resolve(art, q.redacao, base);
+    var date = validDate(q.em) || (ri >= 0 ? startOf(art.versoes[ri], base) : hoje());
     var porData = pick(art.versoes, date, base);
-    var n = /^\d+$/.test(props.q.redacao || '') ? +props.q.redacao : -1;
-    var sel = n >= 0 && n < art.versoes.length ? { i: n, incerta: base !== 'publicacao' && !art.versoes[n].vigor } : porData;
-    var sobreposta = sel && porData && sel.i !== porData.i;
-    function versionHref(i) {
+    var sel = ri >= 0 ? { i: ri, incerta: base !== 'publicacao' && !art.versoes[ri].vigor } : porData;
+    var hojeSel = pick(art.versoes, hoje(), 'vigor'), hojeIdx = hojeSel ? hojeSel.i : null;
+    var ver = { texto: 1, mudou: 1, origem: 1 }[q.ver] ? q.ver : ({ texto: 1, mudou: 1, origem: 1 }[verGuardado()] ? verGuardado() : 'texto');
+    function versionHref(i, extra) {
       var v = art.versoes[i];
-      return link(['d', d.slug, art.id], { em: v.vigor || v.publicacao, base: v.vigor ? 'vigor' : 'publicacao', redacao: i });
+      return link(['d', d.slug, art.id], Object.assign({ em: startOf(v, base), base: base !== 'vigor' ? base : null, redacao: versionKey(art, i), ver: q.ver }, extra || {}));
     }
-    var go = function (o) { location.hash = link(['d', d.slug, art.id], { em: o.date, base: o.basis }); };
+    function compareHref(a, b) { return link(['d', d.slug, art.id, 'comparar'], { de: versionKey(art, a), ate: versionKey(art, b) }); }
+    var go = function (o) { location.hash = link(['d', d.slug, art.id], { em: o.date, base: o.basis !== 'vigor' ? o.basis : null, ver: q.ver }); };
     var up = pending(art.versoes, date);
     var cur = sel ? art.versoes[sel.i] : null;
     var curAto = cur ? atos[cur.ato] : null;
-    var model = cur ? originModel(art, sel.i, atos, versionHref) : null;
     var titulo = art.rotulo + (art.epigrafe ? (/^\(/.test(art.epigrafe) ? ' ' : ' — ') + art.epigrafe : '');
+    document.title = art.rotulo + ' ' + d.sigla + (cur ? ', redação de ' + abrev(startOf(cur, base)) : '') + ' · Redação';
     var notas = art.notas || [];
-    var estado = cur && cur.tipo === 'revogado' ? 'revogado' : 'vigor';
-    var desde = cur ? (cur.vigor ? extenso(cur.vigor) : extenso(cur.publicacao)) : '';
+    // Notes from the act that wrote the redação shown: a transitional norm or a later date of effect.
+    var transitorias = cur && cur.tipo !== 'original' ? notas.filter(function (x) { return x.ato && x.ato === cur.ato; }) : [];
+    var passada = sel && hojeIdx != null && sel.i < hojeIdx;
+    var futura = sel && (hojeIdx == null || sel.i > hojeIdx);
+    var per = sel ? periodo(art, sel.i, base) : null;
+    var pill = !cur ? h(R.StatusPill, { status: 'futuro' }, 'Sem texto nesta data')
+      : futura ? h(R.StatusPill, { status: 'futuro' }, 'Entra em vigor a ' + extenso(per.inicio))
+      : passada ? h(R.StatusPill, { status: 'historico' }, per.fim && per.fim !== 'mesma' ? 'Em vigor de ' + extenso(per.inicio) + ' a ' + extenso(per.fim) : 'Já não está em vigor')
+      : cur.tipo === 'revogado' ? h(R.StatusPill, { status: 'revogado' }, 'Revogado desde ' + extenso(per.inicio))
+      : h(R.StatusPill, { status: 'vigor' }, 'Em vigor desde ' + extenso(per.inicio));
+    var anterior = sel && sel.i > 0 ? art.versoes[sel.i - 1] : null;
+    var diferente = anterior && cur.tipo === 'alterado' && semelhanca(d.slug + '/' + art.id + '/' + sel.i, texto(anterior), texto(cur)) < DIFERENTE;
     var citacao = cur ? 'Artigo ' + art.rotulo.replace(/^Artigo\s*/, '') + ' ' + (d.genitivo || 'de ' + d.titulo) + ', ' +
       (cur.tipo === 'original' ? 'na redação original' : 'na redação dada ' + pela(curAto ? curAto.designacao : '') + ' ' + (curAto ? curAto.designacao : cur.ato) +
         (cur.publicacao ? ', de ' + semAno(cur.publicacao) : '')) + '.' : '';
-    return h('div', { className: 'stack' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [d.sigla, link(['d', d.slug])]].concat(art.caminho.slice(-1).map(function (c) { return [c]; })).concat([[art.rotulo]]) }),
+    // Neighbouring articles in the diploma, at the same date.
+    var ordem = d.arvore.filter(function (x) { return x.tipo === 'artigo'; });
+    var pos = ordem.map(function (x) { return x.artigo; }).indexOf(art.id);
+    var vizinho = function (k) { var x = ordem[pos + k]; return x ? h('a', { href: link(['d', d.slug, x.artigo], { em: q.em, base: q.base }) }, (k < 0 ? '‹ ' : '') + x.rotulo + (k > 0 ? ' ›' : '')) : null; };
+    var corpo;
+    if (cur && ver === 'origem') {
+      var model = originModel(art, sel.i, atos, function (o) { return versionHref(o); });
+      model.acts.forEach(function (a) { var o = a.versao; if (o > 0) { a.diffHref = compareHref(o - 1, o); a.beforeHref = versionHref(o - 1); } });
+      corpo = h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts });
+    } else if (cur && ver === 'mudou' && anterior) {
+      var linhas = diffLines(texto(anterior), texto(cur));
+      var nm = linhas.reduce(function (c, l) { return c + l.filter(function (s, k) { return s.op !== 'eq' && !(s.op === 'ins' && k && l[k - 1].op === 'del'); }).length; }, 0);
+      corpo = h('div', { className: 'stack-s' },
+        h('p', { className: 'muted small' }, (nm === 1 ? '1 alteração' : nm + ' alterações') + ' em relação à redação ' + sel.i + ' (' + nomeAto(anterior, atos) + '). ',
+          h('ins', { className: 'rd-ins' }, 'acrescentado'), ' ', h('del', { className: 'rd-del' }, 'eliminado')),
+        linhas.map(function (l, k) { return h(R.Redline, { key: sel.i + '-' + k, segments: l, mode: 'inline', legend: false }); }));
+    } else if (cur) {
+      corpo = h('div', { className: 'stack-s' },
+        ver === 'mudou' ? h('p', { className: 'muted small' }, 'Esta é a primeira redação. Não há uma redação anterior para comparar.') : null,
+        texto(cur).split('\n').map(function (t, k) { return h('p', { key: k, className: 'rd-statute' }, t); }));
+    }
+    return h('div', { className: 'stack artigo' },
+      h(Crumbs, { items: [['Diplomas', '#/'], [d.sigla, link(['d', d.slug], { em: q.em, base: q.base })]].concat(art.caminho.slice(-1).map(function (c) { return [c]; })).concat([[art.rotulo]]) }),
       h('div', { className: 'title-row' },
         h('div', { className: 'title-block' },
           h('p', { className: 'eyebrow' }, d.titulo),
           h('h1', { className: 'title' }, titulo),
-          h('div', { className: 'pills' },
-            cur ? h(R.StatusPill, { status: estado }, (estado === 'revogado' ? 'Revogado desde ' : 'Em vigor desde ') + desde) : h(R.StatusPill, { status: 'futuro' }, 'Sem texto nesta data'),
-            h('span', { className: 'muted' }, art.versoes.length + (art.versoes.length === 1 ? ' redação' : ' redações')))),
-        h('div', { className: 'actions' },
-          art.versoes.length > 1 ? h('a', { className: 'btn btn-primary', href: link(['d', d.slug, art.id, 'comparar'], { de: sel && sel.i > 0 ? sel.i - 1 : 0, ate: sel ? sel.i : art.versoes.length - 1 }) }, 'Comparar redações') : null)),
-      h(R.DateLens, { key: date + base, date: date, basis: base, today: hoje(), id: 'lente', onChange: go }),
+          h('div', { className: 'pills' }, pill, h('span', { className: 'muted' }, n + (n === 1 ? ' redação' : ' redações')))),
+        h('div', { className: 'actions-col' },
+          n > 1 ? h('a', { className: 'btn btn-primary', href: compareHref(sel && sel.i > 0 ? sel.i - 1 : 0, sel ? sel.i : last) }, 'Comparar redações') : null,
+          h('nav', { className: 'vizinhos small', 'aria-label': 'Artigos vizinhos' }, vizinho(-1), vizinho(1)))),
+      sel ? h(R.VersionBar, {
+        id: 'barra', current: sel.i, today: hoje(),
+        versions: art.versoes.map(function (v, i) {
+          return { start: startOf(v, base), technical: v.tipo === 'retificado', pending: hojeIdx == null || i > hojeIdx,
+            label: 'Redação ' + (i + 1) + ' de ' + n + ': ' + nomeAto(v, atos) + ', ' + intervalo(art, i, base, hojeIdx) };
+        }),
+        status: h(React.Fragment, null,
+          h('span', { className: 'vb-longo' }, h('strong', null, 'Redação ' + (sel.i + 1) + ' de ' + n), ' · ' + nomeAto(cur, atos) + ' · ', h('span', { className: 'muted' }, intervalo(art, sel.i, base, hojeIdx))),
+          h('span', { className: 'vb-curto', 'aria-hidden': 'true' }, h('strong', null, (sel.i + 1) + ' de ' + n + ' · ' + nomeAto(cur, atos)), h('br'),
+            h('span', { className: 'muted' }, per.fim && per.fim !== 'mesma' ? per.inicio.slice(0, 4) + ' a ' + per.fim.slice(0, 4) : (passada ? per.inicio.slice(0, 4) : 'desde ' + per.inicio.slice(0, 4))))),
+        onGo: function (k) { location.hash = versionHref(k); },
+        onList: function () { var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } }
+      }) : null,
+      h(R.DateLens, { date: date, basis: base, today: hoje(), id: 'lente', onChange: go }),
       h('div', { className: 'cols cols-3' },
         h('div', { className: 'col-main stack' },
+          passada ? h('aside', { className: 'note note-aviso' },
+            h('p', null, h('strong', null, 'Nota: '), 'esta não é a redação em vigor hoje. ',
+              per.fim === 'mesma' ? 'A redação seguinte começou na mesma data. Por isso, esta redação não aparece quando escolhe só a data. ' : 'Esteve em vigor até ' + extenso(per.fim) + '. ',
+              h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ver a redação em vigor hoje'))) : null,
+          futura && cur ? h('aside', { className: 'note note-info' },
+            h('p', null, h('strong', null, 'Nota: '), 'esta redação ainda não está em vigor. Entra em vigor a ' + extenso(per.inicio) + '. ',
+              hojeIdx != null ? h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ver a redação em vigor hoje') : null)) : null,
+          transitorias.length ? h('aside', { className: 'note note-aviso note-forte', 'aria-labelledby': 'transit' },
+            h('p', { id: 'transit' }, h('strong', null, 'Atenção: '), 'o ato que escreveu esta redação tem uma norma que muda a forma como ela se aplica. Leia a norma antes de aplicar o texto.'),
+            transitorias.map(function (x, k) {
+              return h('div', { key: k, className: 'transit' },
+                h('p', { 'data-citacao': '' }, x.texto),
+                h('p', { className: 'muted small' }, 'Fonte: ', h(ActLink, { id: x.ato, atos: atos }), x.artigo_do_ato ? ', ' + x.artigo_do_ato.toLowerCase() : ''));
+            })) : null,
           up.length ? h('aside', { className: 'note note-info' },
             h('p', null, h('strong', null, 'Nota: '), 'nesta data já está publicada uma alteração que ainda não está em vigor. ',
               up.map(function (v, i) { return h('span', { key: i }, h(ActLink, { id: v.ato, atos: atos }), ' entra em vigor a ' + extenso(v.vigor) + '. '); }))) : null,
@@ -403,86 +529,181 @@
             h('p', null, h('strong', null, 'Atenção: '), 'o Diário da República não indica a data de entrada em vigor desta redação. Mostramos a redação a partir da data de publicação (' + extenso(cur.publicacao) + ').' + (cur.vigor_regra === 'condicional' ? ' A entrada em vigor depende de outra legislação (' + cur.vigor_fonte + ').' : ''))) : null,
           base === 'efeitos' ? h('aside', { className: 'note note-aviso' },
             h('p', null, h('strong', null, 'Atenção: '), 'o consolidado do Diário da República não tem as datas de produção de efeitos em formato estruturado. Mostramos a redação em vigor nesta data. Leia as notas e o ato que alterou o artigo.')) : null,
-          sobreposta ? h('aside', { className: 'note note-aviso' },
-            h('p', null, 'A redação seguinte começou na mesma data. Por isso, esta redação não aparece quando escolhe só a data. ',
-              h('a', { href: link(['d', d.slug, art.id], { em: date, base: base }) }, 'Ver a redação desta data'))) : null,
+          diferente ? h('aside', { className: 'note note-aviso' },
+            h('p', null, h('strong', null, 'Nota: '), 'esta redação tem um texto muito diferente da redação anterior. O artigo pode ter mudado de número numa revisão. Por isso, a comparação pode juntar dois artigos diferentes.')) : null,
           !cur ? h('div', { className: 'state' }, h('p', null, 'Nesta data o artigo ainda não existia ou ainda não estava em vigor.'),
-            h('p', null, 'A primeira redação é de ' + extenso(art.versoes[0].publicacao) + '. ', h('a', { href: link(['d', d.slug, art.id], { em: startOf(art.versoes[0], base), base: base }) }, 'Ver a primeira redação'))) :
+            h('p', null, 'A primeira redação é de ' + extenso(art.versoes[0].publicacao) + '. ', h('a', { href: versionHref(0) }, 'Ver a primeira redação'))) :
             h('article', { className: 'statute-box', 'aria-label': titulo },
               h('div', { className: 'statute-head' },
-                h('h2', { className: 'article-h' }, art.rotulo, h('span', { className: 'muted' }, art.epigrafe ? ' ' + art.epigrafe.replace(/^\((.*)\)$/, '$1') : '')),
-                h('p', { className: 'muted small' }, 'Cada cor mostra o diploma que escreveu as palavras.')),
-              h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts })),
+                h('h2', { className: 'article-h' }, art.rotulo, h('span', { className: 'muted' }, art.epigrafe ? ' ' + art.epigrafe.replace(/^\((.*)\)$/, '$1') : ''),
+                  sel.i !== last && art.epigrafe ? h('span', { className: 'muted small' }, ' (epígrafe atual)') : null),
+                h('div', { role: 'group', 'aria-label': 'Mostrar', className: 'seg seg-s' }, VER.map(function (m) {
+                  return h('button', { key: m[0], type: 'button', className: 'seg-btn' + (ver === m[0] ? ' is-on' : ''), 'aria-pressed': ver === m[0],
+                    onClick: function () { guardarVer(m[0]); location.hash = link(['d', d.slug, art.id], Object.assign({}, q, { ver: m[0] })); } }, m[1]);
+                }))),
+              corpo),
           notas.length ? h('section', { className: 'notes', 'aria-labelledby': 'notas' },
             h('h2', { id: 'notas', className: 'h3' }, 'Notas sobre este artigo'),
-            h('ul', { className: 'list' }, notas.map(function (n, i) {
-              return h('li', { key: i }, h('p', null, n.texto), h('p', { className: 'muted small' }, 'Fonte: ', n.ato ? h(ActLink, { id: n.ato, atos: atos }) : n.fonte, n.ato && n.artigo_do_ato ? ', ' + n.artigo_do_ato.toLowerCase() : ''));
+            h('ul', { className: 'list' }, notas.map(function (x, i) {
+              return h('li', { key: i }, h('p', null, x.texto), h('p', { className: 'muted small' }, 'Fonte: ', x.ato ? h(ActLink, { id: x.ato, atos: atos }) : x.fonte, x.ato && x.artigo_do_ato ? ', ' + x.artigo_do_ato.toLowerCase() : ''));
             }))) : null,
           cur ? h(R.SourceNote, { source: curAto && curAto.link ? { href: curAto.link, label: 'Ver ' + curAto.designacao + ' no Diário da República' } : (d.link ? { href: d.link, label: 'Ver o diploma no Diário da República' } : null), verification: 'nao-verificado' },
             'Texto do consolidado do Diário da República. Ainda não verificamos este texto com uma reprodução própria.') : null,
-          cur ? h(R.Citation, { key: citacao, text: citacao, permalink: location.href.split('#')[0] + link(['d', d.slug, art.id], { em: date, base: base, redacao: sobreposta ? sel.i : null }) }) : null),
-        h('aside', { className: 'col-side stack', 'aria-label': 'História deste artigo' },
-          h('h2', { className: 'h3' }, 'História deste artigo'),
-          h(R.VersionTimeline, { current: sel ? 'v' + sel.i : null, label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'),
+          cur ? h(R.Citation, { key: citacao, text: citacao, permalink: location.href.split('#')[0] + versionHref(sel.i, { ver: null }) }) : null),
+        h('aside', { className: 'col-side stack', 'aria-labelledby': 'historia' },
+          h('h2', { className: 'h3', id: 'historia', tabIndex: -1 }, 'História deste artigo'),
+          h(R.VersionTimeline, { current: sel ? 'v' + sel.i : null, inForceToday: hojeIdx != null ? 'v' + hojeIdx : null, label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'),
             versions: art.versoes.map(function (v, i) {
-              var a = atos[v.ato] || { designacao: v.ato };
-              return { id: 'v' + i, title: v.tipo === 'original' ? 'Texto original' : TIPO[v.tipo] + ' por ' + a.designacao,
+              var a = atos[v.ato] || { designacao: v.ato }, p = periodo(art, i, 'vigor');
+              return { id: 'v' + i, title: v.tipo === 'original' ? 'Texto original' : TIPO[v.tipo] + ' ' + pela(a.designacao) + ' ' + a.designacao,
                 href: versionHref(i),
-                act: [v.artigo_do_ato, v.vigor ? null : 'Entrada em vigor não indicada'].filter(Boolean).join(' · '),
-                published: v.publicacao, inForce: v.vigor, technical: v.tipo === 'retificado' };
+                act: [v.artigo_do_ato ? 'Norma: ' + v.artigo_do_ato.toLowerCase() + ' ' + (pela(a.designacao) === 'pelo' ? 'do ' : 'da ') + a.designacao : null, v.vigor ? null : 'Entrada em vigor não indicada'].filter(Boolean).join(' · '),
+                published: v.publicacao, inForce: v.vigor, until: v.vigor && p.fim ? (p.fim === 'mesma' ? v.vigor : p.fim) : null, technical: v.tipo === 'retificado',
+                links: [i > 0 ? { href: compareHref(i - 1, i), label: 'Ver a alteração' } : null, v.tipo !== 'original' && atos[v.ato] ? { href: link(['ato', v.ato]), label: 'Ver o ato' } : null].filter(Boolean) };
             }) }))));
   }
 
   // ---- Compare --------------------------------------------------------------------------------
+  // de and ate take an act id, a date, "hoje" or an index (old links). modo and vista stay in the URL.
+  var MODOS = [['marcadas', 'inline', 'Alterações marcadas'], ['nova', 'final', 'Só a redação nova'], ['anterior', 'previous', 'Só a redação anterior']];
+  var VISTAS = [['texto', 'No texto'], ['lado', 'Lado a lado']];
+  // "n.º 3", "alínea b) do n.º 4": where an unchanged run starts and ends.
+  function ondeLinha(t, numero) {
+    var m = /^(\d+(?:\.\d+)*(?:-[A-Z])?) — /.exec(t);
+    if (m) return { numero: m[1], de: 'do n.º ' + m[1], a: 'ao n.º ' + m[1] };
+    m = /^([a-z]+)\) /.exec(t);
+    var al = 'alínea ' + (m ? m[1] + ')' : '') + (numero ? ' do n.º ' + numero : '');
+    if (m) return { numero: numero, de: 'da ' + al, a: 'à ' + al };
+    return { numero: numero, de: 'do parágrafo', a: 'ao parágrafo' };
+  }
   function Comparar(props) {
     var r = useData(['d/' + props.slug + '.json', 'atos.json']);
-    var ms = useState('inline');
+    var ab = useState({});      // unchanged runs the reader opened
+    var df = useState(0);       // the difference in focus
+    var cp = useState(false);   // copied
     if (!r.data) return h(Loading, { error: r.error });
-    var d = r.data[0], atos = r.data[1], art = d.artigos[props.id];
+    var d = r.data[0], atos = r.data[1], art = d.artigos[props.id], q = props.q;
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo.'));
     var n = art.versoes.length;
-    var clamp = function (x, dflt) { x = parseInt(x, 10); return isNaN(x) ? dflt : Math.max(0, Math.min(n - 1, x)); };
-    var de = clamp(props.q.de, Math.max(0, n - 2)), ate = clamp(props.q.ate, n - 1);
-    if (props.q.ato) {  // "ver a alteração" from an act: the version it produced against the one before
-      var vi = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(props.q.ato);
+    var ate = resolve(art, q.ate), de = resolve(art, q.de);
+    if (ate < 0) ate = n - 1;
+    if (de < 0) de = Math.max(0, ate - 1);
+    var ato = q.ato && atos[q.ato] ? atos[q.ato] : null;
+    if (ato && !q.de && !q.ate) {  // "ver a alteração" from an act: the redação it made against the one before
+      var vi = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(q.ato);
       if (vi >= 0) { ate = vi; de = Math.max(0, vi - 1); }
     }
+    var modo = MODOS.filter(function (m) { return m[0] === q.modo; })[0] || MODOS[0];
+    var vista = q.vista === 'lado' ? 'lado' : 'texto';
+    function href(o) {
+      return link(['d', d.slug, art.id, 'comparar'], Object.assign({ de: versionKey(art, de), ate: versionKey(art, ate), modo: q.modo, vista: q.vista, ato: q.ato }, o));
+    }
+    function nome(i) { return 'a redação ' + (i + 1) + ' (' + nomeAto(art.versoes[i], atos) + ')'; }
     var label = function (v, i) {
-      var a = atos[v.ato] || { designacao: v.ato };
-      return (i + 1) + '. ' + (v.tipo === 'original' ? 'Texto original' : a.designacao) + ' · ' + (v.vigor ? 'em vigor desde ' + curta(v.vigor) : 'publicação ' + curta(v.publicacao));
+      var p = periodo(art, i, 'vigor');
+      return (i + 1) + ' · ' + nomeAto(v, atos) + ' · ' + curta(p.inicio) + (p.fim === null ? ' até hoje' : p.fim === 'mesma' ? '' : ' a ' + curta(p.fim));
     };
-    var set = function (k) { return function (e) { var q = { de: de, ate: ate }; q[k] = e.target.value; location.hash = link(['d', d.slug, art.id, 'comparar'], q); }; };
-    var lines = diffLines(texto(art.versoes[de]), texto(art.versoes[ate]));
-    // A deletion followed by its insertion is one change.
-    var changes = lines.reduce(function (c, l) { return c + l.filter(function (s, k) { return s.op !== 'eq' && !(s.op === 'ins' && k && l[k - 1].op === 'del'); }).length; }, 0);
+    var antes = texto(art.versoes[de]), depois = texto(art.versoes[ate]);
+    var lines = diffLines(antes, depois);
+    // Unchanged runs of two or more paragraphs fold into one line the reader can open.
+    var blocos = [], corrida = null, numero = '', nd = 0;
+    function fechar() {
+      if (!corrida) return;
+      var id = corrida.id;
+      if (corrida.linhas.length < 2 || ab[0][id]) corrida.linhas.forEach(function (b) { blocos.push(b); });
+      else blocos.push({ dobra: true, id: id, texto: corrida.linhas.length + ' parágrafos sem alterações, ' + corrida.de + ' ' + corrida.a + '.' });
+      corrida = null;
+    }
+    lines.forEach(function (l, j) {
+      var t = l.map(function (s) { return s.text; }).join('');
+      var w = ondeLinha(t, numero);
+      numero = w.numero;
+      if (l.some(function (s) { return s.op !== 'eq'; })) {
+        fechar();
+        blocos.push({ linha: l, dif: nd++, id: 'l' + j });
+      } else {
+        if (!corrida) corrida = { id: 'd' + j + '-' + de + '-' + ate, linhas: [], de: w.de, a: w.a };
+        corrida.linhas.push({ linha: l, id: 'l' + j });
+        corrida.a = w.a;
+      }
+    });
+    fechar();
+    var foco = Math.min(df[0], Math.max(0, nd - 1));
+    function irDif(k) {
+      df[1](k);
+      setTimeout(function () { var e = document.getElementById('dif-' + k); if (e) { e.focus(); e.scrollIntoView({ block: 'center' }); } }, 0);
+    }
+    var diferente = de !== ate && semelhanca(d.slug + '/' + art.id + '/' + de + '-' + ate, antes, depois) < DIFERENTE;
     var lo = Math.min(de, ate), hi = Math.max(de, ate);
-    var modes = [['inline', 'Alterações marcadas'], ['final', 'Só a redação nova'], ['previous', 'Só a redação anterior']];
+    var seg = function (items, on, key) {
+      return items.map(function (m) {
+        var o = {}; o[key] = m[0];
+        return h('a', { key: m[0], className: 'seg-btn' + (on === m[0] ? ' is-on' : ''), 'aria-current': on === m[0] ? 'true' : undefined, href: href(o) }, m[m.length - 1]);
+      });
+    };
+    var segs = function (l, op) { return l.filter(function (s) { return s.op !== op; }); };
+    // Position of this article among the articles the act changed, for "artigo seguinte deste ato".
+    var noAto = ato ? ato.alteracoes.filter(function (c) { return c.diploma === d.slug; }) : [];
+    var k = noAto.map(function (c) { return c.artigo; }).indexOf(art.id);
+    var doAto = function (j, txt) { var c = noAto[j]; return c ? h('a', { href: link(['d', d.slug, c.artigo, 'comparar'], { ato: ato.id }) }, txt) : null; };
     return h('div', { className: 'stack' },
       h(Crumbs, { items: [['Diplomas', '#/'], [d.sigla, link(['d', d.slug])], [art.rotulo, link(['d', d.slug, art.id])], ['Comparar redações']] }),
+      ato && k >= 0 ? h('nav', { className: 'note note-ato', 'aria-label': 'Artigos alterados por este ato' },
+        h('p', null, 'Alteração feita ' + pela(ato.designacao) + ' ', h(ActLink, { id: ato.id, atos: atos }), ' · artigo ' + (k + 1) + ' de ' + noAto.length + ' deste ato no ' + d.sigla + '.'),
+        h('p', { className: 'links' }, doAto(k - 1, '‹ Artigo anterior deste ato'), doAto(k + 1, 'Artigo seguinte deste ato ›'), h('a', { href: link(['ato', ato.id]) }, 'Voltar ao ato'))) : null,
       h('div', { className: 'title-block' },
         h('p', { className: 'eyebrow' }, 'Comparar redações · ' + d.titulo),
         h('h1', { className: 'title' }, art.rotulo + (art.epigrafe ? ' ' + art.epigrafe : ''))),
       h('form', { className: 'compare-form', onSubmit: function (e) { e.preventDefault(); }, 'aria-label': 'Escolher as redações' },
-        h('div', { className: 'field' }, h('label', { htmlFor: 'de' }, 'Redação anterior'),
-          h('select', { id: 'de', className: 'rd-input', value: de, onChange: set('de') }, art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); }))),
-        h('div', { className: 'field' }, h('label', { htmlFor: 'ate' }, 'Redação nova'),
-          h('select', { id: 'ate', className: 'rd-input', value: ate, onChange: set('ate') }, art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); }))),
-        h('div', { role: 'group', 'aria-label': 'Modo de leitura', className: 'seg' }, modes.map(function (m) {
-          return h('button', { key: m[0], type: 'button', className: 'seg-btn' + (ms[0] === m[0] ? ' is-on' : ''), 'aria-pressed': ms[0] === m[0], onClick: function () { ms[1](m[0]); } }, m[1]);
-        }))),
+        h('div', { className: 'compare-pair' },
+          h('div', { className: 'field' }, h('label', { htmlFor: 'de' }, 'Antes'),
+            h('select', { id: 'de', className: 'rd-input', value: de, onChange: function (e) { location.hash = href({ de: versionKey(art, +e.target.value), ato: null }); } },
+              art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); }))),
+          h('button', { type: 'button', className: 'btn', 'aria-label': 'Trocar as duas redações', onClick: function () { location.hash = href({ de: versionKey(art, ate), ate: versionKey(art, de), ato: null }); } }, '⇄ Trocar'),
+          h('div', { className: 'field' }, h('label', { htmlFor: 'ate' }, 'Depois'),
+            h('select', { id: 'ate', className: 'rd-input', value: ate, onChange: function (e) { location.hash = href({ ate: versionKey(art, +e.target.value), ato: null }); } },
+              art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); })))),
+        de > ate ? h('p', { className: 'aviso-txt' }, h('strong', null, 'Nota: '), 'a redação «Antes» é mais recente do que a redação «Depois».') : null,
+        h('div', { className: 'compare-tools' },
+          h('div', { className: 'actions' },
+            ate >= 2 ? h('a', { className: 'btn', href: href({ de: versionKey(art, ate - 2), ate: versionKey(art, ate - 1), ato: null }) }, '‹ Alteração anterior') : null,
+            ate < n - 1 ? h('a', { className: 'btn', href: href({ de: versionKey(art, ate), ate: versionKey(art, ate + 1), ato: null }) }, 'Alteração seguinte ›') : null),
+          h('nav', { 'aria-label': 'Disposição', className: 'seg' }, seg(VISTAS, vista, 'vista')),
+          h('nav', { 'aria-label': 'Modo de leitura', className: 'seg' }, seg(MODOS, modo[0], 'modo')))),
+      diferente ? h('aside', { className: 'note note-aviso' }, h('p', null, h('strong', null, 'Nota: '), 'as duas redações têm textos muito diferentes. O artigo pode ter mudado de número numa revisão. Por isso, a comparação pode juntar dois artigos diferentes.')) : null,
       h('div', { className: 'cols' },
-        h('div', { className: 'col-main statute-box stack-s' },
-          h('p', { className: 'muted', 'aria-live': 'polite' }, changes ? changes + (changes === 1 ? ' alteração' : ' alterações') + ' entre as duas redações.' : 'As duas redações têm o mesmo texto.'),
-          lines.map(function (l, i) { return h(R.Redline, { key: i + ms[0], segments: l, mode: ms[0], legend: false }); }),
-          h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado')))),
+        h('div', { className: 'col-main stack-s' },
+          h('div', { className: 'compare-status' },
+            h('p', { 'aria-live': 'polite' }, nd ? h('strong', null, nd === 1 ? '1 diferença' : nd + ' diferenças') : 'As duas redações têm o mesmo texto', ' entre ', nome(de), ' e ', nome(ate), '.'),
+            nd > 1 ? h('div', { className: 'actions' },
+              h('button', { type: 'button', className: 'btn', 'aria-disabled': foco === 0, onClick: function () { if (foco > 0) irDif(foco - 1); } }, '‹ Diferença anterior'),
+              h('span', { className: 'small', role: 'status' }, 'Diferença ' + (foco + 1) + ' de ' + nd),
+              h('button', { type: 'button', className: 'btn', 'aria-disabled': foco === nd - 1, onClick: function () { if (foco < nd - 1) irDif(foco + 1); } }, 'Diferença seguinte ›')) : null,
+            h('button', { type: 'button', className: 'btn', onClick: function () {
+              var t = 'Antes: ' + nome(de) + '\n' + antes + '\n\nDepois: ' + nome(ate) + '\n' + depois + '\n\n' + art.rotulo + ' ' + (d.genitivo || 'de ' + d.titulo) + '. Fonte: Diário da República (legislação consolidada).';
+              try { navigator.clipboard.writeText(t).then(function () { cp[1](true); }, function () { cp[1](false); }); } catch (e) { /* no clipboard */ }
+            } }, cp[0] ? 'Copiado' : 'Copiar antes e depois')),
+          h('div', { className: 'statute-box stack-s' + (vista === 'lado' ? ' lado' : '') },
+            vista === 'lado' ? h('div', { className: 'lado-head', 'aria-hidden': 'true' }, h('span', null, 'Antes · ' + nomeAto(art.versoes[de], atos)), h('span', null, 'Depois · ' + nomeAto(art.versoes[ate], atos))) : null,
+            blocos.map(function (b) {
+              if (b.dobra) return h('button', { key: b.id, type: 'button', className: 'dobra', 'aria-expanded': false, onClick: function () { var o = Object.assign({}, ab[0]); o[b.id] = true; ab[1](o); } },
+                h('span', { 'aria-hidden': 'true' }, '⋯ '), b.texto, ' ', h('span', { className: 'dobra-ver' }, 'Mostrar'));
+              var attrs = b.dif != null ? { key: b.id, id: 'dif-' + b.dif, tabIndex: -1, className: 'dif' + (b.dif === foco ? ' is-foco' : '') } : { key: b.id };
+              if (vista === 'lado') return h('div', Object.assign({}, attrs, { className: (attrs.className || '') + ' lado-row' }),
+                h(R.Redline, { segments: segs(b.linha, 'ins'), mode: 'inline', legend: false }),
+                h(R.Redline, { segments: segs(b.linha, 'del'), mode: 'inline', legend: false }));
+              return h('div', attrs, h(R.Redline, { segments: b.linha, mode: modo[1], legend: false }));
+            }),
+            modo[1] === 'inline' || vista === 'lado' ? h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))) : null)),
         h('aside', { className: 'col-side stack-s', 'aria-labelledby': 'passos' },
           h('h2', { id: 'passos', className: 'h3' }, 'Redações entre as duas'),
-          h('p', { className: 'muted small' }, 'Para aplicar a lei mais favorável, veja todas as redações entre as duas datas.'),
-          h('ol', { className: 'list' }, art.versoes.slice(lo, hi + 1).map(function (v, k) {
-            var i = lo + k, a = atos[v.ato] || { designacao: v.ato };
-            return h('li', { key: i }, h('strong', null, (i + 1) + '. '), v.tipo === 'original' ? 'Texto original' : h(ActLink, { id: v.ato, atos: atos }),
+          h('p', { className: 'muted small' }, 'Cada redação aplica-se no seu período. Abra uma redação para ler o texto completo.'),
+          h('ol', { className: 'list' }, art.versoes.slice(lo, hi + 1).map(function (v, j) {
+            var i = lo + j;
+            return h('li', { key: i }, h('strong', null, (i + 1) + '. '),
+              h('a', { href: link(['d', d.slug, art.id], { em: startOf(v, 'vigor'), redacao: versionKey(art, i) }) }, nomeAto(v, atos)),
               h('span', { className: 'muted' }, ' · ' + (v.vigor ? 'em vigor desde ' + extenso(v.vigor) : 'publicação ' + extenso(v.publicacao))),
-              i > lo ? h('span', null, ' · ', h('a', { href: link(['d', d.slug, art.id, 'comparar'], { de: i - 1, ate: i }) }, 'ver esta alteração')) : null);
+              i > lo ? h('span', null, ' · ', h('a', { href: href({ de: versionKey(art, i - 1), ate: versionKey(art, i), ato: null }) }, 'ver esta alteração')) : null);
           })))));
   }
 
@@ -519,7 +740,7 @@
               h('h3', { className: 'h3' }, nomes[slug] ? nomes[slug].titulo : slug),
               h('ul', { className: 'list' }, by[slug].map(function (c, i) {
                 return h('li', { key: i }, h(R.StatusPill, { status: { aditado: 'aditado', revogado: 'revogado' }[c.tipo] || 'vigor' }, TIPO[c.tipo] || c.tipo), ' ',
-                  h('a', { href: link(['d', slug, c.artigo]) }, c.rotulo), ' · ',
+                  h('a', { href: link(['d', slug, c.artigo], { redacao: a.id }) }, c.rotulo), ' · ',
                   h('a', { href: link(['d', slug, c.artigo, 'comparar'], { ato: a.id }) }, 'ver a alteração'));
               })));
           })),
@@ -604,7 +825,7 @@
     var s = route.segs, view;
     if (s[0] === 'd' && s[1] && s[2] && s[3] === 'comparar') view = h(Comparar, { slug: s[1], id: s[2], q: route.q });
     else if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });
-    else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1] });
+    else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
@@ -619,6 +840,6 @@
   if (!root.hasAttribute('data-theme')) { root.setAttribute('data-theme-auto', ''); theme(); }
   if (mq && mq.addEventListener) mq.addEventListener('change', theme);
 
-  window.RedacaoApp = { pick: pick, diff: diff, originModel: originModel, search: search };
+  window.RedacaoApp = { pick: pick, diff: diff, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey };
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();

@@ -1,0 +1,21 @@
+<!-- @dsCard group="Tempo" height=260 subtitle="Constituição, artigo 1.º: duas redações" -->
+<!doctype html>
+<html lang="pt-PT">
+<head><meta charset="utf-8"><title>VersionBar</title></head>
+<body>
+<div id="root" class="rd-stage"></div>
+<script>
+  var R = window.Redacao, h = React.createElement;
+  var V = [
+    { label: 'Redação 1 de 2: texto original, em vigor de 25 de abril de 1976 a 6 de agosto de 1989', start: '1976-04-25', text: 'em vigor de 25 de abril de 1976 a 6 de agosto de 1989', act: 'Texto original' },
+    { label: 'Redação 2 de 2: Lei Constitucional n.º 1/89, em vigor desde 7 de agosto de 1989', start: '1989-08-07', text: 'em vigor desde 7 de agosto de 1989', act: 'Lei Constitucional n.º 1/89' }
+  ];
+  function Demo() {
+    var st = React.useState(1), i = st[0];
+    return h(R.VersionBar, { id: 'demo', current: i, today: '2026-10-28', versions: V, onGo: st[1],
+      status: h(React.Fragment, null, h('strong', null, 'Redação ' + (i + 1) + ' de 2'), ' · ' + V[i].act + ' · ' + V[i].text) });
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+</script>
+</body>
+</html>

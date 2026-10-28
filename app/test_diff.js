@@ -45,6 +45,24 @@ for (const [a, b, want] of cases) {
   assert.ok(rebuilds(a, b), a);
 }
 
+// Redações in URLs: by act id, date, "hoje" or index, and the period each one applies.
+// Objects from the app's context have another prototype, so periods are compared as JSON.
+const { resolve, periodo, versionKey } = window.RedacaoApp;
+const art = { versoes: [
+  { ato: 'lei-2-2014', tipo: 'original', publicacao: '2014-01-16', vigor: '2014-01-21' },
+  { ato: 'declaracao-de-retificacao-18-2014', tipo: 'retificado', publicacao: '2014-03-13', vigor: '2014-01-21' },
+  { ato: 'lei-7-a-2016', tipo: 'alterado', publicacao: '2016-03-30', vigor: '2016-03-31' },
+] };
+assert.strictEqual(resolve(art, 'lei-2-2014'), 0);
+assert.strictEqual(resolve(art, '2'), 2);
+assert.strictEqual(resolve(art, '2015-06-30'), 1);
+assert.strictEqual(resolve(art, '2010-01-01'), -1);
+assert.strictEqual(resolve(art, 'lei-nao-existe'), -1);
+assert.strictEqual(versionKey(art, 1), 'declaracao-de-retificacao-18-2014');
+assert.strictEqual(JSON.stringify(periodo(art, 0, 'vigor')), '{"inicio":"2014-01-21","fim":"mesma"}');
+assert.strictEqual(JSON.stringify(periodo(art, 1, 'vigor')), '{"inicio":"2014-01-21","fim":"2016-03-30"}');
+assert.strictEqual(JSON.stringify(periodo(art, 2, 'vigor')), '{"inicio":"2016-03-31","fim":null}');
+
 let pairs = 0;
 const dir = path.join(__dirname, 'data', 'd');
 if (fs.existsSync(dir)) {
@@ -55,4 +73,4 @@ if (fs.existsSync(dir)) {
     }
   }
 }
-console.log('ok: ' + cases.length + ' cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));
+console.log('ok: ' + cases.length + ' diff cases, 9 URL cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));

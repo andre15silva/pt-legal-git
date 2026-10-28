@@ -1,10 +1,10 @@
 import type * as React from 'react';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> { variant?: 'primary' | 'quiet' | 'ghost' }
 export declare function Button(props: ButtonProps): React.ReactElement;
-export type Status = 'vigor' | 'futuro' | 'revogado' | 'aditado' | 'pendente' | 'verificado' | 'nao-verificado' | 'inconstitucional';
+export type Status = 'vigor' | 'futuro' | 'revogado' | 'aditado' | 'pendente' | 'verificado' | 'nao-verificado' | 'inconstitucional' | 'historico' | 'atual';
 export interface StatusPillProps { status: Status; title?: string; children?: React.ReactNode }
 export declare function StatusPill(props: StatusPillProps): React.ReactElement;
-export interface Act { index: number; label: string; date?: string; href?: string; hrefLabel?: string }
+export interface Act { index: number; label: string; date?: string; href?: string; hrefLabel?: string; diffHref?: string; beforeHref?: string }
 export interface ActChipProps { act: Act; onClick?: () => void; selected?: boolean }
 export declare function ActChip(props: ActChipProps): React.ReactElement;
 export interface Segment { op: 'eq' | 'ins' | 'del'; text: string }
@@ -15,8 +15,11 @@ export interface TextOriginProps { paragraphs: OriginParagraph[]; acts: Act[]; f
 export declare function TextOrigin(props: TextOriginProps): React.ReactElement;
 export interface DateLensProps { date?: string; basis?: 'vigor' | 'efeitos' | 'publicacao'; onChange?: (v: { date: string; basis: string }) => void; id?: string; today?: string }
 export declare function DateLens(props: DateLensProps): React.ReactElement;
-export interface Version { id: string; title: string; href?: string; act: string; published?: string; inForce?: string; until?: string; summary?: string; verification?: Status; technical?: boolean; pending?: boolean }
-export interface VersionTimelineProps { versions: Version[]; current?: string; label?: string }
+export interface Version { id: string; title: string; href?: string; act: string; published?: string; inForce?: string; until?: string; summary?: string; verification?: Status; technical?: boolean; pending?: boolean; links?: { href: string; label: string }[] }
+export interface VersionTimelineProps { versions: Version[]; current?: string; inForceToday?: string; label?: string }
+export interface VersionBarItem { label: string; start: string; technical?: boolean; pending?: boolean }
+export interface VersionBarProps { versions: VersionBarItem[]; current: number; onGo: (i: number) => void; status: React.ReactNode; today?: string; id?: string; heading?: string; onList?: () => void }
+export declare function VersionBar(props: VersionBarProps): React.ReactElement;
 export declare function VersionTimeline(props: VersionTimelineProps): React.ReactElement;
 export interface Stage { label: string; date?: string; state: 'done' | 'current' | 'todo' | 'stopped'; note?: string }
 export interface ProcessTrackProps { stages: Stage[]; title?: string }
@@ -28,4 +31,4 @@ export interface CitationProps { text: string; permalink?: string }
 export declare function Citation(props: CitationProps): React.ReactElement;
 export interface SourceNoteProps { children?: React.ReactNode; source?: { href: string; label: string }; updated?: string; verification?: Status; tone?: 'aviso' }
 export declare function SourceNote(props: SourceNoteProps): React.ReactElement;
-declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Citation: typeof Citation; SourceNote: typeof SourceNote; dataPorExtenso(iso: string): string } } }
+declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Citation: typeof Citation; SourceNote: typeof SourceNote; dataPorExtenso(iso: string): string } } }

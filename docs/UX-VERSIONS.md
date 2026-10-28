@@ -46,9 +46,9 @@ The reviews found three problems in the data, not the layout. I checked each one
 
 | Question | Options raised | Decision |
 |---|---|---|
-| Keyboard shortcuts | `[` `]` and `j` `k` (lawyer, drafter, patterns), or no single-character keys (a11y, WCAG 2.1.4) | ←/→ and Home/End inside the focused version bar. Alt+←/→ anywhere outside form fields. List them in "Atalhos de teclado". No single-character keys. |
+| Keyboard shortcuts | `[` `]` and `j` `k` (lawyer, drafter, patterns), or no single-character keys (a11y, WCAG 2.1.4) | ←/→ and Home/End inside the focused version bar. No single-character keys. No page-wide Alt+←/→ either: browsers use it for Back. |
 | Retificações | Fold into the redação they correct (lawyer), or count separately (drafter) | Keep them as entries, styled as technical changes and grouped under the redação they correct. Add "Ocultar retificações". |
-| "Origem do texto" by default | On (today), or off for citizens (a11y, citizen, the TextOrigin README) | Plain text by default, with two toggles: "Mostrar o que mudou" (diff against the previous redação) and "Mostrar a origem das palavras". Remember the choice per browser. |
+| "Origem do texto" by default | On (today), or off for citizens (a11y, citizen, the TextOrigin README) | Plain text by default. One switch with three choices: "Texto", "O que mudou" (diff against the previous redação) and "Origem das palavras". The choice stays in the URL (`ver=`) and in the browser. |
 | URL identity | Array index (today), act id (patterns), date (lawyer) | Canonical: act id (`redacao=lei-64-2025`). Accept a date or `hoje` for `em`, `de` and `ate`. Keep old index URLs working. |
 | Diff layout | Inline only (today), or side by side (patterns, buzer.de) | Inline by default. Add "Lado a lado" on screens ≥ 1100 px. |
 
@@ -109,6 +109,39 @@ Designed on a canvas with the Redação design system: https://claude.ai/artifac
 | Act focused on one article | `#/ato/lei-64-2025?artigo=codigo-irc/artigo-87` |
 
 ## 5. Plan
+
+**Status (2026-10-28).** Steps A and B are built, and most of step C:
+
+- **Step A:**
+  - Pills and banners now give each redação's period.
+  - Transitional norms show above the text.
+  - The DateLens commits on confirm and keeps focus.
+  - A warning appears for low-similarity steps.
+  - Links keep the date.
+  - Pills wrap, and there are forced-colours fixes.
+- **Step B:**
+  - `VersionBar` in the design system, sticky on wide screens and fixed to the bottom on phones.
+  - The "Texto / O que mudou / Origem das palavras" switch.
+  - The word popover.
+  - URLs by act id.
+- **Step C:**
+  - Folded números.
+  - Swap.
+  - Pair stepping.
+  - Next and previous difference.
+  - "Lado a lado".
+  - Mode and layout in the URL.
+  - `de` and `ate` by act id or date.
+  - "Copiar antes e depois".
+  - Next and previous article of an act.
+
+Still open:
+
+- "Ocultar retificações".
+- Steps D and E.
+- The data work.
+
+`app/test_diff.js` covers URL resolution and periods. axe-core reports no WCAG 2.2 AA violations on the article and compare pages, light and dark, at 1360 and 390 px.
 
 Effort: S is up to a day, M a few days, L a week or more.
 

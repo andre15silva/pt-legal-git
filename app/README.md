@@ -2,8 +2,12 @@
 
 A static web app that shows the history of each article of Portuguese law:
 
-- **Article** — the text on any date, with the three date bases (em vigor, produção de efeitos, publicação). Each phrase is coloured by the act that wrote it. A timeline lists every version, with notes from the Diário da República (DR) and a ready-to-paste citation.
-- **Compare** — a word-level redline between any two versions, plus every version in between.
+- **Article** — the text on any date, with the three date bases (em vigor, produção de efeitos, publicação).
+  - A version bar steps to the previous or next redação and keeps the reader's place.
+  - Each redação states the period it applied, and an old redação never shows as in force.
+  - The text shows plain, with the changes against the previous redação marked, or with each phrase coloured by the act that wrote it.
+  - A timeline lists every redação, with notes from the Diário da República (DR) and a ready-to-paste citation.
+- **Compare** — a word-level redline between any two redações, inline or side by side, with unchanged números folded, plus every redação in between.
 - **Act** — what an amending act changed, its dates, and the parliamentary initiative it came from.
 - **Initiative** — the legislative process and each vote, by parliamentary group.
 - **Search** — by article number and acronym ("art 87 circ"), or by words of the article title.
@@ -22,6 +26,18 @@ python3 -m http.server 8000 -d app       # then open http://localhost:8000
 ```
 
 Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.json). Each entry needs the DR consolidation ID (`frag_id`, `tipo`, `key`, all taken from the consolidated-text URL). Where the DR leaves a date out, the entry records the entry-into-force rule for the original text, with the provision that sets it.
+
+## URLs
+
+| What | URL |
+|---|---|
+| An article at a date | `#/d/codigo-irc/artigo-87?em=2026-03-01&base=vigor` |
+| One redação, named by the act that made it | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025` |
+| What the text box shows | `&ver=texto`, `&ver=mudou` or `&ver=origem` |
+| Compare two redações (`de` and `ate` take an act id, a date or `hoje`) | `#/d/codigo-irc/artigo-87/comparar?de=lei-82-2023&ate=hoje&vista=lado&modo=marcadas` |
+| What one act changed in one article | `#/d/nrau/artigo-15-a/comparar?ato=lei-56-2023` |
+
+Old links with a redação index (`redacao=3`, `de=1`) still work.
 
 ## How the data is made
 
