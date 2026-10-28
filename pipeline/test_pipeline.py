@@ -140,6 +140,24 @@ class Passagem(unittest.TestCase):
         self.assertEqual(comp.assentos("2022-06-01"), {"PS": 1})
         self.assertEqual(comp.assentos("2023-06-01"), {"PS": 1, "PSD": 1})
 
+    def test_committee_text_belongs_to_the_act_it_names(self):
+        from types import SimpleNamespace as N
+        a = "Texto de Substituição apresentado pela Comissão relativo à Proposta de Lei n.º 129/XIII/3.ª (GOV), e dos Projetos de Lei n.ºs 847/XIII/3.ª (BE), e 1043/XIII/4.ª (PSD)"
+        b = "Texto de Substituição apresentado pela Comissão relativo à Proposta de Lei n.º 128/XIII/3.ª (GOV), Artigo 8.º do Projeto de Lei n.º 847/XIII/3.ª (BE) e do Projeto de Lei n.º 1041/XIII/4.ª (PSD)"
+        self.assertEqual(passagem.citadas(a), {("Proposta de Lei", "129", "XIII"), ("Projeto de Lei", "847", "XIII"), ("Projeto de Lei", "1043", "XIII")})
+        g = lambda d, desc, pos: N(phase="Votação na generalidade", date=d, description=desc, positions=pos, result="Aprovado", unanimous=False, absent=[])
+        own = g("2018-07-18", None, {"BE": "favor", "PSD": "contra"})
+        ta, tb = g("2018-12-21", a, {"PS": "favor"}), g("2018-12-21", b, {"PSD": "favor"})
+        ini = lambda kind, n, votes, ev=(): N(kind=kind, number=n, legislature="XIII", id=n, votes=votes, events=list(ev))
+        inis = [(None, ini("Projeto de Lei", "847", [own, ta, tb])), (None, ini("Proposta de Lei", "129", [ta], [("2018-05-04", "Requerimento Baixa Comissão sem Votação (Generalidade)")])),
+                (None, ini("Projeto de Lei", "1043", [ta]))]
+        proprios, textos = passagem.generalidade(inis, {})
+        self.assertEqual(proprios[0]["voto"]["grupos"], {"BE": "favor", "PSD": "contra"})
+        self.assertIsNone(proprios[1]["voto"])
+        self.assertTrue(proprios[1]["baixa_sem_votacao"])
+        self.assertEqual([t["grupos"] for t in textos], [{"PS": "favor"}])
+        self.assertEqual(textos[0]["citadas"], ["847", "129", "1043"])
+
 
 if __name__ == "__main__":
     unittest.main()

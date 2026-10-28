@@ -206,7 +206,73 @@ def autores(raw: dict) -> dict:
     return {**base, "tipo": "grupos"}
 
 
-def passagem(inis: list[tuple[dict, object]], ato_id: str, comp: Composicao | None) -> dict:
+# A committee text that replaces the initiatives: "Texto de Substituição apresentado pela Comissão …".
+_TEXTO_COMISSAO = re.compile(r"^\s*Texto (?:de substituição|final)\b", re.I)
+_CITACAO = re.compile(r"\b(Proposta|Projeto)s? de Lei\b|\b(\d+)/([IVXLC]+)\b")
+
+
+def citadas(descricao: str | None) -> set[tuple[str, str, str]]:
+    """The initiatives a committee text names: {("Proposta de Lei", "129", "XIII"), …}.
+
+    "relativo à Proposta de Lei n.º 129/XIII/3.ª (GOV), e dos Projetos de Lei n.ºs 847/XIII/3.ª (BE)"
+    """
+    out, tipo = set(), None
+    for m in _CITACAO.finditer(re.sub(r"<[^>]+>", " ", descricao or "")):
+        if m.group(1):
+            tipo = m.group(1) + " de Lei"
+        elif tipo:
+            out.add((tipo, m.group(2), m.group(3)))
+    return out
+
+
+def _voto(v, comp: Composicao | None) -> dict:
+    """One vote as the app shows it, checked against the seats of the day."""
+    voto = ler_voto(v.positions)
+    assentos = comp.assentos(v.date) if comp else None
+    return {
+        "data": v.date, "fase": v.phase, "resultado": v.result, "unanime": bool(v.unanimous),
+        "ausentes": [ALIAS.get(a, a) for a in v.absent], "descricao": v.description, "proposta": ler_descricao(v.description),
+        "grupos": voto["grupos"], "contagens": voto["contagens"], "dissidencia": voto["dissidencia"], "fora_de_grupo": voto["fora_de_grupo"],
+        "sem_registo": [] if v.unanimous or not assentos else [g for g in (comp.ordem if comp else []) if assentos.get(g) and g not in voto["grupos"] and g not in v.absent],
+        "verificacao": verificar(voto, v.result, assentos)}
+
+
+def generalidade(inis: list[tuple[dict, object]], comps: dict[str, Composicao]) -> tuple[list[dict], list[dict]]:
+    """The generalidade votes of an act: each initiative's own vote, and the committee texts.
+
+    The AR records the vote on a committee text under every initiative it replaces, and an
+    initiative can feed two texts that became two laws (Lei n.º 12/2019 and Lei n.º 13/2019 share
+    the Projeto de Lei n.º 847/XIII). So a committee text belongs to this act when the initiatives
+    it names match the act's initiatives best.
+    """
+    do_ato = {(i.kind, str(i.number), i.legislature) for _, i in inis}
+    proprios, textos = [], {}
+    for _, i in inis:
+        comp = comps.get(i.legislature)
+        own = None
+        for v in i.votes:
+            if v.phase != "Votação na generalidade":
+                continue
+            if _TEXTO_COMISSAO.match(v.description or ""):
+                textos.setdefault((v.date, re.sub(r"\W+", "", v.description).lower()[:300]), (v, comp))
+            elif own is None:
+                own = _voto(v, comp)
+        sem = any(f.startswith("Requerimento Baixa Comissão sem Votação") for _, f in i.events)
+        proprios.append({"voto": own, "baixa_sem_votacao": own is None and sem})
+
+    def nota(v):
+        c = citadas(v.description)
+        return len(c & do_ato) / len(c | do_ato) if c else 0.0
+    melhor = max((nota(v) for v, _ in textos.values()), default=0.0)
+    escolhidos = sorted((x for x in textos.values() if melhor and nota(x[0]) == melhor), key=lambda x: x[0].date)
+    out = []
+    for v, comp in escolhidos:
+        c = citadas(v.description)
+        out.append({**_voto(v, comp), "citadas": [str(i.id) for _, i in inis if (i.kind, str(i.number), i.legislature) in c]})
+    return proprios, out
+
+
+def passagem(inis: list[tuple[dict, object]], ato_id: str, comps: dict[str, Composicao] | Composicao | None) -> dict:
     """The passage of an act from its initiatives: [(raw AR record, normalised Initiative)].
 
     The main initiative is the one whose events end in the act's publication. The others were
@@ -216,6 +282,9 @@ def passagem(inis: list[tuple[dict, object]], ato_id: str, comp: Composicao | No
         return any(p == "Lei (Publicação DR)" for _, p in x[1].events)
     inis = sorted(inis, key=lambda x: (not principal_de(x), x[1].events[0][0] if x[1].events else ""))
     raw, ini = inis[0]
+    if not isinstance(comps, dict):
+        comps = {ini.legislature: comps} if comps else {}
+    comp = comps.get(ini.legislature)
     passos: dict[str, dict] = {}
     for data, fase in ini.events:
         nome = _passo(fase)
@@ -231,25 +300,20 @@ def passagem(inis: list[tuple[dict, object]], ato_id: str, comp: Composicao | No
         if not nome:
             continue
         passos.setdefault(nome, {"passo": nome, "data": v.date, "votacoes": []})
-        voto = ler_voto(v.positions)
-        assentos = comp.assentos(v.date) if comp else None
-        chk = verificar(voto, v.result, assentos)
+        voto = _voto(v, comp)
+        chk = voto["verificacao"]
         checks["ok" if chk and chk["ok"] else "falha" if chk else "sem"] += 1
-        passos[nome]["votacoes"].append({
-            "data": v.date, "fase": v.phase, "resultado": v.result, "unanime": bool(v.unanimous),
-            "ausentes": [ALIAS.get(a, a) for a in v.absent], "descricao": v.description, "proposta": ler_descricao(v.description),
-            "grupos": voto["grupos"], "contagens": voto["contagens"], "dissidencia": voto["dissidencia"], "fora_de_grupo": voto["fora_de_grupo"],
-            "sem_registo": [] if v.unanimous or not assentos else [g for g in (comp.ordem if comp else []) if assentos.get(g) and g not in voto["grupos"] and g not in v.absent],
-            "verificacao": chk})
+        passos[nome]["votacoes"].append(voto)
     ordem = [n for n, _ in PASSOS]
+    proprios, textos = generalidade(inis, comps)
     return {
         "ato": ato_id, "legislatura": ini.legislature,
         "ordem_grupos": comp.ordem if comp else [],
         "iniciativas": [{"id": str(i.id), "designacao": f"{i.kind} n.º {i.number}/{i.legislature}", "titulo": i.title,
                          "autores": autores(r), "principal": k == 0,
-                         "generalidade": next(({"data": v.date, "resultado": v.result, "unanime": bool(v.unanimous), **{k2: ler_voto(v.positions)[k2] for k2 in ("grupos", "dissidencia")}}
-                                               for v in i.votes if v.phase == "Votação na generalidade"), None)}
+                         "generalidade": proprios[k]["voto"], "baixa_sem_votacao": proprios[k]["baixa_sem_votacao"]}
                         for k, (r, i) in enumerate(inis)],
+        "texto_comissao": textos,
         "passos": sorted(passos.values(), key=lambda p: (ordem.index(p["passo"]), p["data"])),
         "verificacao": dict(checks),
     }

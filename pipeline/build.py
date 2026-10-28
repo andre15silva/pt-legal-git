@@ -281,7 +281,7 @@ def link_parliament(reg: Registry, pdir: str) -> tuple[dict, dict]:
             reg.acts[ids[iid]].setdefault("iniciativas", []).append(
                 {"id": iid, "designacao": f"{ini.kind} n.º {ini.number}/{ini.legislature}", "titulo": ini.title, "autores": ini.authors})
     comps = passagem.carregar_composicoes(pdir)
-    passagens = {aid: passagem.passagem(inis, aid, comps.get(inis[0][1].legislature)) for aid, inis in por_ato.items()}
+    passagens = {aid: passagem.passagem(inis, aid, comps) for aid, inis in por_ato.items()}
     return out, passagens
 
 

@@ -18,8 +18,8 @@ def css(t):
             out.append("  --%s: %s;" % (s["name"], s["value"][theme]))
         out.append("}")
     out.append(":root {")
-    for group in ("spacing", "radius", "size"):
-        for x in t[group]["tokens"]:
+    for group in ("spacing", "radius", "size", "motion"):
+        for x in t.get(group, {}).get("tokens", []):
             out.append("  --%s: %s;" % (x["name"], x["value"]))
     for k, v in t["type"]["families"].items():
         out.append("  --font-%s: %s;" % (k, v))

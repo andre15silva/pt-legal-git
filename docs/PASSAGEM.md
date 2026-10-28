@@ -122,6 +122,14 @@ All entry points lead to one component, **Passagem no Parlamento**. Its address 
 
 **Step 1. Structured data only (S–M).** Built on 2026-10-28.
 
+*Decision on 2026-10-28: the UI shows only the votação na generalidade for now.* The act page, the initiative page, the register and the Origem do texto popover show who proposed the text and how each group voted on it na generalidade. `passagem.json` still holds every step and vote for later.
+
+*Committee texts.* When the committee replaces the initiatives with a "texto de substituição", the AR records the vote on that text under every initiative it replaces. One initiative can feed two texts that became two laws: the Projeto de Lei n.º 847/XIII is in both Lei n.º 12/2019 and Lei n.º 13/2019. So the pipeline keeps apart:
+- each initiative's own generalidade vote, or "baixou à comissão sem votação";
+- the committee text votes. A committee text belongs to an act when the initiatives its description names match the act's initiatives best (Jaccard index).
+
+The act page shows the committee text vote first, when there is one, because that is the text that became law. Then it shows one row per initiative, with one column per group. The proposing group is in bold.
+
 *Result:* `pipeline/passagem.py` writes `app/data/passagem.json`. It has 56 passages for the corpus acts. Of 329 votes with group positions, 320 pass the seat check, 8 cannot be checked, and 1 fails. The failure is a real record error: in Lei n.º 7/2009, the PCP proposal 5P is recorded as "Aprovado" with 22 votes for and 208 against. The act page shows the Atenção line under that vote.
 
 

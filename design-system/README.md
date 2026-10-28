@@ -85,6 +85,13 @@ The visual language is **Hvit** ("white"): white paper, hairline rules, one gree
 - Selected: `verde` text with a 2px `verde` underline (tabs), or a `verde` rule beside the row (register).
 - Motion: none needed. Version switches swap instantly; respect `prefers-reduced-motion` everywhere.
 
+### Motion
+
+- Tokens: `dur-1` (120 ms, hover and press), `dur-2` (180 ms, things that open), `dur-3` (240 ms, things that arrive), `dur-marca` (1600 ms, the fade of new words), `ease`, `ease-move`, `shift` (8 px).
+- Keyframes in `components/bundle.css`: `rd-entrar`, `rd-abrir`, `rd-aparecer`, `rd-crescer`, `rd-de-direita`, `rd-de-esquerda`, `rd-marca`.
+- `TimeRuler` has one marker that slides between periods. `Register` grows the verde rule on the current row. `Popover` and the Origem do texto panel unfold from their button.
+- `prefers-reduced-motion: reduce` makes every change instant. The rules for pages are in the project's `docs/DESIGN-DIRECTION.md`, section 10.
+
 ### Accessibility
 
 - WCAG 2.2 AA minimum; aim for the acessibilidade.gov.pt *selo* (Prata or above).

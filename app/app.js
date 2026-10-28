@@ -6,25 +6,30 @@
   var useState = React.useState, useEffect = React.useEffect, useMemo = React.useMemo;
 
   // ---- Data -------------------------------------------------------------------------------
-  var cache = {};
+  // Loaded files stay in memory. A page whose files are all loaded renders at once, without a
+  // loading state, so moving between pages never flashes "A carregar…".
+  var cache = {}, valores = {};
   function load(path) {
     if (!cache[path]) {
       cache[path] = fetch('data/' + path).then(function (r) {
         if (!r.ok) throw new Error(path + ': ' + r.status);
         return r.json();
-      });
+      }).then(function (j) { valores[path] = j; return j; });
     }
     return cache[path];
   }
   function useData(paths) {
     var key = paths.join('|');
+    var pronto = paths.every(function (p) { return p in valores; });
     var st = useState({ key: null, data: null, error: null });
     useEffect(function () {
+      if (pronto) return;
       var alive = true;
       Promise.all(paths.map(load)).then(function (d) { if (alive) st[1]({ key: key, data: d, error: null }); },
         function (e) { if (alive) st[1]({ key: key, data: null, error: e }); });
       return function () { alive = false; };
     }, [key]);
+    if (pronto) return { data: paths.map(function (p) { return valores[p]; }), error: null };
     return st[0].key === key ? st[0] : { data: null, error: null };
   }
 
@@ -54,7 +59,7 @@
       function on() {
         var path = location.hash.split('?')[0];
         st[1](parseHash());
-        if (path !== lastPath) window.scrollTo(0, 0);
+        if (path !== lastPath) window.scrollTo({ top: 0, behavior: 'instant' });
         lastPath = path;
       }
       window.addEventListener('hashchange', on);
@@ -343,7 +348,7 @@
     var recent = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.length; })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; }).slice(0, 8);
-    return h('div', { className: 'stack' },
+    return h('div', { className: 'pagina-ato' },
       h('section', { className: 'intro' },
         h('h1', { className: 'display' }, 'A história de cada artigo da lei portuguesa'),
         h('p', { className: 'lead' }, 'Veja o texto de um artigo em qualquer data, compare redações e veja que lei escreveu cada frase.'),
@@ -357,8 +362,8 @@
             return h('li', { key: x[0] + x[1] }, h('a', { href: link(['d', x[0], x[1]]) }, h('strong', null, x[2]), x[3] ? ' ' + x[3] : ''),
               h('span', { className: 'muted' }, ' · ' + nomes[x[0]].sigla), x[4] === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))) : null),
-      h('div', { className: 'cols' },
-        h('section', { className: 'col-main', 'aria-labelledby': 'dipl' },
+      h('div', { className: 'duas duas-largo' },
+        h('section', { 'aria-labelledby': 'dipl' },
           h('h2', { id: 'dipl', className: 'h2' }, 'Diplomas'),
           h('ul', { className: 'cards' }, index.diplomas.map(function (d) {
             return h('li', { key: d.slug, className: 'card' },
@@ -366,7 +371,7 @@
               h('p', { className: 'muted' }, d.designacao + ' · publicação: ' + extenso(d.publicacao)),
               h('p', null, d.n_artigos + ' artigos · ' + d.n_atos + ' atos alteraram este diploma'));
           }))),
-        h('section', { className: 'col-side', 'aria-labelledby': 'rec' },
+        h('section', { 'aria-labelledby': 'rec' },
           h('h2', { id: 'rec', className: 'h2' }, 'Alterações mais recentes'),
           h('ol', { className: 'list' }, recent.map(function (a) {
             var ds = {};
@@ -385,18 +390,21 @@
     var acts = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; });
-    return h('div', { className: 'stack' },
+    return h('div', { className: 'pagina-ato' },
       h(Crumbs, { items: [['Diplomas', '#/'], [d.titulo]] }),
       em ? h('div', { className: 'note note-data', role: 'region', 'aria-label': 'Data escolhida' },
         h('p', null, 'Os artigos abrem como estavam a ', h('strong', null, extenso(em)), '. ', h('a', { href: link(['d', d.slug]) }, 'Voltar a hoje'))) : null,
-      h('div', { className: 'title-block' },
-        h('p', { className: 'eyebrow' }, d.designacao + ' · ' + d.sigla),
+      h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, d.titulo),
         d.sumario ? h('p', { className: 'lead' }, d.sumario) : null,
-        h('p', { className: 'muted' }, 'Publicação: ' + extenso(d.publicacao) + (d.vigor_original ? ' · Entrada em vigor: ' + extenso(d.vigor_original.data) + ' (' + d.vigor_original.fonte + ')' : '')),
-        d.link ? h('p', null, h('a', { href: d.link, target: '_blank', rel: 'noopener' }, 'Ver o diploma no Diário da República')) : null),
-      h('div', { className: 'cols' },
-        h('nav', { className: 'col-main toc', 'aria-label': 'Índice' },
+        // The facts of the diploma on one row: what it is, when it was published, when it took effect.
+        h('dl', { className: 'meta' },
+          h('div', null, h('dt', null, 'Diploma'), h('dd', null, d.designacao + ' (' + d.sigla + ')')),
+          h('div', null, h('dt', null, 'Publicação'), h('dd', null, extenso(d.publicacao))),
+          d.vigor_original ? h('div', null, h('dt', null, 'Entrada em vigor'), h('dd', null, extenso(d.vigor_original.data), h('span', { className: 'factos-sub' }, d.vigor_original.fonte))) : null,
+          d.link ? h('div', null, h('dt', null, 'Fonte'), h('dd', null, h('a', { href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗'))) : null)),
+      h('div', { className: 'duas duas-largo' },
+        h('nav', { className: 'toc', 'aria-label': 'Índice' },
           h('h2', { className: 'h2' }, 'Índice'),
           h('ul', { className: 'toc-list' }, d.arvore.map(function (n, i) {
             var pad = { paddingLeft: Math.max(0, n.nivel - 1) * 16 + 'px' };
@@ -406,14 +414,14 @@
               n.n > 1 ? h('span', { className: 'muted' }, ' · ' + n.n + ' redações') : null,
               n.estado === 'revogado' ? ' ' : null, n.estado === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))),
-        h('section', { className: 'col-side', 'aria-labelledby': 'alt' },
-          h('h2', { id: 'alt', className: 'h2' }, 'Atos que alteraram este diploma'),
-          h('p', { className: 'muted' }, acts.length + ' atos, do mais recente para o mais antigo.'),
+        h('section', { 'aria-labelledby': 'alt' },
+          h('h2', { id: 'alt', className: 'h2' }, 'Atos que o alteraram'),
           h('ol', { className: 'list' }, acts.map(function (a) {
             var n = a.alteracoes.filter(function (c) { return c.diploma === d.slug; }).length;
             return h('li', { key: a.id }, h('a', { href: link(['ato', a.id]) }, a.designacao),
               h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + n + (n === 1 ? ' artigo' : ' artigos')));
-          })))));
+          })),
+          h('p', { className: 'muted small lista-nota' }, acts.length + ' atos, do mais recente para o mais antigo.'))));
   }
 
   // ---- Article --------------------------------------------------------------------------------
@@ -516,6 +524,36 @@
     try { navigator.clipboard.writeText(t).then(done, function () { }); } catch (e) { /* no clipboard */ }
   }
   var copiado = { chave: null };
+  // The last redação shown, to know which way the reader moved and which words are new to them.
+  var vista = { art: null, i: null, dir: null, desde: null };
+  // One line of the law, with the words written after redação `desde` marked for a moment.
+  function linhaMarcada(l, key, marca, desde) {
+    var t = l.map(function (x) { return x[1]; }).join(''), p = partes(t), corte = t.length - p.resto.length, pos = 0;
+    return h('p', { key: key, className: 'lei-p lei-' + (p.kind || 'x') + (revogada(p.resto) ? ' lei-rev' : '') + (marca && p.num && marca[p.num] ? ' lei-marca' : '') },
+      p.nr ? h('span', { className: 'nr' }, p.nr + ' ') : null,
+      l.map(function (x, k) {
+        var a = pos; pos += x[1].length;
+        if (pos <= corte) return null;
+        var txt = nbsp(x[1].slice(Math.max(0, corte - a)));
+        return x[0] > desde ? h('span', { key: k, className: 'acabado' }, txt) : txt;
+      }));
+  }
+  // Tabs with one underline that slides to the chosen tab.
+  function Abas(props) {
+    var ref = React.useRef(null), linha = React.useRef(null);
+    React.useLayoutEffect(function () {
+      var b = ref.current && ref.current.querySelector('.is-on'), u = linha.current;
+      if (!b || !u) return;
+      u.style.left = b.offsetLeft + 'px'; u.style.width = b.offsetWidth + 'px';
+      if (!u.classList.contains('pronta')) requestAnimationFrame(function () { u.classList.add('pronta'); });
+    });
+    return h('div', { className: 'tabs', role: 'group', 'aria-label': 'Mostrar', ref: ref },
+      props.items.map(function (m) {
+        return h('button', { key: m[0], type: 'button', className: 'tab' + (props.value === m[0] ? ' is-on' : ''), 'aria-pressed': props.value === m[0],
+          onClick: function () { props.onChange(m[0]); } }, m[1]);
+      }),
+      h('span', { className: 'tabs-linha', ref: linha, 'aria-hidden': 'true' }));
+  }
   function Artigo(props) {
     var r = useData(['d/' + props.slug + '.json', 'atos.json', 'passagem.json']);
     var cp = useState(0);
@@ -533,6 +571,12 @@
     var sel = ri >= 0 ? { i: ri, incerta: base !== 'publicacao' && !art.versoes[ri].vigor } : porData;
     var hojeSel = pick(art.versoes, hoje(), 'vigor'), hojeIdx = hojeSel ? hojeSel.i : null;
     var ver = { texto: 1, mudou: 1, origem: 1 }[q.ver] ? q.ver : ({ texto: 1, mudou: 1, origem: 1 }[verGuardado()] ? verGuardado() : 'texto');
+    // Which way the reader moved: the new text comes from that side. After a step forward, the
+    // words the newer redações wrote are marked for a moment.
+    var chaveArt = d.slug + '/' + art.id;
+    if (vista.art !== chaveArt) vista.dir = vista.desde = null;
+    else if (sel && vista.i != null && vista.i !== sel.i) { vista.dir = sel.i > vista.i ? 'seguinte' : 'anterior'; vista.desde = sel.i > vista.i ? vista.i : null; }
+    vista.art = chaveArt; vista.i = sel ? sel.i : null;
     function versionHref(i, extra) {
       return link(['d', d.slug, art.id], Object.assign({ redacao: versionKey(art, i), ver: q.ver }, extra || {}));
     }
@@ -586,25 +630,24 @@
       corpo = h('div', { className: 'lei' }, alt.nodes);
     } else if (cur) {
       if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior para comparar.');
-      corpo = h('div', { className: 'lei' }, texto(cur).split('\n').map(function (t, k) { return linhaLei(t, k, marcas); }));
+      corpo = h('div', { className: 'lei' }, vista.desde != null
+        ? cur.linhas.map(function (l, k) { return linhaMarcada(l, k, marcas, vista.desde); })
+        : texto(cur).split('\n').map(function (t, k) { return linhaLei(t, k, marcas); }));
     }
-    var tabs = h('div', { className: 'tabs', role: 'group', 'aria-label': 'Mostrar' }, VER.map(function (m) {
-      return h('button', { key: m[0], type: 'button', className: 'tab' + (ver === m[0] ? ' is-on' : ''), 'aria-pressed': ver === m[0],
-        onClick: function () { guardarVer(m[0]); substituir(link(['d', d.slug, art.id], Object.assign({}, q, { ver: m[0] }))); } }, m[1]);
-    }));
+    var tabs = h(Abas, { items: VER, value: ver, onChange: function (v) { vista.dir = vista.desde = null; guardarVer(v); substituir(link(['d', d.slug, art.id], Object.assign({}, q, { ver: v }))); } });
     var dataPop = h(R.Popover, { label: 'Data', title: 'Ver o artigo noutra data', className: 'pop-data' },
       h(R.DateLens, { date: date, basis: base, today: hoje(), id: 'lente', onChange: go, bases: ['vigor', 'publicacao'] }));
     var f = cur ? formula(art, sel.i, atos, d) : null;
     var status = cur ? h(React.Fragment, null, h('strong', null, ordinal(sel.i) + ' de ' + n), ' · ' + nomeAto(cur, atos, d) + ' · ', h('span', { className: 'muted' }, intervaloCurto(art, sel.i, base, hojeIdx))) : 'Sem texto nesta data';
 
-    return h('div', { className: 'artigo' },
+    return h('div', { className: 'artigo', 'data-dir': vista.dir },
       h('div', { className: 'corrida' },
         h('p', null, h('a', { href: link(['d', d.slug]) }, d.sigla), art.caminho.length ? ' · ' + art.caminho[art.caminho.length - 1] : ''),
         h('nav', { className: 'vizinhos', 'aria-label': 'Artigos vizinhos' }, vizinho(-1), vizinho(1))),
       h('header', { className: 'art-head' },
         h('h1', { className: 'art-titulo' }, h('span', { className: 'art-num' }, art.rotulo), epigrafe ? h('span', { className: 'art-ep' }, epigrafe) : null),
         cur ? h('div', { className: 'art-acoes' },
-          h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação'),
+          h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } }, h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')),
           curAto && curAto.link ? h('a', { className: 'rd-link', href: curAto.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : d.link ? h('a', { className: 'rd-link', href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null) : null),
       cur ? h('div', { className: 'estado' },
         h('p', { className: 'estado-formula' }, h('em', null, f[0], atos[f[2]] ? h('a', { href: link(['ato', f[2]]) }, f[1]) : f[1])),
@@ -634,7 +677,8 @@
             up.map(function (v, i) { return h('span', { key: i }, h(ActLink, { id: v.ato, atos: atos }), ' entra em vigor a ' + extenso(v.vigor) + '. '); }))) : null,
           sel && sel.incerta ? h('aside', { className: 'regra regra-aviso' }, h('p', null, h('strong', null, 'Atenção: '), 'o Diário da República não indica a data de entrada em vigor desta redação. Contamos a partir da publicação (' + extenso(cur.publicacao) + ').' + (cur.vigor_regra === 'condicional' ? ' A entrada em vigor depende de outra legislação (' + cur.vigor_fonte + ').' : ''))) : null,
           !cur ? h('div', { className: 'vazio' }, h('p', null, 'Nesta data o artigo ainda não existia.'), h('p', null, 'A primeira redação é de ' + extenso(startOf(art.versoes[0], base)) + '. ', h('a', { href: versionHref(0) }, 'Ver a primeira redação'))) : null,
-          resumo, corpo,
+          // Keyed by redação and view: a new text arrives with a short fade from the side it came from.
+          h('div', { key: (sel ? sel.i : '-') + ver, className: 'art-lei' }, resumo, corpo),
           d.inicio_historia && cur && sel.i === 0 ? h('p', { className: 'nota-hist' }, d.inicio_historia.nota) : null,
           outras.length ? h('section', { className: 'secao', 'aria-labelledby': 'notas' },
             h('h2', { id: 'notas' }, 'Notas'),
@@ -658,7 +702,7 @@
                 v.artigo_do_ato && a ? h('p', { key: 'n' }, TIPO[v.tipo] + ' pelo ' + v.artigo_do_ato.toLowerCase() + ' ' + (pela(a.designacao) === 'pelo' ? 'do ' : 'da ') + a.designacao + '.') : null,
                 ps[v.ato] ? h('p', { key: 'p', className: 'reg-parl' }, resumoParlamento(ps[v.ato])) : a && /^Decreto-Lei/.test(a.designacao) ? h('p', { key: 'p' }, 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.') : null,
                 h('p', { key: 'l' }, i > 0 ? h('a', { href: versionHref(i, { ver: 'mudou' }) }, 'Ver as alterações') : null, i > 0 && a ? ' · ' : null,
-                  a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a passagem no Parlamento' : 'Ver o ato') : null)
+                  a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a votação no Parlamento' : 'Ver o ato') : null)
               ] : null };
           }) }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
@@ -809,12 +853,7 @@
           })))));
   }
 
-  // ---- Passagem no Parlamento ---------------------------------------------------------------------
-  // Who proposed the act, each stage and each vote, from the AR open data (pipeline/passagem.py).
-  // The rules are in docs/PASSAGEM.md: no colour, the AR's order of groups, every result checked.
-  var NOME_PASSO = { iniciativa: 'Iniciativa', generalidade: 'Votação na generalidade', especialidade: 'Especialidade', 'votacao-final': 'Votação final global',
-    'redacao-final': 'Redação final', tribunal: 'Tribunal Constitucional', veto: 'Veto', reapreciacao: 'Reapreciação do decreto',
-    promulgacao: 'Promulgação', publicacao: 'Publicação', retificacao: 'Retificação' };
+  // ---- Votação na generalidade -------------------------------------------------------------------
   function lista(xs) { return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' e ' + xs[xs.length - 1]; }
   function quemPropos(ini) {
     var a = ini.autores || {};
@@ -824,107 +863,162 @@
     if (a.tipo === 'comissao') return 'Uma comissão parlamentar';
     if (a.tipo === 'mesa') return a.nome.charAt(0).toUpperCase() + a.nome.slice(1);
     if (a.tipo === 'grupos' && a.grupos && a.grupos.length) return (a.grupos.length === 1 ? 'O grupo parlamentar do ' : 'Os grupos parlamentares do ') + lista(a.grupos);
-    var gs = [];
-    (a.deputados || []).forEach(function (d) { if (d.grupo && gs.indexOf(d.grupo) < 0) gs.push(d.grupo); });
-    if (!gs.length) gs = a.grupos || [];
-    return gs.length ? 'Deputados do ' + lista(gs) : 'Deputados';
+    var gs = gruposDe(ini).filter(function (g) { return !SEM_GRUPO[g]; });
+    // Deputies outside any group are named: "Cristina Rodrigues (sem grupo parlamentar)".
+    var sem = (a.deputados || []).filter(function (d) { return SEM_GRUPO[d.grupo]; }).map(function (d) { return d.nome; });
+    var nomes = sem.length ? lista(sem) + ' (sem grupo parlamentar)' : '';
+    if (!gs.length) return nomes || 'Deputados';
+    return 'Deputados do ' + lista(gs) + (nomes ? ' e ' + nomes : '');
   }
-  function plural(sujeito) { return /^(Os |Deputados)/.test(sujeito) ? 'apresentaram' : 'apresentou'; }
-  // "a Proposta de Lei", "o Projeto de Lei": the article and the object pronoun.
-  function genero(designacao) { return /^Proposta/.test(designacao) ? { o: 'a', lo: '-a' } : { o: 'o', lo: '-o' }; }
-  // The lede: one fact per sentence, pretérito perfeito, active voice.
-  function ledePassagem(p) {
-    var ini = p.iniciativas.filter(function (i) { return i.principal; })[0] || p.iniciativas[0], out = [];
-    var q = quemPropos(ini), gn = genero(ini.designacao);
-    var conj = p.iniciativas.filter(function (i) { return i !== ini; });
-    // A constitutional revision comes from several projects at once: name every proposing group.
-    if (/^Projeto de Revisão/.test(ini.designacao) && conj.length) {
-      var gs = [];
-      p.iniciativas.forEach(function (i) { (i.autores.grupos || []).concat((i.autores.deputados || []).map(function (d) { return d.grupo; })).forEach(function (g) { if (g && gs.indexOf(g) < 0) gs.push(g); }); });
-      gs = p.ordem_grupos.filter(function (g) { return gs.indexOf(g) >= 0; }).concat(gs.filter(function (g) { return p.ordem_grupos.indexOf(g) < 0; }));
-      out.push('Deputados ' + (gs.length ? 'do ' + lista(gs) + ' ' : '') + 'apresentaram ' + p.iniciativas.length + ' projetos de revisão constitucional. O Parlamento discutiu-os em conjunto.');
-      conj = [];
-    } else out.push(q + ' ' + plural(q) + ' ' + gn.o + ' ' + ini.designacao + '.');
-    if (conj.length) out.push('O Parlamento discutiu' + gn.lo + ' com ' + (conj.length > 3 ? 'outras ' + conj.length + ' iniciativas.' : lista(conj.map(function (i) { return i.designacao; })) + '.'));
-    var passo = function (n) { return p.passos.filter(function (s) { return s.passo === n; })[0]; };
-    var res = function (s) { var v = s && s.votacoes[s.votacoes.length - 1]; return v ? v.resultado : null; };
-    var g = passo('generalidade'), e = passo('especialidade'), f = passo('votacao-final'), vt = passo('veto'), r = passo('reapreciacao'), pr = passo('promulgacao'), pu = passo('publicacao');
-    if (g && res(g)) out.push('O Parlamento ' + (res(g) === 'Aprovado' ? 'aprovou' : 'rejeitou') + gn.lo + ' na generalidade a ' + extenso(g.data) + '.');
-    if (e) out.push(e.votacoes.length ? 'Na especialidade, o Plenário fez ' + e.votacoes.length + (e.votacoes.length === 1 ? ' votação.' : ' votações.') : 'A especialidade decorreu na comissão. Não temos as votações da comissão.');
-    if (f && res(f)) out.push('O Parlamento ' + (res(f) === 'Aprovado' ? 'aprovou' : 'rejeitou') + ' o texto final em votação final global a ' + extenso(f.data) + '.');
-    if (vt) out.push('O Presidente da República vetou o decreto.');
-    if (r) {
-      var conf = r.votacoes.filter(function (v) { return /Confirmação/.test(v.fase); })[0], novo = r.votacoes.filter(function (v) { return /novo decreto/.test(v.fase); })[0];
-      if (conf) out.push('O Parlamento confirmou o decreto a ' + extenso(conf.data) + '.');
-      else if (novo) out.push('O Parlamento aprovou um novo decreto a ' + extenso(novo.data) + '.');
-    }
-    if (pr) out.push('O Presidente da República promulgou a lei a ' + extenso(pr.data) + '.');
-    if (pu) out.push('O Diário da República publicou a lei a ' + extenso(pu.data) + '.');
-    return out.join(' ');
+  var SEM_GRUPO = { Ninsc: 1, NiCR: 1, Indep: 1 };
+  // "do Governo", "de deputados do BE": the proposer after a designation.
+  function dePropos(ini) {
+    var q = quemPropos(ini);
+    return /^(O|A|Os|Um|Deputados) /.test(q) || q === 'Deputados' ? q.replace(/^O /, 'do ').replace(/^A /, 'da ').replace(/^Os /, 'dos ').replace(/^Deputados/, 'de deputados').replace(/^Um /, 'de um ') : 'de ' + q;
   }
-  // "Proposta de Lei n.º 16/XVII, do Governo. Votação do diploma inteiro a 17 de outubro de 2025: aprovado. A favor: …"
+  // The groups that proposed an initiative, to mark them in the table.
+  function gruposDe(ini) {
+    var a = ini.autores || {}, gs = (a.grupos || []).slice();
+    (a.deputados || []).forEach(function (d) { if (d.grupo && !SEM_GRUPO[d.grupo] && gs.indexOf(d.grupo) < 0) gs.push(d.grupo); });
+    return gs;
+  }
+  function plural(sujeito) { return /^(Os |Deputados)| e [A-ZÁÉÍÓÚ]/.test(sujeito) ? 'apresentaram' : 'apresentou'; }
+  // "a Proposta de Lei", "o Projeto de Lei": the article, the object pronoun and the participle.
+  function genero(designacao) { return /^Proposta/.test(designacao) ? { o: 'a', lo: '-a', ado: 'Aprovada', ejeitado: 'Rejeitada' } : { o: 'o', lo: '-o', ado: 'Aprovado', ejeitado: 'Rejeitado' }; }
+  function principalDe(p) { return p.iniciativas.filter(function (i) { return i.principal; })[0] || p.iniciativas[0]; }
+  function ordemDe(p, votos) {
+    var out = p.ordem_grupos.slice();
+    votos.forEach(function (v) { Object.keys(v.grupos).concat(v.ausentes || []).forEach(function (g) { if (out.indexOf(g) < 0) out.push(g); }); });
+    return out.filter(function (g) { return votos.some(function (v) { return v.grupos[g] || (v.ausentes || []).indexOf(g) >= 0; }); });
+  }
+  // The vote that opened the text that became law: the committee text, or the main initiative's own.
+  function votoDoTexto(p) {
+    if (p.texto_comissao && p.texto_comissao.length) return { voto: p.texto_comissao[p.texto_comissao.length - 1], comissao: true };
+    var ini = principalDe(p);
+    return ini.generalidade ? { voto: ini.generalidade, ini: ini } : null;
+  }
+  function sentidos(v, ordem) {
+    var out = '';
+    [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']].forEach(function (x) {
+      var gs = ordem.filter(function (g) { return v.grupos[g] === x[0]; });
+      if (gs.length) out += ' ' + x[1] + ': ' + gs.join(', ') + '.';
+    });
+    return out;
+  }
+  // For the register and the Origem do texto popover:
+  // "Proposta de Lei n.º 16/XVII, do Governo. Aprovada na generalidade a 19 de setembro de 2025. A favor: …"
   function resumoParlamento(p) {
     if (!p) return null;
-    var ini = p.iniciativas.filter(function (i) { return i.principal; })[0] || p.iniciativas[0];
-    var f = p.passos.filter(function (s) { return s.passo === 'votacao-final'; })[0], v = f && f.votacoes[0];
-    var quem = quemPropos(ini).replace(/^O /, 'do ').replace(/^A /, 'da ').replace(/^Os /, 'dos ').replace(/^Deputados/, 'de deputados').replace(/^Um /, 'de um ');
-    var out = ini.designacao + ', ' + quem + '.';
-    if (v) {
-      out += ' Votação do diploma inteiro a ' + extenso(v.data) + ': ' + (v.resultado || '').toLowerCase() + (v.unanime ? ' por unanimidade.' : '.');
-      if (!v.unanime) [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']].forEach(function (x) {
-        var gs = p.ordem_grupos.concat(Object.keys(v.grupos).filter(function (g) { return p.ordem_grupos.indexOf(g) < 0; })).filter(function (g) { return v.grupos[g] === x[0]; });
-        if (gs.length) out += ' ' + x[1] + ': ' + gs.join(', ') + '.';
-      });
+    var t = votoDoTexto(p), ini = principalDe(p);
+    if (!t) return ini.designacao + ', ' + dePropos(ini) + '. Não temos o registo da votação na generalidade.';
+    var v = t.voto, gn = t.comissao ? genero('Texto') : genero(ini.designacao);
+    var res = v.resultado === 'Aprovado' ? gn.ado : v.resultado === 'Rejeitado' ? gn.ejeitado : v.resultado;
+    return (t.comissao ? 'Texto de substituição da comissão, que junta ' + p.iniciativas.length + (p.iniciativas.length === 1 ? ' iniciativa' : ' iniciativas') : ini.designacao + ', ' + dePropos(ini)) + '. ' +
+      (res ? res + ' na generalidade' : 'Votação na generalidade') + ' a ' + extenso(v.data) + (v.unanime ? ', por unanimidade.' : '.') + (v.unanime ? '' : sentidos(v, ordemDe(p, [v])));
+  }
+  // The lede: one fact per sentence, pretérito perfeito, active voice.
+  function ledeGeneralidade(p) {
+    var ini = principalDe(p), n = p.iniciativas.length, out = [];
+    var proprios = p.iniciativas.filter(function (i) { return i.generalidade; });
+    var texto = p.texto_comissao && p.texto_comissao.length ? p.texto_comissao[p.texto_comissao.length - 1] : null;
+    var aprovou = function (v, lo) { return 'O Parlamento ' + (v.resultado === 'Rejeitado' ? 'rejeitou' : 'aprovou') + lo + ' na generalidade a ' + extenso(v.data) + (v.unanime ? ', por unanimidade.' : '.'); };
+    if (/^Projeto de Revisão/.test(ini.designacao)) {
+      var gs = [];
+      p.iniciativas.forEach(function (i) { gruposDe(i).forEach(function (g) { if (gs.indexOf(g) < 0) gs.push(g); }); });
+      gs = p.ordem_grupos.filter(function (g) { return gs.indexOf(g) >= 0; }).concat(gs.filter(function (g) { return p.ordem_grupos.indexOf(g) < 0; }));
+      out.push('Deputados ' + (gs.length ? 'do ' + lista(gs) + ' ' : '') + 'apresentaram ' + n + (n === 1 ? ' projeto de revisão constitucional.' : ' projetos de revisão constitucional.'));
+      if (!proprios.length && !texto) out.push('Não temos votações destes projetos na generalidade.');
+    } else if (texto) {
+      out.push('A lei vem de um texto de substituição da comissão parlamentar. O texto junta ' + (n === 1 ? 'uma iniciativa.' : n + ' iniciativas.'));
+      out.push(aprovou(texto, '-o'));
+      if (proprios.length) out.push(proprios.length === n ? 'Antes, o Parlamento votou cada iniciativa na generalidade.' : 'Antes, o Parlamento votou ' + proprios.length + ' destas iniciativas na generalidade.');
+    } else {
+      var q = quemPropos(ini), gn = genero(ini.designacao);
+      out.push(q + ' ' + plural(q) + ' ' + gn.o + ' ' + ini.designacao + '.');
+      if (n > 1) out.push('O Parlamento discutiu' + gn.lo + ' com ' + (n === 2 ? 'outra iniciativa.' : 'outras ' + (n - 1) + ' iniciativas.'));
+      if (n === 1 && ini.generalidade) out.push(aprovou(ini.generalidade, gn.lo));
+      else if (proprios.length) {
+        var dias = proprios.map(function (i) { return i.generalidade.data; }).filter(function (x, k, a) { return a.indexOf(x) === k; });
+        out.push('Votou cada uma na generalidade' + (dias.length === 1 ? ' a ' + extenso(dias[0]) + '.' : '.'));
+      } else out.push('Não temos o registo da votação na generalidade.');
     }
-    return out;
+    return out.join(' ');
   }
   function Voto(props) {
     var v = props.v;
     return h(R.Votacao, { grupos: v.grupos, ordem: props.ordem, contagens: v.contagens, dissidencia: v.dissidencia, foraDeGrupo: v.fora_de_grupo,
-      ausentes: v.ausentes, semRegisto: v.sem_registo, unanime: v.unanime, resultado: v.resultado, verificacao: v.verificacao, mostrarConta: props.conta });
+      ausentes: v.ausentes, semRegisto: v.sem_registo, unanime: v.unanime, resultado: v.resultado, verificacao: v.verificacao, mostrarConta: props.conta !== false });
   }
-  function rotuloVoto(v) {
-    var p = v.proposta;
-    if (p && (p.proponente || p.alvo)) return 'Proposta' + (p.proponente ? ' do ' + p.proponente : '') + (p.operacao ? ', ' + p.operacao : '') + (p.alvo ? ' (' + p.alvo + ')' : '');
-    return v.descricao ? v.descricao.replace(/<[^>]+>/g, '') : v.fase;
+  // One vote with its heading: what was voted, the date and the result.
+  function BlocoVoto(props) {
+    var v = props.v, gn = genero(props.designacao || 'Texto');
+    var res = v.resultado === 'Aprovado' ? gn.ado : v.resultado === 'Rejeitado' ? gn.ejeitado : v.resultado;
+    return h('div', { className: 'voto' },
+      h('div', { className: 'voto-cabeca' },
+        h('p', { className: 'voto-nome' }, props.titulo),
+        h('p', { className: 'voto-data' }, extenso(v.data))),
+      props.sub ? h('p', { className: 'voto-sub' }, props.sub) : null,
+      res && !v.unanime ? h('p', { className: 'voto-res' }, res) : null,
+      h(Voto, { v: v, ordem: props.ordem }));
   }
-  function Passagem(props) {
-    var p = props.p, ordem = p.ordem_grupos;
-    var principais = p.passos.filter(function (s) { return s.votacoes.length && s.passo !== 'especialidade'; });
-    var colunas = [];
-    principais.forEach(function (s) { s.votacoes.forEach(function (v) { colunas.push([NOME_PASSO[s.passo] === 'Reapreciação do decreto' ? v.fase : NOME_PASSO[s.passo], v]); }); });
-    var gruposMatriz = ordem.filter(function (g) { return colunas.some(function (c) { return c[1].grupos[g]; }); });
-    colunas.forEach(function (c) { Object.keys(c[1].grupos).forEach(function (g) { if (gruposMatriz.indexOf(g) < 0) gruposMatriz.push(g); }); });
-    return h('section', { className: 'secao passagem', id: 'passagem', 'aria-labelledby': 'passagem-h' },
-      h('h2', { id: 'passagem-h' }, 'Passagem no Parlamento'),
-      h('p', { className: 'lede' }, ledePassagem(p)),
-      h('ol', { className: 'passos' }, p.passos.map(function (s, k) {
-        var votos = s.votacoes, muitos = s.passo === 'especialidade' && votos.length > 3;
-        return h('li', { key: k, className: 'passo' + (votos.length ? '' : ' passo-simples') },
-          h('span', { className: 'passo-data' }, curta(s.data)),
-          h('div', { className: 'passo-corpo' },
-            h('p', { className: 'passo-nome' }, NOME_PASSO[s.passo], votos.length === 1 && votos[0].resultado ? h('span', { className: 'muted' }, ' · ' + votos[0].resultado) : null),
-            s.passo === 'iniciativa' ? p.iniciativas.map(function (i) {
-              return h('p', { key: i.id }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao), ', ' + quemPropos(i).replace(/^O /, 'do ').replace(/^A /, 'da ').replace(/^Os /, 'dos ').replace(/^Deputados/, 'de deputados').replace(/^Um /, 'de um ') + '. ', h('span', { 'data-citacao': '' }, i.titulo));
-            }) : null,
-            s.passo === 'especialidade' && !votos.length ? h('p', { className: 'muted' }, 'Não temos as votações da comissão.') : null,
-            !muitos ? votos.map(function (v, j) {
-              return h('div', { key: j, className: 'passo-voto' }, votos.length > 1 || s.passo === 'especialidade' ? h('p', { className: 'passo-sub' }, rotuloVoto(v), v.resultado ? ' · ' + v.resultado : '') : null, h(Voto, { v: v, ordem: ordem, conta: true }));
-            }) : h('details', { className: 'passo-mais' },
-              h('summary', null, 'Ver as ' + votos.length + ' votações no Plenário'),
-              votos.map(function (v, j) { return h('div', { key: j, className: 'passo-voto' }, h('p', { className: 'passo-sub' }, rotuloVoto(v), v.resultado ? ' · ' + v.resultado : ''), h(Voto, { v: v, ordem: ordem })); }))));
-      })),
-      colunas.length > 1 ? h('div', { className: 'matriz-caixa', tabIndex: 0, role: 'region', 'aria-label': 'Votações por grupo parlamentar' },
-        h('table', { className: 'matriz' },
-          h('caption', null, 'Votações por grupo parlamentar'),
-          h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Grupo'), colunas.map(function (c, k) { return h('th', { key: k, scope: 'col' }, c[0], h('span', { className: 'muted' }, ' ' + curta(c[1].data))); }))),
-          h('tbody', null, gruposMatriz.map(function (g) {
-            return h('tr', { key: g }, h('th', { scope: 'row' }, g), colunas.map(function (c, k) {
-              var v = c[1], s = v.grupos[g];
-              return h('td', { key: k }, v.unanime ? 'unanimidade' : s ? { favor: 'A favor', contra: 'Contra', abstencao: 'Abstenção' }[s] : v.ausentes.indexOf(g) >= 0 ? 'Ausente' : '—');
-            }));
-          })))) : null,
-      h('p', { className: 'muted small' }, 'Ordem dos grupos: a da Assembleia da República nesta legislatura. A Assembleia publica o sentido de voto de cada grupo e, em algumas votações, o número de deputados. Fonte: Assembleia da República, dados abertos.'));
+  var CELULA = { favor: 'A favor', contra: 'Contra', abstencao: 'Abstenção' };
+  // Several initiatives: one row each, one column per group, so the reader can compare.
+  function TabelaIniciativas(props) {
+    var p = props.p, inis = p.iniciativas;
+    var votos = inis.filter(function (i) { return i.generalidade; }).map(function (i) { return i.generalidade; });
+    var ordem = ordemDe(p, votos);
+    // Deputies outside any group, counted per sentido: "2 a favor".
+    var semGrupo = votos.some(function (v) { return (v.fora_de_grupo || []).length; });
+    var contaSem = function (v) {
+      var c = {};
+      (v.fora_de_grupo || []).forEach(function (x) { c[x.sentido] = (c[x.sentido] || 0) + 1; });
+      return Object.keys(c).map(function (k) { return c[k] + ' ' + CELULA[k].toLowerCase(); }).join(', ') || '—';
+    };
+    // On a phone the table would show one group at a time: each initiative gets its own list instead.
+    var estreito = h('div', { className: 'so-estreito-b' },
+      h('h3', { className: 'tabela-titulo' }, props.titulo),
+      h('ol', { className: 'inis-votos' }, inis.map(function (i) {
+        var v = i.generalidade;
+        return h('li', { key: i.id },
+          h('p', { className: 'iv-nome' }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao)),
+          h('p', { className: 'tv-quem' }, quemPropos(i) + (v ? ' · ' + (v.resultado || '') + ' a ' + curta(v.data) : '')),
+          v ? h(Voto, { v: v, ordem: ordem, conta: false }) : h('p', { className: 'muted small' }, i.baixa_sem_votacao ? 'Baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação.'));
+      })));
+    return h(React.Fragment, null, estreito, h('div', { className: 'tabela-caixa so-largo-b', tabIndex: 0, role: 'region', 'aria-labelledby': 'tab-ini' },
+      h('table', { className: 'tabela-votos' },
+        h('caption', { id: 'tab-ini' }, props.titulo),
+        h('thead', null, h('tr', null,
+          h('th', { scope: 'col' }, 'Iniciativa'), h('th', { scope: 'col' }, 'Resultado'),
+          ordem.map(function (g) { return h('th', { key: g, scope: 'col', className: 'tv-g' }, g); }),
+          semGrupo ? h('th', { scope: 'col', className: 'tv-g' }, 'Sem grupo') : null)),
+        h('tbody', null, inis.map(function (i) {
+          var v = i.generalidade, meus = gruposDe(i);
+          return h('tr', { key: i.id },
+            h('th', { scope: 'row' }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao), h('span', { className: 'tv-quem' }, quemPropos(i))),
+            v ? h('td', { className: 'tv-res' }, v.resultado || '—', h('span', { className: 'tv-quem' }, curta(v.data))) : null,
+            v ? ordem.map(function (g) {
+              var s = v.unanime ? 'favor' : v.grupos[g], fora = (v.dissidencia || []).filter(function (d) { return d.grupo === g; });
+              var txt = s ? CELULA[s] : (v.ausentes || []).indexOf(g) >= 0 ? 'Ausente' : '—';
+              return h('td', { key: g, className: 'tv-g' + (meus.indexOf(g) >= 0 ? ' tv-autor' : '') + (s ? '' : ' muted') }, txt,
+                fora.length ? h('span', { className: 'tv-quem' }, fora.map(function (d) { return (d.n || 1) + ' ' + CELULA[d.sentido].toLowerCase(); }).join(', ')) : null);
+            }).concat(semGrupo ? [h('td', { key: 'sg', className: 'tv-g' }, contaSem(v))] : []) : h('td', { colSpan: ordem.length + 1 + (semGrupo ? 1 : 0), className: 'muted' }, i.baixa_sem_votacao ? 'Baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação.'));
+        }))),
+      h('p', { className: 'tabela-nota' }, 'A negrito: o grupo que apresentou a iniciativa.')));
+  }
+  function Generalidade(props) {
+    var p = props.p, ini = principalDe(p), n = p.iniciativas.length;
+    var texto = p.texto_comissao && p.texto_comissao.length ? p.texto_comissao[p.texto_comissao.length - 1] : null;
+    var proprios = p.iniciativas.filter(function (i) { return i.generalidade; });
+    return h('section', { className: 'secao geral', id: 'generalidade', 'aria-labelledby': 'geral-h' },
+      h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
+      h('p', { className: 'lede' }, ledeGeneralidade(p)),
+      texto ? h(BlocoVoto, { v: texto, ordem: ordemDe(p, [texto]), titulo: 'Texto de substituição da comissão', sub: 'Junta ' + lista(p.iniciativas.map(function (i) { return i.designacao; })) + '.' }) : null,
+      !texto && n === 1 && ini.generalidade ? h(BlocoVoto, { v: ini.generalidade, ordem: ordemDe(p, [ini.generalidade]), titulo: ini.designacao, designacao: ini.designacao, sub: h('span', { 'data-citacao': '' }, ini.titulo) }) : null,
+      n > 1 && proprios.length ? h(TabelaIniciativas, { p: p, titulo: texto ? 'Votação de cada iniciativa, antes do texto da comissão' : 'Votação de cada iniciativa' }) : null,
+      n > 1 && !proprios.length ? h('ul', { className: 'inis' }, p.iniciativas.map(function (i) {
+        return h('li', { key: i.id }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao), ', ' + dePropos(i) + (i.baixa_sem_votacao ? '. Baixou à comissão sem votação.' : '.'));
+      })) : null,
+      h('p', { className: 'fonte' }, 'Ordem dos grupos: a da Assembleia da República nessa legislatura. Fonte: Assembleia da República, dados abertos.'));
   }
 
   // ---- Act (the "commit") -----------------------------------------------------------------------
@@ -941,62 +1035,78 @@
     var by = {};
     a.alteracoes.forEach(function (c) { (by[c.diploma] = by[c.diploma] || []).push(c); });
     var p = ps[a.id], dl = /^Decreto-Lei/.test(a.designacao);
+    document.title = a.designacao + ' · Redação';
     // The changes as an amending law writes them: "Alterou os artigos 14.º, 15.º e 15.º-A."
     var VERBO = { alterado: 'Alterou', aditado: 'Aditou', revogado: 'Revogou', retificado: 'Retificou' };
-    return h('div', { className: 'stack ato' },
+    var facto = function (k, v) { return [h('dt', { key: k + 't' }, k), h('dd', { key: k + 'd' }, v)]; };
+    return h('div', { className: 'pagina-ato' },
       h(Crumbs, { items: [['Diplomas', '#/'], [a.designacao]] }),
-      h('div', { className: 'title-block' },
-        h('h1', { className: 'title' }, a.designacao + (a.publicacao ? ', de ' + semAno(a.publicacao) : '')),
-        a.sumario ? h('p', { className: 'lead', 'data-citacao': '' }, a.sumario) : null,
-        h('p', { className: 'linha-datas' }, 'Publicação: ' + (a.publicacao ? extenso(a.publicacao) : 'não indicada') + (a.dr ? ' (Diário da República n.º ' + a.dr + ')' : '') + ' · Entrada em vigor: ' +
-          (datas.length ? datas.map(function (dt) { return extenso(dt) + (datas.length > 1 ? ' (' + vigor[dt] + (vigor[dt] === 1 ? ' artigo)' : ' artigos)') : ''); }).join(', ') : 'não indicada') + '. ',
-          a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null)),
-      h('section', { className: 'secao', 'aria-labelledby': 'alterou' },
-        h('h2', { id: 'alterou' }, 'O que este ato mudou'),
-        Object.keys(by).map(function (slug) {
-          var porTipo = {};
-          by[slug].forEach(function (c) { (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c); });
-          return h('div', { key: slug, className: 'mudou' },
-            h('p', { className: 'mudou-diploma' }, nomes[slug] ? nomes[slug].titulo : slug),
-            ['alterado', 'aditado', 'revogado', 'retificado'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
-              var cs = porTipo[t];
-              return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
-                cs.map(function (c, i) {
-                  return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
-                    h('a', { href: link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null }) }, c.rotulo.replace(/^Artigo\s*/, '')));
-                }), '.');
-            }));
-        })),
-      p ? h(Passagem, { p: p })
-        : h('section', { className: 'secao', 'aria-labelledby': 'passagem-h' },
-          h('h2', { id: 'passagem-h' }, dl ? 'Aprovação' : 'Passagem no Parlamento'),
-          h('p', null, dl ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.'
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, a.designacao + (a.publicacao ? ', de ' + semAno(a.publicacao) : '')),
+        a.sumario ? h('p', { className: 'lead', 'data-citacao': '' }, a.sumario) : null),
+      h('div', { className: 'duas' },
+        h('section', { className: 'secao secao-1', 'aria-labelledby': 'alterou' },
+          h('h2', { id: 'alterou' }, 'O que este ato mudou'),
+          Object.keys(by).map(function (slug) {
+            var porTipo = {};
+            by[slug].forEach(function (c) { (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c); });
+            return h('div', { key: slug, className: 'mudou' },
+              h('p', { className: 'mudou-diploma' }, nomes[slug] ? nomes[slug].titulo : slug),
+              ['alterado', 'aditado', 'revogado', 'retificado'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
+                var cs = porTipo[t];
+                return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
+                  cs.map(function (c, i) {
+                    return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
+                      h('a', { href: link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null }) }, c.rotulo.replace(/^Artigo\s*/, '')));
+                  }), '.');
+              }));
+          })),
+        h('aside', { className: 'factos', 'aria-label': 'Datas e fontes' },
+          h('dl', null,
+            facto('Publicação', [a.publicacao ? extenso(a.publicacao) : 'não indicada', a.dr ? h('span', { key: 'dr', className: 'factos-sub' }, 'Diário da República n.º ' + a.dr) : null]),
+            facto('Entrada em vigor', datas.length ? datas.map(function (dt) { return h('span', { key: dt, className: 'factos-linha' }, extenso(dt) + (datas.length > 1 ? ' (' + vigor[dt] + (vigor[dt] === 1 ? ' artigo)' : ' artigos)') : '')); }) : 'não indicada'),
+            p ? facto(p.iniciativas.length === 1 ? 'Iniciativa' : 'Iniciativas', p.iniciativas.slice(0, 3).map(function (i) { return h('a', { key: i.id, className: 'factos-linha', href: link(['iniciativa', i.id]) }, i.designacao); })
+              .concat(p.iniciativas.length > 3 ? [h('span', { key: 'mais', className: 'factos-sub' }, 'e mais ' + (p.iniciativas.length - 3))] : [])) : null),
+          h('p', { className: 'factos-links' },
+            a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null))),
+      p ? h(Generalidade, { p: p })
+        : h('section', { className: 'secao', 'aria-labelledby': 'geral-h' },
+          h('h2', { id: 'geral-h' }, dl ? 'Aprovação' : 'Votação na generalidade'),
+          h('p', { className: 'lede' }, dl ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.'
             : /^Declaração de Retificação/.test(a.designacao) ? 'Uma declaração de retificação corrige erros do texto publicado. Não tem votação.'
-            : a.ar ? 'Não encontrámos a iniciativa nos dados abertos da Assembleia da República.' : 'Não temos dados da passagem deste ato no Parlamento.')));
+            : a.ar ? 'Não encontrámos a iniciativa nos dados abertos da Assembleia da República.' : 'Não temos dados deste ato no Parlamento.')));
   }
 
   // ---- Initiative (the "pull request") ---------------------------------------------------------
-  var STAGES = [['Entrada', /^Entrada$/], ['Admissão', /^Admissão/], ['Generalidade', /Votação na generalidade/],
-    ['Especialidade', /especialidade/i], ['Votação final global', /^Votação final global$|^Votação final$|^Votação global$/],
-    ['Promulgação', /^Promulgação|^Veto/], ['Publicação', /Publicação DR\)$/]];
   function Iniciativa(props) {
     var r = useData(['iniciativas.json', 'atos.json', 'passagem.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var ini = r.data[0][props.id], atos = r.data[1], ps = r.data[2];
     if (!ini) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos esta iniciativa.'));
-    var p = ps[ini.ato], ato = atos[ini.ato];
-    return h('div', { className: 'stack' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [ini.tipo + ' n.º ' + ini.numero + '/' + ini.legislatura]] }),
-      h('div', { className: 'title-block' },
-        h('p', { className: 'eyebrow' }, ini.tipo + ' n.º ' + ini.numero + '/' + ini.legislatura + ' · ' + (ini.autores || []).join(', ')),
-        h('h1', { className: 'title', 'data-citacao': '' }, ini.titulo),
-        h('p', { className: 'linha-datas' }, 'Publicada como ', ato ? h('a', { href: link(['ato', ini.ato]) }, ato.designacao) : ini.ato, '. ',
-          h('a', { href: ini.link, target: '_blank', rel: 'noopener' }, 'Assembleia da República ↗'))),
-      p ? h(Passagem, { p: p }) : null,
+    var p = ps[ini.ato], ato = atos[ini.ato], nome = ini.tipo + ' n.º ' + ini.numero + '/' + ini.legislatura;
+    var esta = p ? p.iniciativas.filter(function (i) { return i.id === props.id; })[0] : null;
+    var texto = p && p.texto_comissao ? p.texto_comissao.filter(function (t) { return t.citadas.indexOf(props.id) >= 0; }).pop() : null;
+    document.title = nome + ' · Redação';
+    return h('div', { className: 'pagina-ato' },
+      h(Crumbs, { items: [['Diplomas', '#/'], [nome]] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, nome),
+        h('p', { className: 'lead', 'data-citacao': '' }, ini.titulo)),
+      h('div', { className: 'duas' },
+        h('section', { className: 'secao secao-1', 'aria-labelledby': 'geral-h' },
+          h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
+          esta && esta.generalidade ? h(BlocoVoto, { v: esta.generalidade, ordem: ordemDe(p, [esta.generalidade]), titulo: nome, designacao: nome })
+            : h('p', { className: 'lede' }, esta && esta.baixa_sem_votacao ? 'Esta iniciativa baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação desta iniciativa na generalidade.'),
+          texto ? h(BlocoVoto, { v: texto, ordem: ordemDe(p, [texto]), titulo: 'Texto de substituição da comissão', sub: 'Inclui esta iniciativa.' }) : null),
+        h('aside', { className: 'factos', 'aria-label': 'Autores e fontes' },
+          h('dl', null,
+            esta ? [h('dt', { key: 'qt' }, 'Apresentada por'), h('dd', { key: 'qd' }, quemPropos(esta))] : null,
+            h('dt', null, 'Publicada como'), h('dd', null, ato ? h('a', { href: link(['ato', ini.ato]) }, ato.designacao) : ini.ato),
+            ini.conjuntas && ini.conjuntas.length ? [h('dt', { key: 'ct' }, 'Discutida com'), h('dd', { key: 'cd' }, ini.conjuntas.join(', '))] : null),
+          h('p', { className: 'factos-links' }, h('a', { href: ini.link, target: '_blank', rel: 'noopener' }, 'Assembleia da República ↗')))),
       h('section', { className: 'secao', 'aria-labelledby': 'ev' },
         h('h2', { id: 'ev' }, 'Todas as fases'),
-        h('ol', { className: 'fases' }, ini.eventos.map(function (e, i) { return h('li', { key: i }, h('span', { className: 'passo-data' }, curta(e[0])), h('span', null, e[1])); })),
-        ini.conjuntas && ini.conjuntas.length ? h('p', { className: 'muted small' }, 'Discutida em conjunto com: ' + ini.conjuntas.join(', ') + '.') : null));
+        h('ol', { className: 'fases' }, ini.eventos.map(function (e, i) { return h('li', { key: i }, h('span', { className: 'fase-data' }, curta(e[0])), h('span', null, e[1])); }))));
   }
 
   // ---- About -------------------------------------------------------------------------------------
@@ -1018,7 +1128,7 @@
       h('ul', null,
         h('li', null, 'Ainda não verificamos o texto com uma reprodução própria dos atos. O texto é o do consolidado do Diário da República, que não tem valor legal.'),
         h('li', null, 'Algumas datas de entrada em vigor faltam no consolidado do Diário da República. Nos textos originais, indicamos a norma que fixa a data.'),
-        h('li', null, 'As votações mostram o sentido de voto de cada grupo parlamentar, sem o número de deputados.')));
+        h('li', null, 'Mostramos só a votação na generalidade. A Assembleia da República publica o sentido de voto de cada grupo e, em algumas votações, o número de deputados. Quando não tem o número, contamos pelos assentos de cada grupo nesse dia.')));
   }
 
   // ---- App ---------------------------------------------------------------------------------------
@@ -1032,7 +1142,8 @@
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else view = h(Home);
-    return h(Shell, null, view);
+    // A new page fades in. Another redação of the same article does not: only its text moves.
+    return h(Shell, null, h('div', { key: s.join('/'), className: 'vista' }, view));
   }
 
   // Follow the reader's light or dark setting, unless the host page already chose a theme.

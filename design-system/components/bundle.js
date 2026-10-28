@@ -187,6 +187,9 @@
               onClick: function () { go(k); }
             }));
         }),
+        // One marker for the redação on screen: it slides to the next one instead of jumping.
+        vs[i] ? h('span', { className: cx('rd-ruler-marca', vs[i].pending && 'is-pending'), 'aria-hidden': 'true',
+          style: { left: pct(vs[i].start) + '%', width: 'max(' + Math.max(0, pct(i < n - 1 ? vs[i + 1].start : last) - pct(vs[i].start)) + '%, 8px)' } }) : null,
         h('span', { className: 'rd-ruler-today', style: { left: pct(today) + '%' }, 'aria-hidden': 'true' })),
       h('div', { className: 'rd-ruler-labels', 'aria-hidden': 'true' },
         years.map(function (y) { return h('span', { key: y, style: { left: pct(y + '-01-01') + '%' } }, y); }),
@@ -391,7 +394,7 @@
     }
     var linhas = SENTIDOS.map(function (s) {
       var gs = ordem.filter(function (k) { return g[k] === s[0]; }).map(grupo);
-      fora.filter(function (x) { return x.sentido === s[0]; }).forEach(function (x) { gs.push(x.nome + ' (não inscrito)'); });
+      fora.filter(function (x) { return x.sentido === s[0]; }).forEach(function (x) { gs.push(x.nome + ' (sem grupo parlamentar)'); });
       return [s[1], gs.length ? gs.join(', ') : 'nenhum grupo'];
     });
     var semRegisto = props.unanime ? [] : props.semRegisto || [];
@@ -402,7 +405,7 @@
           ausentes.length ? [h('dt', { key: 'at' }, 'Ausente'), h('dd', { key: 'ad' }, ausentes.join(', '))] : null,
           semRegisto.length ? [h('dt', { key: 'st' }, 'Sem registo'), h('dd', { key: 'sd' }, semRegisto.join(', '))] : null),
       v && !v.ok ? h('p', { className: 'rd-votos-aviso' }, h('strong', null, 'Atenção: '), 'o resultado registado não corresponde aos votos registados. Consulte o Diário da Assembleia da República.') : null,
-      v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, (v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ') + v.favor + ' a favor, ' + v.contra + ' contra, ' + v.abstencao + ' abstenções.') : null);
+      v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, (v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ') + v.favor + ' a favor, ' + v.contra + ' contra, ' + v.abstencao + (v.abstencao === 1 ? ' abstenção.' : ' abstenções.')) : null);
   }
 
   // ---- Citation --------------------------------------------------------------

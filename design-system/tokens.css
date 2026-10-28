@@ -86,6 +86,13 @@
   --row: 48px;
   --band: 3px;
   --target: 44px;
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+  --dur-marca: 1600ms;
+  --ease: cubic-bezier(.2, 0, 0, 1);
+  --ease-move: cubic-bezier(.4, 0, .2, 1);
+  --shift: 8px;
   --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
   --font-sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;

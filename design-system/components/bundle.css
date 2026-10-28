@@ -103,9 +103,10 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .rd-ruler-span { position: absolute; bottom: 0; height: 22px; padding: 0; border: 0; background: transparent; cursor: pointer; min-width: 8px; }
 .rd-ruler-span::after { content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 5px; background: transparent; }
 .rd-ruler-span:hover::after { background: var(--rule-mid); }
-.rd-ruler-span.is-on::after { background: var(--ink); }
+.rd-ruler-marca { position: absolute; bottom: 4px; height: 5px; background: var(--ink); pointer-events: none; transition: left var(--dur-3) var(--ease-move), width var(--dur-3) var(--ease-move); }
+.rd-ruler-marca.is-pending { background: var(--pendente); }
 .rd-ruler-span.is-pending::after { background: repeating-linear-gradient(90deg, var(--pendente) 0 4px, transparent 4px 7px); height: 2px; bottom: 6px; }
-.rd-ruler-span.is-pending.is-on::after { height: 5px; bottom: 4px; }
+.rd-ruler-span.is-pending.is-on::after { background: transparent; }
 .rd-ruler-today { position: absolute; bottom: 2px; width: 2px; height: 16px; background: var(--ink); }
 .rd-ruler-labels { position: relative; height: 16px; font-family: var(--font-serif); font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
 .rd-ruler-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
@@ -130,10 +131,12 @@ a.rd-reg-act:hover { color: var(--verde); text-decoration: underline; text-under
 .rd-reg-date { color: var(--ink-muted); white-space: nowrap; }
 .rd-reg-row.is-technical { font-size: 14px; }
 .rd-reg-row.is-technical .rd-reg-act { color: var(--ink-muted); font-style: italic; }
-.rd-reg-row.is-current { box-shadow: inset 3px 0 0 var(--verde); }
+.rd-reg-row { position: relative; transition: background-color var(--dur-1) var(--ease); }
+.rd-reg-row:not(.is-current):hover { background: var(--paper-sunken); }
+.rd-reg-row.is-current::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--verde); transform-origin: top; animation: rd-crescer var(--dur-2) var(--ease) both; }
 .rd-reg-row.is-current .rd-reg-act { font-weight: 600; }
 .rd-reg-row.is-current .rd-reg-ord { color: var(--verde); }
-.rd-reg-more { grid-column: 3 / -1; margin-top: var(--space-1); font-family: var(--font-sans); font-variant-numeric: normal; font-size: 14px; line-height: 20px; color: var(--ink-muted); display: flex; flex-direction: column; gap: 2px; }
+.rd-reg-more { animation: rd-abrir var(--dur-2) var(--ease) both; grid-column: 3 / -1; margin-top: var(--space-1); font-family: var(--font-sans); font-variant-numeric: normal; font-size: 14px; line-height: 20px; color: var(--ink-muted); display: flex; flex-direction: column; gap: 2px; }
 .rd-reg-more p { margin: 0; }
 
 /* Popover: the only floating layer, with a hairline frame and a shadow. */
@@ -143,6 +146,7 @@ a.rd-reg-act:hover { color: var(--verde); text-decoration: underline; text-under
 .rd-pop-btn::after { content: " ▾"; color: var(--ink-muted); white-space: pre; }
 .rd-pop[open] > .rd-pop-btn::after { content: " ▴"; }
 .rd-pop-btn:hover { background: var(--paper-sunken); }
+.rd-pop[open] > .rd-pop-body { animation: rd-abrir var(--dur-2) var(--ease) both; }
 .rd-pop-body { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; width: min(380px, calc(100vw - 32px)); padding: var(--space-4); background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sheet); }
 
 /* VersionTimeline (older history list, kept for compatibility) */
@@ -215,3 +219,21 @@ a.rd-reg-act:hover { color: var(--verde); text-decoration: underline; text-under
 .rd-src-meta { margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- Motion ------------------------------------------------------------------
+   Short and quiet. Things that arrive fade in and travel at most --shift. Things that open
+   unfold from their button. Markers slide. Nothing bounces, nothing loops. */
+@keyframes rd-entrar { from { opacity: 0; transform: translateY(var(--shift)); } }
+@keyframes rd-abrir { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes rd-aparecer { from { opacity: 0; } }
+@keyframes rd-crescer { from { transform: scaleY(0); } }
+@keyframes rd-de-direita { from { opacity: 0; transform: translateX(var(--shift)); } }
+@keyframes rd-de-esquerda { from { opacity: 0; transform: translateX(calc(-1 * var(--shift))); } }
+@keyframes rd-marca { 0%, 25% { background-color: var(--ins-bg); } 100% { background-color: transparent; } }
+.rd-btn, .rd-link, .rd-vbar-step, .rd-pop-btn, .rd-ruler-span::after { transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+.rd-vbar-step:not([aria-disabled="true"]):active:first-child { transform: translateX(-2px); }
+.rd-vbar-step:not([aria-disabled="true"]):active:nth-child(2) { transform: translateX(2px); }
+.rd-origin-pop { animation: rd-abrir var(--dur-2) var(--ease) both; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }
+}

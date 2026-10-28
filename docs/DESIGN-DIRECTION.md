@@ -193,7 +193,7 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
 
 ## 9. Order of work
 
-*Status on 2026-10-28:* step 1 is built. The act and initiative pages are in the same language, with the Passagem layer (step 1 of PASSAGEM.md). Home and diploma use the new tokens but keep their old layout.
+*Status on 2026-10-28:* step 1 is built. Step 3 is built except search in the header: home, diploma, act and initiative pages use the same grid (section 11). The change flash from step 4 is built (section 10).
 
 1. **The white Nordic tokens (section 8) and the article page skeleton.**
    - Remove the boxes, pills, eyebrows and duplicate facts.
@@ -202,3 +202,43 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
 2. **Alterações view replaces compare.** Número alignment, two-way folds, ↑↓ navigation, "Comparar com", "Lado a lado", copying only the changes, redirects.
 3. **Home, diploma, act and initiative pages in the same language.** Search in the header.
 4. **Origem do texto with margin notes.** Then the "Passagem no Parlamento" layer from [PASSAGEM.md](PASSAGEM.md). Then the change flash. Then the data fixes in section 7 (the CIRC start and the CRP "não alteraram" line can come with step 1).
+
+## 10. Motion
+
+Motion says what changed and where it came from. It never decorates. The values are tokens (`--dur-1` 120 ms, `--dur-2` 180 ms, `--dur-3` 240 ms, `--dur-marca` 1600 ms, `--ease`, `--ease-move`, `--shift` 8 px) in `design-system/tokens.json`.
+
+| What happens | What moves | How |
+|---|---|---|
+| A new page | The page content | Fades in and rises `--shift`, `--dur-3`. The header and footer stay still. |
+| Next or previous redação | The text of the law | Comes in from the side the reader moved to (right for "Seguinte", left for "Anterior"), `--dur-3`. The title, status and register do not move. |
+| A step forward | The words the newer redação wrote | Start on `ins-bg` and fade to white over `--dur-marca`. The reader sees what is new without opening "Alterações". No mark on a step back. |
+| The redação changes | The marker on the time ruler | Slides to the new period, `--dur-3`, `--ease-move`. |
+| The redação changes | The register | The verde rule grows down the new row and its details unfold, `--dur-2`. |
+| Another tab | The tab underline, the text | The underline slides to the tab, `--dur-2`. The text cross-fades. |
+| A popover, a fold, a phrase in Origem do texto | The panel | Unfolds 4 px from its button, `--dur-2`. Folds animate their height where the browser can (`interpolate-size`). |
+| Hover and press | Colour, underline, wash | `--dur-1`. "‹ Anterior" and "Seguinte ›" nudge 2 px towards where they go. |
+| Copy | The button label | Cross-fades to "Citação copiada". |
+| Data still loading | "A carregar…" | Shows only after 400 ms. Pages whose data is already loaded render at once, with no loading state. |
+
+Rules:
+- Nothing bounces, loops or moves on its own. No motion longer than 240 ms, except the fade of new words.
+- `prefers-reduced-motion: reduce` turns every animation and transition into an instant change.
+- Animations run in CSS on elements that mount (keyed by page, by redação and view) or on transitions of elements that stay. No View Transitions: the data loads asynchronously, and a transition would capture the loading state.
+
+## 11. Space
+
+One grid for every page: a 650 px text column, a 300 px column of facts or history, 64 px between them, inside a 1110 px page. Home and diploma use a wider first column (the index and the list of diplomas) with the same 300 px side column.
+
+Vertical rhythm, desktop (phone in brackets):
+- 32 px (24) from the header to the breadcrumbs or running head; 32 px (16) to the title.
+- 16 px between the title, the lead and the status line. They are one block.
+- 40 px (24) from the title block to the ruler, and from the version row to the text.
+- 64 px (48) between sections. A section starts with a hairline, then 24 px (20), then its heading, then 16 px.
+- 96 px (64) of white under the last section, before the footer.
+
+Rules:
+- Space groups things; hairlines only separate rows of a list and sections. Things that belong together are 4–16 px apart; things that do not are 40 px or more apart. Nothing sits in between.
+- Both columns start on the same line: the side column starts with its own hairline or its ledger rule, level with the first section.
+- The right column holds facts (dates, sources, initiatives) or history (the register). When there are none, it stays white. We never stretch text to fill it.
+- Lists of facts are rows with a hairline (ledgers), headed by a 1 px ink rule. Wide tables (votes by group) take the full page width. On a phone they become one list per item.
+
