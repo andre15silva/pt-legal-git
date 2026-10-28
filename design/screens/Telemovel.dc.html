@@ -22,7 +22,7 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
     <form role="search" style="display: flex; gap: 8px;">
       <label for="qm" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Pesquisar na lei</label>
       <input id="qm" type="search" value="casamento" style="flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; font: inherit; border: 1px solid var(--rule-strong); border-radius: 4px; background: var(--paper); color: var(--ink);">
-      <button type="submit" style="min-height: 44px; padding: 0 14px; font: inherit; font-weight: 700; border-radius: 4px; border: 1px solid var(--verde); background: var(--verde); color: var(--on-verde);">Procurar</button>
+      <button type="submit" style="min-height: 44px; padding: 0 14px; font: inherit; font-weight: 700; border-radius: 4px; border: 1px solid var(--verde); background: var(--verde); color: var(--on-verde);">Pesquisar</button>
     </form>
   </header>
 
@@ -36,7 +36,7 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
     </article>
 
     <section aria-labelledby="hist" style="display: flex; flex-direction: column; gap: 12px;">
-      <h2 id="hist" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">Como este artigo mudou</h2>
+      <h2 id="hist" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">As alterações deste artigo</h2>
       <div role="group" aria-label="Escolher alteração" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));">
         <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
           <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><strong style="display: block; font-size: 16px;">{{t.year}}</strong><span style="font-size: 12px;">{{t.who}}</span></button>
@@ -61,7 +61,7 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
       <a href="#" style="font-size: 15px; line-height: 22px;">Outros artigos sobre casamento no Código Civil</a>
     </section>
 
-    <p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Texto não oficial. Só a publicação no Diário da República faz fé. Isto não é aconselhamento jurídico.</p>
+    <p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Texto não oficial. Só a publicação no Diário da República faz fé. Esta página não é aconselhamento jurídico.</p>
   </main>
 </div>
 </x-dc>
@@ -73,13 +73,13 @@ class Component extends DCLogic {
     var s = function (list) { return list.map(function (x) { return { op: x[0], text: x[1] }; }); };
     var V = {
       '1967': { year: '1967', who: 'Texto original', act: 'Decreto-Lei n.º 47344', inForce: '1 de junho de 1967', isOriginal: true, hasDiff: false,
-        summary: 'A redação original do Código Civil de 1966 definia o casamento entre duas pessoas de sexo diferente que pretendem constituir «legìtimamente» a família.' },
+        summary: 'Na redação original do Código Civil de 1966, o casamento é um contrato entre duas pessoas de sexo diferente.' },
       '1978': { year: '1978', who: 'Reforma de 1977', act: 'Decreto-Lei n.º 496/77', inForce: '1 de abril de 1978', isOriginal: false, hasDiff: true,
-        summary: 'A reforma do direito da família retirou «legìtimamente» e remeteu para as disposições do Código.',
+        summary: 'A reforma do direito da família de 1977 eliminou a palavra «legìtimamente». Também acrescentou a referência às disposições do Código.',
         caption: 'Alteração de 1978 face ao texto original',
         segments: s([['eq', 'Casamento é o contrato celebrado entre duas pessoas de sexo diferente que pretendem constituir '], ['del', 'legìtimamente a '], ['eq', 'família mediante uma '], ['del', 'comunhão plena'], ['ins', 'plena comunhão'], ['eq', ' de vida'], ['ins', ', nos termos das disposições deste Código'], ['eq', '.']]) },
       '2010': { year: '2010', who: 'Lei n.º 9/2010', act: 'Lei n.º 9/2010', inForce: '5 de junho de 2010', isOriginal: false, hasDiff: true,
-        summary: 'Deixou de exigir que as duas pessoas sejam de sexo diferente.',
+        summary: 'A Lei n.º 9/2010 eliminou as palavras «de sexo diferente». Desde então, o casamento é um contrato entre duas pessoas de qualquer sexo.',
         caption: 'Alteração de 2010 face à redação de 1978',
         segments: s([['eq', 'Casamento é o contrato celebrado entre duas pessoas '], ['del', 'de sexo diferente '], ['eq', 'que pretendem constituir família mediante uma plena comunhão de vida, nos termos das disposições deste Código.']]) }
     };

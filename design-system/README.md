@@ -11,8 +11,15 @@ Redação is the history of every article of Portuguese law: what it says on any
 
 ## Content fundamentals
 
-- **Language:** European Portuguese (pt-PT) everywhere: *ecrã*, *ficheiro*, *registar*. Treat the reader as "você" implicitly; prefer the impersonal and the imperative ("Compare as redações", "Ver a lei como estava em…"). No "V. Ex.ª".
-- **Plain sentences:** interface sentences of 20 words or fewer, active voice. Explain a legal term the first time it appears on a page, then use it as is.
+- **Standard: PTS.** All product copy follows *Português Técnico Simplificado* (PTS), our pt-PT adaptation of ASD-STE100 Simplified Technical English. The full rules and the controlled dictionary are in the project's `docs/ESTILO.md`; `tools/estilo.py` checks copy automatically. The core rules:
+  - At most 20 words in an instruction and 25 in a description. One instruction per sentence. At most six sentences per paragraph.
+  - Verb forms: infinitive for buttons and links ("Comparar redações"), 3rd-person imperative for instructions ("Escolha a data"), present indicative for descriptions, pretérito perfeito simples for past events. No gerúndio, no compound tenses or periphrases ("tem sido", "vai ser", "está a ser"), no conditional.
+  - Active voice. Say who acts: "A Lei n.º 64/2025 alterou o artigo." Passive only for legal terms ("revogado", "publicado").
+  - One word, one meaning, from the controlled dictionary: *redação* (one unit), *versão* (a whole diploma), *alteração*, *entrar em vigor*, *produzir efeitos*, *pesquisar*, *seguir*. No synonyms for variety.
+  - No semicolons, no dash asides, no exclamation marks, no emoji. The dash appears only where the law uses it ("1 — …", "Artigo 87.º — Taxas").
+  - No filler or marketing words ("descubra", "intuitivo", "robusto", "de facto", "em suma"). No rhetorical questions.
+- **Language:** European Portuguese (pt-PT) with the 1990 spelling agreement, as the Diário da República uses: *ecrã*, *ficheiro*, *utilizador*, *registo*, *guardar*. Never pt-BR. Address the reader with an implicit "você"; never write "você", "V. Ex.ª" or "tu".
+- **Warnings:** two levels only. **Atenção** when the reader could reach a wrong legal conclusion (a transitional norm changes the rate), **Nota** otherwise. Start with the condition, then the consequence.
 - **Legal terms of art stay exact:** *redação*, *versão*, *em vigor*, *revogado*, *aditado*, *republicação*, *declaração de retificação*, *produção de efeitos*. Use **redação** for one unit (artigo, número, alínea) and **versão** for a whole diploma.
 - **Git → interface vocabulary:**
 
@@ -30,7 +37,7 @@ Redação is the history of every article of Portuguese law: what it says on any
 - **Designations:** exactly as published: "Lei n.º 13/2023, de 3 de abril", "Decreto-Lei n.º 47344, de 25 de novembro de 1966", "Lei Constitucional n.º 1/89". Use the ordinal indicator `º` (U+00BA), never the degree sign.
 - **Dates:** written out in prose ("8 de julho de 1989"); `dd/mm/aaaa` only in dense tables. Always `font-variant-numeric: tabular-nums` where dates stack.
 - **Citations:** "artigo 1.º da Constituição da República Portuguesa, na redação dada pela Lei Constitucional n.º 1/89, de 8 de julho" (see `Citation`).
-- **Summaries:** an official *resumo em linguagem clara* is labelled "Resumo oficial". A machine summary is labelled "Resumo automático — pode conter erros" with a dashed `rule-strong` border, and never sits inside the statute column.
+- **Summaries:** an official *resumo em linguagem clara* is labelled "Resumo oficial". A machine summary is labelled "Resumo automático. Pode conter erros." with a dashed `rule-strong` border, and never sits inside the statute column.
 - **No emoji.** Glyphs only where a component defines them (✓ ✕ – ● ◌ ⊘ §).
 
 ## Visual foundations

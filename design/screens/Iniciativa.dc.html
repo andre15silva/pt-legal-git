@@ -27,7 +27,7 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
   <div style="max-width: 1360px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px;">
     <div style="display: flex; flex-direction: column; gap: 8px; max-width: 900px;">
       <p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Proposta de Lei · Autor: Governo · Entrada a 18 de julho de 2025</p>
-      <h1 style="margin: 0; font-family: var(--font-serif); font-size: 36px; line-height: 42px; font-weight: 600; text-wrap: balance;">Altera o Código do Imposto sobre o Rendimento das Pessoas Coletivas, reduzindo as taxas gerais de IRC</h1>
+      <h1 data-citacao style="margin: 0; font-family: var(--font-serif); font-size: 36px; line-height: 42px; font-weight: 600; text-wrap: balance;">Altera o Código do Imposto sobre o Rendimento das Pessoas Coletivas, reduzindo as taxas gerais de IRC</h1>
       <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
         <x-import component-from-global-scope="Redacao.StatusPill" status="vigor">Publicada como Lei n.º 64/2025</x-import>
         <a href="Ato.dc.html" style="font-size: 15px;">Ver o que a lei alterou</a>
@@ -46,17 +46,17 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
           <x-import component-from-global-scope="Redacao.VoteBar" title="Generalidade · 19/09/2025" result="Aprovado" votes="{{genVotes}}"></x-import>
           <x-import component-from-global-scope="Redacao.VoteBar" title="Votação final global · 17/10/2025" result="Aprovado" votes="{{vfgVotes}}"></x-import>
         </div>
-        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); max-width: 80ch;">Sentido de voto por grupo parlamentar, tal como consta do registo da Assembleia da República. Lugares: composição da XVII Legislatura. No registo da generalidade não consta o voto do BE; mostra-se como ausente. A 17/10/2025 foi ainda votado um requerimento oral de dispensa de redação final: rejeitado.</p>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); max-width: 80ch;">Mostramos o sentido de voto de cada grupo parlamentar, como no registo da Assembleia da República. O número de deputados é o da composição da XVII Legislatura. O registo da votação na generalidade não tem o voto do BE. Por isso, mostramos o BE como ausente. A 17 de outubro de 2025, a Assembleia também votou um requerimento oral de dispensa de redação final. A Assembleia rejeitou o requerimento.</p>
       </section>
 
       <aside aria-label="Iniciativas discutidas em conjunto" style="flex: 1 1 360px; max-width: 460px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
-        <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">Discutidas em conjunto a 18/09/2025</h2>
-        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Quatro destas iniciativas também alteravam o Código do IRC. Nenhuma chegou a texto final.</p>
+        <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">Iniciativas discutidas em conjunto a 18 de setembro de 2025</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Quatro destas iniciativas propõem alterações ao Código do IRC. A Assembleia rejeitou as cinco iniciativas.</p>
         <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;">
           <sc-for list="{{joint}}" as="j" hint-placeholder-count="5">
             <li style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px dashed var(--rule-strong); border-radius: 8px; background: var(--paper-raised);">
               <span style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;"><strong style="font-size: 15px;">{{j.id}}</strong><span style="font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--revogado);">⊘ {{j.result}}</span></span>
-              <span style="font-size: 15px; line-height: 22px;">{{j.title}}</span>
+              <span style="font-size: 15px; line-height: 22px;">{{j.oficial}}</span>
               <span style="font-size: 13px; color: var(--ink-muted);">{{j.author}} · {{j.target}}</span>
             </li>
           </sc-for>
@@ -86,11 +86,11 @@ class Component extends DCLogic {
       genVotes: v([['PSD', 'favor'], ['CH', 'favor'], ['IL', 'favor'], ['CDS-PP', 'favor'], ['PAN', 'favor'], ['JPP', 'favor'], ['PS', 'contra'], ['L', 'contra'], ['PCP', 'contra'], ['BE', 'ausente']]),
       vfgVotes: v([['PSD', 'favor'], ['CH', 'favor'], ['IL', 'favor'], ['CDS-PP', 'favor'], ['PAN', 'favor'], ['JPP', 'favor'], ['PS', 'contra'], ['L', 'contra'], ['PCP', 'contra'], ['BE', 'contra']]),
       joint: [
-        { id: 'Projeto de Lei n.º 194/XVII', author: 'CH', target: 'Código do IRC', result: 'Rejeitado na generalidade', title: 'Prevê a redução das taxas do Imposto sobre o Rendimento das Pessoas Coletivas' },
-        { id: 'Projeto de Lei n.º 193/XVII', author: 'IL', target: 'Código do IRC', result: 'Rejeitado na generalidade', title: 'Reduz o IRC e elimina o primeiro escalão da Derrama Estadual' },
-        { id: 'Projeto de Lei n.º 190/XVII', author: 'PAN', target: 'Código do IRC', result: 'Rejeitado na generalidade', title: 'Cria incentivos para que as empresas atribuam seguros de saúde aos animais de companhia dos seus trabalhadores' },
-        { id: 'Projeto de Lei n.º 189/XVII', author: 'PAN', target: 'Código do IRC', result: 'Rejeitado na generalidade', title: 'Cria incentivos para que as empresas atribuam apoios sociais para a frequência de creche ou pré-escolar destinados aos dependentes dos seus trabalhadores' },
-        { id: 'Projeto de Resolução n.º 286/XVII', author: 'PS', target: 'Recomendação ao Governo', result: 'Rejeitado', title: 'Recomenda ao Governo que promova uma política fiscal que assegure a redução da carga fiscal de forma justa e equilibrada' }
+        { id: 'Projeto de Lei n.º 194/XVII', author: 'CH', target: 'Código do IRC', result: 'Rejeitado na generalidade', oficial: 'Prevê a redução das taxas do Imposto sobre o Rendimento das Pessoas Coletivas' },
+        { id: 'Projeto de Lei n.º 193/XVII', author: 'IL', target: 'Código do IRC', result: 'Rejeitado na generalidade', oficial: 'Reduz o IRC e elimina o primeiro escalão da Derrama Estadual' },
+        { id: 'Projeto de Lei n.º 190/XVII', author: 'PAN', target: 'Código do IRC', result: 'Rejeitado na generalidade', oficial: 'Cria incentivos para que as empresas atribuam seguros de saúde aos animais de companhia dos seus trabalhadores' },
+        { id: 'Projeto de Lei n.º 189/XVII', author: 'PAN', target: 'Código do IRC', result: 'Rejeitado na generalidade', oficial: 'Cria incentivos para que as empresas atribuam apoios sociais para a frequência de creche ou pré-escolar destinados aos dependentes dos seus trabalhadores' },
+        { id: 'Projeto de Resolução n.º 286/XVII', author: 'PS', target: 'Recomendação ao Governo', result: 'Rejeitado', oficial: 'Recomenda ao Governo que promova uma política fiscal que assegure a redução da carga fiscal de forma justa e equilibrada' }
       ]
     };
   }

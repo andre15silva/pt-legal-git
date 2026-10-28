@@ -51,6 +51,16 @@ Redação
 
 URLs are readable and citable: `/codigo-irc/artigo-87?em=2026-03-01&base=efeitos`. Every view is a permalink that pins its date.
 
+## Copy: Português Técnico Simplificado (PTS)
+
+All product copy follows PTS, our pt-PT adaptation of ASD-STE100 Simplified Technical English. The rules and the controlled dictionary are in [ESTILO.md](ESTILO.md). [`tools/estilo.py`](../tools/estilo.py) checks the screens, component strings and previews; they currently pass with 0 errors. The core rules:
+
+- At most 20 words in an instruction and 25 in a description. One instruction per sentence.
+- Infinitive on buttons, 3rd-person imperative in instructions, present indicative in descriptions. No gerúndio, compound tenses or conditional.
+- Active voice. One word, one meaning: *redação* for one unit, *versão* for a whole diploma, *alteração*, *entrar em vigor*, *produzir efeitos*, *pesquisar*, *seguir*.
+- No semicolons, dash asides, exclamation marks, emoji, filler or marketing words. pt-PT and AO90 spelling only.
+- Official titles and law text are quoted exactly and marked `data-citacao`, so the checker skips them.
+
 ## Principles applied
 
 1. **The law is the hero.** The statute is set in Source Serif 4 at 19/31 in a 68ch column on `paper-raised`; the interface chrome stays quiet around it.

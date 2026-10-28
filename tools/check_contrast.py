@@ -33,4 +33,5 @@ for th in ('light', 'dark'):
             if r < need:
                 bad += 1
                 print(f'FAIL {th:5} {fg:12} on {bg:12} {r:.2f} < {need}')
-print('failures:', bad)
+print("failures:", bad)
+sys.exit(1 if bad else 0)

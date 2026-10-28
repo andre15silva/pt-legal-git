@@ -44,8 +44,8 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
         <h1 style="margin: 0; font-family: var(--font-serif); font-size: 40px; line-height: 46px; font-weight: 600; text-wrap: balance;">Artigo 87.º — Taxas</h1>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
           <x-import component-from-global-scope="Redacao.StatusPill" status="vigor">Em vigor desde 12 de novembro de 2025</x-import>
-          <x-import component-from-global-scope="Redacao.StatusPill" status="verificado">Coincide com o consolidado do DR</x-import>
-          <span style="font-size: 14px; color: var(--ink-muted);">7 redações desde 2014 · última pela Lei n.º 64/2025</span>
+          <x-import component-from-global-scope="Redacao.StatusPill" status="verificado">Verificado com o Diário da República</x-import>
+          <span style="font-size: 14px; color: var(--ink-muted);">7 redações desde 2014 · a última é da Lei n.º 64/2025</span>
         </div>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -76,8 +76,8 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
 
     <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
       <section aria-labelledby="transit" style="border: 1px solid var(--aviso); background: var(--aviso-bg); border-radius: 8px; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
-        <h2 id="transit" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700; color: var(--ink);">Nesta data aplica-se uma norma transitória</h2>
-        <p style="margin: 0; max-width: 68ch;">Para períodos de tributação que se iniciem em 2026, a taxa dos n.<sup>os</sup> 1 e 5 é de <strong>19 %</strong>, não os 17 % do texto. Os 17 % só se aplicam a períodos que se iniciem a partir de 1 de janeiro de 2028.</p>
+        <h2 id="transit" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700; color: var(--ink);">Atenção: nesta data aplica-se uma norma transitória</h2>
+        <p style="margin: 0; max-width: 68ch;">Para períodos de tributação que começam em 2026, a taxa dos n.<sup>os</sup> 1 e 5 é de <strong>19 %</strong>. O texto do artigo diz 17 %. A taxa de 17 % aplica-se a períodos que começam a partir de 1 de janeiro de 2028.</p>
         <div role="table" aria-label="Taxa geral por período de tributação" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; max-width: 560px; font-variant-numeric: tabular-nums;">
           <div role="row" style="display: contents;">
             <span role="columnheader" style="background: var(--paper-raised); padding: 6px 10px; font-size: 13px; color: var(--ink-muted);">2025</span>
@@ -92,19 +92,19 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
             <span role="cell" style="background: var(--paper-raised); padding: 6px 10px; font-size: 20px; font-weight: 700;">17 %</span>
           </div>
         </div>
-        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink);">Fonte: <a href="Ato.dc.html">Lei n.º 64/2025, artigo 3.º</a> (2026 e 2027) · Lei n.º 45-A/2024, artigo 116.º, n.º 3 (2025). A taxa de 15 % do n.º 2 aplica-se desde os períodos iniciados em 2026.</p>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink);">Fonte: <a href="Ato.dc.html">Lei n.º 64/2025, artigo 3.º</a> (2026 e 2027) · Lei n.º 45-A/2024, artigo 116.º, n.º 3 (2025). A taxa de 15 % do n.º 2 aplica-se a períodos que começam a partir de 2026.</p>
       </section>
 
       <article aria-label="Texto do artigo 87.º" style="background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px;">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: baseline;">
           <h2 style="margin: 0; font-family: var(--font-serif); font-size: 20px; line-height: 28px; font-weight: 600;">Artigo 87.º <span style="font-weight: 400; color: var(--ink-muted);">Taxas</span></h2>
-          <p style="margin: 0; font-size: 14px; color: var(--ink-muted);">Origem do texto: toque numa frase ou num diploma</p>
+          <p style="margin: 0; font-size: 14px; color: var(--ink-muted);">Escolha uma frase ou um diploma para ver a origem do texto.</p>
         </div>
         <x-import component-from-global-scope="Redacao.TextOrigin" paragraphs="{{paragraphs}}" acts="{{acts}}" focus="{{focusAct}}"></x-import>
       </article>
 
       <x-import component-from-global-scope="Redacao.SourceNote" source="{{source}}" updated="há 2 horas" verification="verificado"></x-import>
-      <x-import component-from-global-scope="Redacao.Citation" text="Artigo 87.º, n.º 1, do Código do Imposto sobre o Rendimento das Pessoas Coletivas, na redação dada pela Lei n.º 64/2025, de 7 de novembro." permalink="redacao.pt/codigo-irc/artigo-87?em=2026-03-01&amp;base=efeitos"></x-import>
+      <x-import component-from-global-scope="Redacao.Citation" data-citacao text="Artigo 87.º, n.º 1, do Código do Imposto sobre o Rendimento das Pessoas Coletivas, na redação dada pela Lei n.º 64/2025, de 7 de novembro." permalink="redacao.pt/codigo-irc/artigo-87?em=2026-03-01&amp;base=efeitos"></x-import>
     </main>
 
     <aside aria-label="Contexto do artigo" style="flex: 1 1 320px; max-width: 400px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
@@ -114,7 +114,7 @@ a{color:var(--verde)}a:hover{color:var(--ink)}
       </section>
       <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 16px;">
         <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">No Parlamento</h2>
-        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Quando houver iniciativas pendentes que alterem este artigo, aparecem aqui com a fase em que estão.</p>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">As iniciativas do Parlamento que alteram este artigo aparecem aqui, com a fase de cada uma.</p>
         <a href="Iniciativa.dc.html" style="font-size: 15px;">Ver a iniciativa que deu origem à redação atual</a>
       </section>
     </aside>
@@ -154,13 +154,13 @@ class Component extends DCLogic {
         p('8 —', [[3, 'Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como startup, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea f) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5 %.']])
       ],
       versions: [
-        { id: 'v1', title: 'Redação de 2014', act: 'Declaração de Retificação n.º 18/2014', published: '2014-03-13', inForce: '2014-01-21', summary: 'Retificação publicada a 13 de março, com efeitos desde 21 de janeiro. O consolidado do DR não regista nenhuma versão de 2015: possível lacuna, a verificar.', verification: 'nao-verificado', technical: true },
-        { id: 'v2', title: 'Orçamento do Estado para 2016', act: 'Lei n.º 7-A/2016, artigo 133.º', published: '2016-03-30', inForce: '2016-03-31', summary: 'N.º 5: 21,5 % → 21 %.', verification: 'verificado' },
-        { id: 'v3', title: 'Orçamento do Estado para 2020', act: 'Lei n.º 2/2020, artigo 335.º', published: '2020-03-31', inForce: '2020-04-01', summary: 'N.º 2: escalão das PME de 15 000 € para 25 000 €.', verification: 'verificado' },
-        { id: 'v4', title: 'Orçamento do Estado para 2023', act: 'Lei n.º 24-D/2022, artigo 227.º', published: '2022-12-30', inForce: '2023-01-01', summary: 'N.º 2: inclui Small Mid Cap; escalão sobe para 50 000 €.', verification: 'verificado' },
-        { id: 'v5', title: 'Orçamento do Estado para 2024', act: 'Lei n.º 82/2023, artigo 237.º', published: '2023-12-29', inForce: '2024-01-01', summary: 'Adita o n.º 8: taxa de 12,5 % para startups.', verification: 'verificado' },
-        { id: 'v6', title: 'Orçamento do Estado para 2025', act: 'Lei n.º 45-A/2024, artigo 90.º', published: '2024-12-31', inForce: '2025-01-01', summary: 'Taxa geral 21 % → 20 %; PME 17 % → 16 %.', verification: 'verificado' },
-        { id: 'v7', title: 'Redução das taxas gerais', act: 'Lei n.º 64/2025, artigo 2.º', published: '2025-11-07', inForce: '2025-11-12', summary: 'Taxa geral 20 % → 17 % (19 % em 2026, 18 % em 2027); PME 16 % → 15 %.', verification: 'verificado' }
+        { id: 'v1', title: 'Redação de 2014', act: 'Declaração de Retificação n.º 18/2014', published: '2014-03-13', inForce: '2014-01-21', summary: 'Publicada a 13 de março, com efeitos desde 21 de janeiro. O consolidado do Diário da República não tem nenhuma redação de 2015. Esta falta está por verificar.', verification: 'nao-verificado', technical: true },
+        { id: 'v2', title: 'Orçamento do Estado para 2016', act: 'Lei n.º 7-A/2016, artigo 133.º', published: '2016-03-30', inForce: '2016-03-31', summary: 'N.º 5: a taxa passa de 21,5 % para 21 %.', verification: 'verificado' },
+        { id: 'v3', title: 'Orçamento do Estado para 2020', act: 'Lei n.º 2/2020, artigo 335.º', published: '2020-03-31', inForce: '2020-04-01', summary: 'N.º 2: o escalão das PME passa de 15 000 € para 25 000 €.', verification: 'verificado' },
+        { id: 'v4', title: 'Orçamento do Estado para 2023', act: 'Lei n.º 24-D/2022, artigo 227.º', published: '2022-12-30', inForce: '2023-01-01', summary: 'N.º 2: adita as empresas Small Mid Cap. O escalão passa para 50 000 €.', verification: 'verificado' },
+        { id: 'v5', title: 'Orçamento do Estado para 2024', act: 'Lei n.º 82/2023, artigo 237.º', published: '2023-12-29', inForce: '2024-01-01', summary: 'Adita o n.º 8, com a taxa de 12,5 % para startups.', verification: 'verificado' },
+        { id: 'v6', title: 'Orçamento do Estado para 2025', act: 'Lei n.º 45-A/2024, artigo 90.º', published: '2024-12-31', inForce: '2025-01-01', summary: 'Taxa geral: de 21 % para 20 %. Taxa das PME: de 17 % para 16 %.', verification: 'verificado' },
+        { id: 'v7', title: 'Redução das taxas gerais', act: 'Lei n.º 64/2025, artigo 2.º', published: '2025-11-07', inForce: '2025-11-12', summary: 'Taxa geral: de 20 % para 17 %, com 19 % em 2026 e 18 % em 2027. Taxa das PME: de 16 % para 15 %.', verification: 'verificado' }
       ]
     };
   }

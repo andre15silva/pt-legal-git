@@ -25,6 +25,7 @@ Lei n.º 64/2025 rewrote the Código do IRC's general rate from 20 % to **17 %**
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Data model (vigência × eficácia × knowledge × system time), hybrid ingestion and verification pipeline, git export spec, API and MCP, stack |
 | [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) | What the DR and parlamento.pt actually expose (probed live), legalize-pt, Lei 74/98 rules, rights |
 | [docs/DESIGN.md](docs/DESIGN.md) | Screens, information architecture, vocabulary, visual identity, accessibility |
+| [docs/ESTILO.md](docs/ESTILO.md) | PTS (Português Técnico Simplificado): our pt-PT adaptation of ASD-STE100 for all product copy |
 | [design-system/](design-system/) | Source of the **Redação design system**: tokens, brand book (README), 11 React components with previews |
 | [design/screens/](design/screens/) | Source of the six screen designs (Claude Design canvas files) |
 | [tools/](tools/) | Phase-0 spikes, stdlib Python only |
@@ -49,6 +50,9 @@ python -I tools/dr_client.py historia 64205634 lei 2014-64205634 "Artigo 87.º"
 
 # Check the design tokens' contrast pairs in both themes
 python -I tools/check_contrast.py design-system/tokens.json
+
+# Check product copy against the PTS style guide
+python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js
 
 # Tests
 python -I -m unittest discover -s tools

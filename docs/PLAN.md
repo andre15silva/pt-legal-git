@@ -41,6 +41,7 @@ Six stakeholder panels shaped this plan; see [STAKEHOLDERS.md](STAKEHOLDERS.md).
 5. **Neutral by construction.** No party colours, no party scoring, procedural vocabulary for outcomes.
 6. **Git is the engine, not the vocabulary.** People see *alterações*, *origem do texto*, *comparar redações*, *iniciativas*.
 7. **The point-in-time view is free forever.** Revenue comes from workflow (alerts, teams, exports, SLA), not from access to the law.
+8. **Plain, controlled Portuguese.** All copy follows PTS, our pt-PT adaptation of ASD-STE100 ([ESTILO.md](ESTILO.md)), checked by `tools/estilo.py` on every push (`.github/workflows/checks.yml`).
 
 ## 5. Scope by phase
 
@@ -131,6 +132,7 @@ Goal: hard numbers on feasibility before building the product.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Data model, pipeline, git export, API/MCP, stack |
 | [DATA-SOURCES.md](DATA-SOURCES.md) | What the DR and parlamento.pt actually expose, with probes |
 | [DESIGN.md](DESIGN.md) | Design principles, information architecture, screens, design system |
+| [ESTILO.md](ESTILO.md) | PTS: the pt-PT copy standard adapted from ASD-STE100, with a controlled dictionary |
 | [`design-system/`](../design-system/) | The Redação design system source (tokens, components, brand book) |
 | [`tools/`](../tools/) | Phase-0 spikes: the parlamento.pt parser and the initiative → DR linker |
 | [`research/`](research/) | Raw stakeholder and source reports |

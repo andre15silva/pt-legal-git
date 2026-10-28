@@ -103,7 +103,7 @@
                 key: si, role: 'button', tabIndex: 0,
                 className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim', focus === s.act && 'is-focus'),
                 'aria-pressed': focus === s.act,
-                'aria-label': s.text + ' — texto de ' + a.label,
+                'aria-label': s.text + '. Origem do texto: ' + a.label,
                 onClick: toggle,
                 onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }
               }, s.text);
@@ -114,7 +114,7 @@
           return h('div', { key: a.index, role: 'listitem' }, h(ActChip, { act: a, selected: focus === a.index, onClick: function () { setFocus(focus === a.index ? null : a.index); } }));
         })),
       h('p', { className: 'rd-origin-note', 'aria-live': 'polite' },
-        sel ? ['Texto escrito pela ', h('strong', { key: 's' }, sel.label), sel.date ? ', publicada a ' + dataPorExtenso(sel.date) + '.' : '.'] : 'Toque numa frase para ver que diploma a escreveu.'));
+        sel ? ['Origem do texto: ', h('strong', { key: 's' }, sel.label), sel.date ? '. Publicação: ' + dataPorExtenso(sel.date) + '.' : '.'] : 'Escolha uma frase para ver o diploma que a escreveu.'));
   }
 
   // ---- DateLens ---------------------------------------------------------------
@@ -131,7 +131,7 @@
     var id = props.id || 'rd-lens';
     var phrase = {
       vigor: 'Texto em vigor a ',
-      efeitos: 'Texto que produzia efeitos a ',
+      efeitos: 'Texto que produz efeitos a ',
       publicacao: 'Texto publicado até '
     }[basis];
     return h('form', { className: 'rd-lens', role: 'search', 'aria-label': 'Ver a lei numa data', onSubmit: function (e) { e.preventDefault(); } },
@@ -161,7 +161,7 @@
           h('div', { className: 'rd-tl-body' },
             h('div', { className: 'rd-tl-head' },
               h('span', { className: 'rd-tl-title' }, v.title),
-              current ? h(StatusPill, { status: 'vigor' }, 'Versão em vigor') : null,
+              current ? h(StatusPill, { status: 'vigor' }) : null,
               v.pending ? h(StatusPill, { status: 'pendente' }) : null,
               v.verification ? h(StatusPill, { status: v.verification }) : null),
             h('p', { className: 'rd-tl-act' }, v.act),
@@ -182,7 +182,7 @@
         (props.stages || []).map(function (s, i) {
           return h('li', { key: i, className: 'rd-proc-step is-' + s.state, 'aria-current': s.state === 'current' ? 'step' : undefined },
             h('span', { className: 'rd-proc-dot', 'aria-hidden': 'true' }, s.state === 'done' ? '✓' : s.state === 'stopped' ? '✕' : ''),
-            h('span', { className: 'rd-proc-label' }, s.label, h(Sr, null, ' — ' + STAGE_WORD[s.state])),
+            h('span', { className: 'rd-proc-label' }, s.label, h(Sr, null, ': ' + STAGE_WORD[s.state])),
             s.date ? h('span', { className: 'rd-proc-date' }, dataPorExtenso(s.date)) : null,
             s.note ? h('span', { className: 'rd-proc-note' }, s.note) : null);
         })));
