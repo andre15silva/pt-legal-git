@@ -1,4 +1,6 @@
-__pycache__/
 *.pyc
-data/
 .venv/
+__pycache__/
+app/data/
+app/ds/
+data/

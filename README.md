@@ -29,12 +29,18 @@ Lei n.º 64/2025 rewrote the Código do IRC's general rate from 20 % to **17 %**
 | [docs/ESTILO.md](docs/ESTILO.md) | PTS (Português Técnico Simplificado): our pt-PT adaptation of ASD-STE100 for all product copy |
 | [design-system/](design-system/) | Source of the **Redação design system**: tokens, brand book (README), 11 React components with previews |
 | [design/screens/](design/screens/) | Source of the six screen designs (Claude Design canvas files) |
+| [app/](app/) | The visualizer: static web app (React + design system), no build step |
+| [pipeline/](pipeline/) | Fetch from the DR and AR, build the app's data (word-level origin, act and initiative links) |
 | [tools/](tools/) | Phase-0 spikes, stdlib Python only |
 | [docs/research/](docs/research/) | Raw reports: six stakeholder panels and two source probes |
 
 **Live artifacts** (private; share them from their Share menu):
 - Design system: <https://claude.ai/artifact/9VHviXgVubUSFgprQGgAyB>
 - Screens: <https://claude.ai/artifact/KCq1vDY2KCuzdGppQEtZhx>
+
+## The visualizer
+
+[`app/`](app/) is a working visualizer built on real data from the DR and the AR. It covers the Constituição, Código do Trabalho, Código do IRC and NRAU: 1,282 articles, 85 amending acts and 142 parliamentary initiatives. It has the article view with the three date bases and the origin of each phrase, word-level comparison, and act and initiative pages. See [app/README.md](app/README.md) to build and run it.
 
 ## Tools
 
@@ -57,6 +63,7 @@ python -I tools/estilo.py design/screens/*.dc.html design-system/components/bund
 
 # Tests
 python -I -m unittest discover -s tools
+python -I -m unittest discover -s pipeline
 ```
 
 Measured on the XVII legislatura (2,354 initiatives, 136 published as Lei):

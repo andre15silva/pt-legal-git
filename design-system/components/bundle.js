@@ -77,7 +77,7 @@
     return h('div', { className: 'rd-redline' },
       props.caption ? h('p', { className: 'rd-redline-cap' }, props.caption) : null,
       h('p', { className: cx('rd-statute', mode === 'inline' && 'rd-redline-marked') }, props.number ? h('span', { className: 'rd-num' }, props.number + ' ') : null, body),
-      mode === 'inline' ? h('p', { className: 'rd-redline-legend' },
+      mode === 'inline' && props.legend !== false ? h('p', { className: 'rd-redline-legend' },
         h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado'), ' (' + nIns + ')'),
         h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'), ' (' + nDel + ')')) : null);
   }
@@ -138,7 +138,7 @@
       h('div', { className: 'rd-lens-row' },
         h('label', { htmlFor: id + '-date', className: 'rd-lens-label' }, 'Ver a lei como estava em'),
         h('input', { id: id + '-date', type: 'date', className: 'rd-input', value: date, onChange: function (e) { setDate(e.target.value); if (props.onChange) props.onChange({ date: e.target.value, basis: basis }); } }),
-        h(Button, { variant: 'ghost', onClick: function () { var t = props.today || '2026-10-28'; setDate(t); } }, 'Hoje')),
+        h(Button, { variant: 'ghost', onClick: function () { var t = props.today || '2026-10-28'; setDate(t); if (props.onChange) props.onChange({ date: t, basis: basis }); } }, 'Hoje')),
       h('fieldset', { className: 'rd-seg' },
         h('legend', { className: 'rd-sr' }, 'Que data conta'),
         BASES.map(function (b) {
@@ -160,7 +160,7 @@
           h('span', { className: 'rd-tl-node', 'aria-hidden': 'true' }),
           h('div', { className: 'rd-tl-body' },
             h('div', { className: 'rd-tl-head' },
-              h('span', { className: 'rd-tl-title' }, v.title),
+              v.href ? h('a', { className: 'rd-tl-title rd-link', href: v.href }, v.title) : h('span', { className: 'rd-tl-title' }, v.title),
               current ? h(StatusPill, { status: 'vigor' }) : null,
               v.pending ? h(StatusPill, { status: 'pendente' }) : null,
               v.verification ? h(StatusPill, { status: v.verification }) : null),
@@ -193,28 +193,31 @@
   var VOTE = { favor: { w: 'A favor', g: '✓' }, contra: { w: 'Contra', g: '✕' }, abstencao: { w: 'Abstenção', g: '–' }, ausente: { w: 'Ausente', g: '·' } };
   function VoteBar(props) {
     var votes = props.votes || [];
+    var seats = votes.some(function (v) { return v.seats != null; });
     var tot = { favor: 0, contra: 0, abstencao: 0, ausente: 0 };
-    votes.forEach(function (v) { tot[v.vote] += v.seats || 0; });
-    var all = tot.favor + tot.contra + tot.abstencao + tot.ausente || 1;
+    votes.forEach(function (v) { tot[v.vote] += seats ? (v.seats || 0) : 1; });
     return h('figure', { className: 'rd-vote' },
       h('figcaption', { className: 'rd-vote-cap' },
         h('span', { className: 'rd-vote-title' }, props.title || 'Votação'),
         props.result ? h('strong', { className: 'rd-vote-res' }, props.result) : null),
-      h('div', { className: 'rd-vote-bar', role: 'img', 'aria-label': 'A favor ' + tot.favor + ', contra ' + tot.contra + ', abstenção ' + tot.abstencao + (tot.ausente ? ', ausentes ' + tot.ausente : '') },
+      !seats ? h('p', { className: 'rd-vote-tot' }, ['favor', 'contra', 'abstencao'].map(function (k) {
+        return h('span', { key: k, className: 'rd-vote-k' }, h('span', { className: 'rd-vote-sw rd-vote-' + k, 'aria-hidden': 'true' }), VOTE[k].w + ': ' + tot[k] + (tot[k] === 1 ? ' grupo' : ' grupos'));
+      })) : null,
+      !seats ? null : h('div', { className: 'rd-vote-bar', role: 'img', 'aria-label': 'A favor ' + tot.favor + ', contra ' + tot.contra + ', abstenção ' + tot.abstencao + (tot.ausente ? ', ausentes ' + tot.ausente : '') },
         ['favor', 'abstencao', 'contra', 'ausente'].map(function (k) {
           return tot[k] ? h('span', { key: k, className: 'rd-vote-seg rd-vote-' + k, style: { flexGrow: tot[k] } }) : null;
         })),
-      h('p', { className: 'rd-vote-tot' },
+      !seats ? null : h('p', { className: 'rd-vote-tot' },
         ['favor', 'contra', 'abstencao'].map(function (k) {
           return h('span', { key: k, className: 'rd-vote-k' }, h('span', { className: 'rd-vote-sw rd-vote-' + k, 'aria-hidden': 'true' }), VOTE[k].w + ' ' + tot[k]);
         })),
       h('table', { className: 'rd-vote-table' },
         h('caption', { className: 'rd-sr' }, 'Sentido de voto por grupo parlamentar'),
-        h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Grupo parlamentar'), h('th', { scope: 'col' }, 'Deputados'), h('th', { scope: 'col' }, 'Voto'))),
+        h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Grupo parlamentar'), seats ? h('th', { scope: 'col' }, 'Deputados') : null, h('th', { scope: 'col' }, 'Voto'))),
         h('tbody', null, votes.map(function (v, i) {
           return h('tr', { key: i },
             h('th', { scope: 'row' }, v.group),
-            h('td', { className: 'rd-num-col' }, v.seats),
+            seats ? h('td', { className: 'rd-num-col' }, v.seats) : null,
             h('td', null, h('span', { className: 'rd-vote-cell rd-vote-t-' + v.vote }, h('span', { 'aria-hidden': 'true' }, VOTE[v.vote].g + ' '), VOTE[v.vote].w)));
         }))));
   }

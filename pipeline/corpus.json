@@ -1,0 +1,131 @@
+{
+  "consultado_em": "2026-10-28",
+  "diplomas": [
+    {
+      "slug": "constituicao",
+      "titulo": "Constituição da República Portuguesa",
+      "sigla": "CRP",
+      "frag_id": "34520775",
+      "tipo": "decreto-aprovacao-constituicao",
+      "key": "1976-34520775",
+      "codigo_no_anexo": false,
+      "genitivo": "da Constituição da República Portuguesa",
+      "vigor_original": {
+        "data": "1976-04-25",
+        "regra": "explicita",
+        "fonte": "Constituição, artigo 296.º, n.º 2"
+      }
+    },
+    {
+      "slug": "codigo-do-trabalho",
+      "titulo": "Código do Trabalho",
+      "sigla": "CT",
+      "frag_id": "34546475",
+      "tipo": "lei",
+      "key": "2009-34546475",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código do Trabalho",
+      "vigor_original": {
+        "data": "2009-02-17",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2 (a Lei n.º 7/2009 não fixa data geral)"
+      },
+      "notas_vigor": [
+        {
+          "artigos": [
+            "artigo-356",
+            "artigo-358",
+            "artigo-382",
+            "artigo-387",
+            "artigo-388",
+            "artigo-389",
+            "artigo-391"
+          ],
+          "texto": "Algumas normas deste artigo só entram em vigor com a legislação que revê o Código de Processo do Trabalho.",
+          "fonte": "Lei n.º 7/2009, artigo 14.º, n.º 1"
+        },
+        {
+          "artigos": [
+            "artigo-34",
+            "artigo-35",
+            "artigo-36",
+            "artigo-37",
+            "artigo-38",
+            "artigo-39",
+            "artigo-40",
+            "artigo-41",
+            "artigo-42",
+            "artigo-43",
+            "artigo-44",
+            "artigo-45",
+            "artigo-46",
+            "artigo-47",
+            "artigo-48",
+            "artigo-49",
+            "artigo-50",
+            "artigo-51",
+            "artigo-52",
+            "artigo-53",
+            "artigo-54",
+            "artigo-55",
+            "artigo-56",
+            "artigo-57",
+            "artigo-58",
+            "artigo-59",
+            "artigo-60",
+            "artigo-61",
+            "artigo-62"
+          ],
+          "texto": "Este artigo só entra em vigor com a legislação que regula a proteção social na parentalidade.",
+          "fonte": "Lei n.º 7/2009, artigo 14.º, n.º 2",
+          "condicional": true
+        }
+      ]
+    },
+    {
+      "slug": "codigo-irc",
+      "titulo": "Código do Imposto sobre o Rendimento das Pessoas Coletivas",
+      "sigla": "CIRC",
+      "frag_id": "64205634",
+      "tipo": "lei",
+      "key": "2014-64205634",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código do IRC",
+      "vigor_original": {
+        "data": "2014-01-21",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2"
+      },
+      "nota_efeitos": {
+        "texto": "A Lei n.º 2/2014 aplica-se aos períodos de tributação que começam, ou aos factos tributários que ocorrem, a partir de 1 de janeiro de 2014.",
+        "fonte": "Lei n.º 2/2014, artigo 14.º"
+      }
+    },
+    {
+      "slug": "nrau",
+      "titulo": "Novo Regime do Arrendamento Urbano",
+      "sigla": "NRAU",
+      "frag_id": "34578375",
+      "tipo": "lei",
+      "key": "2006-34578375",
+      "codigo_no_anexo": false,
+      "genitivo": "do Novo Regime do Arrendamento Urbano",
+      "vigor_original": {
+        "data": "2006-06-28",
+        "regra": "explicita",
+        "fonte": "Lei n.º 6/2006, artigo 65.º, n.º 2 (120 dias após a publicação; data do consolidado do Diário da República)"
+      },
+      "vigor_excecoes": [
+        {
+          "artigos": [
+            "artigo-63",
+            "artigo-64"
+          ],
+          "data": "2006-02-28",
+          "regra": "explicita",
+          "fonte": "Lei n.º 6/2006, artigo 65.º, n.º 1"
+        }
+      ]
+    }
+  ]
+}

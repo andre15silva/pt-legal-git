@@ -1,0 +1,317 @@
+"""Build the visualizer's data from the raw DR fetch and the AR open data.
+
+    python -I pipeline/build.py            # writes app/data/ (gitignored)
+
+Inputs:  data/raw/<slug>.json (pipeline/fetch.py), data/parlamento/*_json.txt
+         (pipeline/fetch_parlamento.py), pipeline/corpus.json.
+Outputs: app/data/index.json (corpus and search list), app/data/d/<slug>.json (structure
+         and every article's history), app/data/atos.json (acts), app/data/iniciativas.json.
+
+Every article's history is a list of versions, oldest first. Each version records the act
+that produced it, its publication and entry-into-force dates, its text, and the word-level
+origin of that text (spans pointing to the version that wrote each word).
+"""
+from __future__ import annotations
+
+import glob
+import html
+import shutil
+import json
+import os
+import re
+import sys
+import unicodedata
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "pipeline"))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import atos  # noqa: E402
+import texto  # noqa: E402
+from parlamento import normalise as normalise_iniciativa  # noqa: E402
+
+OUT = os.path.join(ROOT, "app", "data")
+NO_DATE = "1900-01-01"
+ANEXO, ARTIGO = 14, 11
+
+
+def d10(s: str | None) -> str | None:
+    s = (s or "")[:10]
+    return None if not s or s.startswith("1900") or s.startswith("0001") else s
+
+
+def slugify(s: str) -> str:
+    s = re.sub(r"\.º", "", s.lower())
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+
+
+def plain(s: str | None) -> str:
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", s or ""))).strip()
+
+
+def write(path: str, obj) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
+
+
+class Registry:
+    """All acts seen across the corpus, keyed by atos.slug(designacao)."""
+
+    def __init__(self):
+        self.acts: dict[str, dict] = {}
+
+    def add(self, info: dict) -> str:
+        a = self.acts.setdefault(info["id"], {"id": info["id"], "designacao": info["designacao"],
+                                              "publicacao": None, "dr": None, "serie": None, "link": None,
+                                              "sumario": None, "alteracoes": []})
+        for k in ("publicacao", "dr", "serie", "link"):
+            if info.get(k) and not a.get(k):
+                a[k] = info[k]
+        return info["id"]
+
+
+def assign_ids(items: list[tuple[list[dict], dict]], codigo_no_anexo: bool) -> list[str]:
+    """Readable, unique article ids: 'artigo-87', 'artigo-87-a'.
+
+    For codes approved in an annex (CT, CIRC), the code's articles get the plain ids and the
+    approving law's articles get 'lei-…'. Elsewhere an id gets a prefix only when two articles
+    share a number, for example a republished annex next to the diploma's own articles.
+    """
+    def in_anexo(stack):
+        return [p for p in stack if p["tipo"] == ANEXO and p["nome"].lower().startswith("anexo")]
+    base = [slugify(f["ConsolidacaoFragmento"]["Name"]) for _, f in items]
+    counts: dict[str, int] = {}
+    for b in base:
+        counts[b] = counts.get(b, 0) + 1
+    ids, used = [], set()
+    for (stack, _), b in zip(items, base):
+        anexos = in_anexo(stack)
+        if codigo_no_anexo:
+            aid = b if anexos else "lei-" + b
+        elif counts[b] > 1 and anexos:
+            aid = slugify(anexos[-1]["nome"]) + "-" + b
+        else:
+            aid = b
+        while aid in used:
+            aid += "-b"
+        used.add(aid)
+        ids.append(aid)
+    return ids
+
+
+def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
+    cfg = raw["diploma"]
+    head = raw["header"]["ConsolidadaConteudoDetalhe"]
+    legis, frag = head["DiplomaLegis"], head["DiplomaFrag"]
+    now = raw["now"]["LegConsBase"]["List"]
+    first = {f["FragmentoVersao"]["FragmentoId"]: f for f in raw["first"]["LegConsBase"]["List"]}
+    original_designacao = plain(legis.get("FormattedTitle") or "").split(" - ")[0] or cfg["titulo"]
+    original = {"id": atos.slug(original_designacao), "designacao": original_designacao,
+                "publicacao": d10(legis.get("DataPublicacao")) or raw["initial_date"],
+                "link": "https://diariodarepublica.pt" + legis["LinkSitemap"] if legis.get("LinkSitemap") else None}
+    reg.add(original)
+    reg.acts[original["id"]]["sumario"] = plain(legis.get("Sumario")) or None
+
+    # Summaries and links of the amending acts, from the consolidation timeline.
+    for m in raw["timeline"]["ModificacoesList"]["List"]:
+        desig = m["Title"].split(" - ")[0].strip()
+        aid = reg.add({"id": atos.slug(desig), "designacao": desig, "publicacao": d10(m.get("DataPublicacao")),
+                       "link": "https://diariodarepublica.pt" + m["LinkSitemap"] if m.get("LinkSitemap") else None})
+        if m.get("SumarioDiplomaLegis") and not reg.acts[aid]["sumario"]:
+            reg.acts[aid]["sumario"] = m["SumarioDiplomaLegis"].strip()
+
+    nodes, items, stack = [], [], []
+    for f in now:
+        fv, cf = f["FragmentoVersao"], f["ConsolidacaoFragmento"]
+        tipo, nivel = fv["TipoFragmentoId"], f["Nivel"]
+        stack = [p for p in stack if p["nivel"] < nivel]
+        if tipo != ARTIGO:
+            if nivel > 0 and tipo != 7:  # skip the diploma root and the signatures
+                nodes.append({"nivel": nivel, "tipo": "divisao", "rotulo": cf["Name"], "epigrafe": (fv.get("Epigrafe") or "").strip()})
+            stack.append({"nivel": nivel, "tipo": tipo, "nome": cf["Name"]})
+            continue
+        nodes.append(None)
+        items.append((list(stack), f))
+    ids = iter(assign_ids(items, bool(cfg.get("codigo_no_anexo"))))
+    tree, it, artigos = [], iter(items), {}
+    for node in nodes:
+        if node is not None:
+            tree.append(node)
+            continue
+        path, f = next(it)
+        aid, fv = next(ids), f["FragmentoVersao"]
+        hist = build_article(f, first.get(fv["FragmentoId"]), raw["versions"].get(fv["FragmentoId"], []), original, reg)
+        apply_vigor_rules(hist, aid, cfg)
+        hist.update({"id": aid, "diploma": cfg["slug"], "caminho": [p["nome"] for p in path if p["nivel"] > 0]})
+        for i, v in enumerate(hist["versoes"]):
+            if i or v["tipo"] != "original":
+                reg.acts[v["ato"]]["alteracoes"].append({"diploma": cfg["slug"], "artigo": aid, "rotulo": hist["rotulo"],
+                                                       "tipo": v["tipo"], "vigor": v["vigor"]})
+        artigos[aid] = hist
+        last = hist["versoes"][-1]
+        tree.append({"nivel": f["Nivel"], "tipo": "artigo", "rotulo": f["ConsolidacaoFragmento"]["Name"], "epigrafe": hist["epigrafe"],
+                     "artigo": aid, "estado": hist["estado"], "n": len(hist["versoes"]), "ultima": last["vigor"] or last["publicacao"]})
+
+    index = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "genitivo": cfg.get("genitivo"),
+             "vigor_original": cfg.get("vigor_original"), "designacao": original["designacao"],
+             "ato_original": original["id"], "publicacao": original["publicacao"], "link": original["link"],
+             "eli": frag.get("ELI") or None, "sumario": reg.acts[original["id"]]["sumario"], "arvore": tree, "artigos": artigos}
+    summary = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "designacao": original["designacao"],
+               "publicacao": original["publicacao"], "genitivo": cfg.get("genitivo")}
+    write(os.path.join(OUT, "d", cfg["slug"] + ".json"), index)
+    return index, summary
+
+
+def apply_vigor_rules(hist: dict, aid: str, cfg: dict) -> None:
+    """Fill the original version's entry-into-force date from corpus.json, citing the rule used.
+
+    The DR leaves this date empty for original texts. corpus.json records it per diploma,
+    with the provision that fixes it, and per-article exceptions and notes.
+    """
+    v0 = hist["versoes"][0]
+    if v0["tipo"] == "original" and not v0["vigor"]:
+        rule = next((e for e in cfg.get("vigor_excecoes", []) if aid in e["artigos"]), None) or cfg.get("vigor_original")
+        if rule:
+            v0["vigor"], v0["vigor_conhecido"] = rule["data"], True
+            v0["vigor_regra"], v0["vigor_fonte"] = rule["regra"], rule["fonte"]
+    for n in cfg.get("notas_vigor", []):
+        if aid in n["artigos"]:
+            hist["notas"].insert(0, {"texto": n["texto"], "fonte": n["fonte"], "ato": None, "tipo": "vigor"})
+            if n.get("condicional") and v0["tipo"] == "original":
+                # The whole article waits for other legislation: the date is not ours to guess.
+                v0["vigor"], v0["vigor_conhecido"], v0["vigor_regra"], v0["vigor_fonte"] = None, False, "condicional", n["fonte"]
+    if cfg.get("nota_efeitos") and not aid.startswith("lei-"):
+        hist["notas"].append({"texto": cfg["nota_efeitos"]["texto"], "fonte": cfg["nota_efeitos"]["fonte"], "ato": None, "tipo": "efeitos"})
+
+
+def build_article(f: dict, first: dict | None, entries: list[dict], original: dict, reg: Registry) -> dict:
+    fv = f["FragmentoVersao"]
+    versions = []
+    if first is not None:
+        ffv = first["FragmentoVersao"]
+        versions.append({"ato": original["id"], "tipo": "original", "artigo_do_ato": None,
+                         "publicacao": original["publicacao"], "vigor": d10(ffv.get("DataEntradaVigor")),
+                         "texto": texto.normalise(ffv.get("Texto"))})
+    for e in reversed(entries):  # the DR lists the newest first
+        info = atos.parse(e["AssociacaoDescription"]) or {}
+        if not info:
+            continue
+        aid = reg.add(info)
+        txt = "(Revogado.)" if info["tipo"] == "revogado" else texto.normalise(e.get("Texto"))
+        versions.append({"ato": aid, "tipo": info["tipo"], "artigo_do_ato": info.get("artigo_do_ato"),
+                         "publicacao": info.get("publicacao") or d10(e.get("DataVersao")),
+                         "vigor": info.get("vigor") or d10(e.get("DataEntradaVigor")), "texto": txt})
+    if not versions:  # an article added later and never changed again
+        alt = [atos.parse(a) for a in f["AlteracoesList"]["List"]]
+        info = next((a for a in alt if a and a["tipo"] == "aditado"), None) or next((a for a in alt if a), None)
+        aid = reg.add(info) if info else original["id"]
+        versions.append({"ato": aid, "tipo": info["tipo"] if info else "original", "artigo_do_ato": info and info.get("artigo_do_ato"),
+                         "publicacao": (info and info.get("publicacao")) or d10(fv.get("DataVersao")) or original["publicacao"],
+                         "vigor": (info and info.get("vigor")) or d10(fv.get("DataEntradaVigor")), "texto": texto.normalise(fv.get("Texto"))})
+    # Order by the date each version took effect; unknown entry dates fall back to publication.
+    versions.sort(key=lambda v: (v["vigor"] or v["publicacao"] or NO_DATE))
+    spans = texto.blame([v["texto"] for v in versions])
+    for v, s in zip(versions, spans):
+        v["vigor_conhecido"] = bool(v["vigor"])
+        if v["vigor"]:
+            v.setdefault("vigor_fonte", "Diário da República (legislação consolidada)")
+        v["linhas"] = [[[o, t] for o, t in line] for line in texto.lines_of(s)]
+        del v["texto"]
+    notas = []
+    for n in f["Nota"]["List"]:
+        fonte = plain(re.sub(r"</a>.*", "", n, flags=re.S))
+        info = atos.parse_fonte(fonte)
+        notas.append({"texto": plain(re.sub(r"^.*?</a>", "", n, flags=re.S)), "fonte": fonte,
+                      "artigo_do_ato": info["artigo_do_ato"] if info else None, "ato": reg.add(info) if info else None})
+    revogado = versions[-1]["tipo"] == "revogado" or fv.get("VersaoEstadoId") == 4
+    return {"rotulo": f["ConsolidacaoFragmento"]["Name"], "epigrafe": (fv.get("Epigrafe") or "").strip(),
+            "estado": "revogado" if revogado else "vigente", "versoes": versions, "notas": notas}
+
+
+# --- Parliament -------------------------------------------------------------------------------
+
+def link_parliament(reg: Registry, pdir: str) -> dict:
+    out: dict[str, dict] = {}
+    if not os.path.isdir(pdir):
+        sys.stderr.write(f"sem dados do Parlamento em {pdir}: atos sem iniciativa\n")
+        return out
+    diplomas = {}
+    for path in glob.glob(os.path.join(pdir, "Diplomas*_json.txt")):
+        with open(path, encoding="utf-8-sig") as fh:
+            for d in json.load(fh):
+                num = (d.get("Numero") or "") + (("-" + d["Numero2"]) if re.fullmatch(r"[A-Z]", d.get("Numero2") or "") else "")
+                diplomas[(d.get("Tipo"), num, str(d.get("AnoCivil")))] = d
+    wanted: dict[str, dict[str, str]] = {}  # legislatura -> {IniId: act id}
+    for aid, a in reg.acts.items():
+        key = atos.lei_key(a["designacao"])
+        d = diplomas.get(key) if key else None
+        if not d:
+            continue
+        a["ar"] = {"legislatura": d.get("Legislatura"), "diploma_id": d.get("Id")}
+        for ini in d.get("Iniciativas") or []:
+            wanted.setdefault(d.get("Legislatura"), {})[str(ini["IniId"])] = aid
+    for leg, ids in wanted.items():
+        path = os.path.join(pdir, f"Iniciativas{leg}_json.txt")
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8-sig") as fh:
+            data = json.load(fh)
+        for raw_ini in data:
+            iid = str(raw_ini.get("IniId"))
+            if iid not in ids:
+                continue
+            ini = normalise_iniciativa(raw_ini)
+            doc = {"id": iid, "legislatura": ini.legislature, "tipo": ini.kind, "numero": ini.number, "titulo": ini.title,
+                   "autores": ini.authors, "eventos": ini.events, "conjuntas": ini.joint_with,
+                   "votacoes": [{"data": v.date, "fase": v.phase, "resultado": v.result, "unanime": v.unanimous,
+                                 "posicoes": v.positions, "descricao": v.description} for v in ini.votes],
+                   "ato": ids[iid], "link": f"https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID={iid}"}
+            out[iid] = doc
+            reg.acts[ids[iid]].setdefault("iniciativas", []).append(
+                {"id": iid, "designacao": f"{ini.kind} n.º {ini.number}/{ini.legislature}", "titulo": ini.title, "autores": ini.authors})
+    return out
+
+
+def copy_design_system() -> None:
+    """The app loads the Redação design system's tokens and components from app/ds/."""
+    src = os.path.join(ROOT, "design-system")
+    dst = os.path.join(ROOT, "app", "ds")
+    os.makedirs(dst, exist_ok=True)
+    for name in ("tokens.css", "components/bundle.css", "components/bundle.js"):
+        shutil.copyfile(os.path.join(src, name), os.path.join(dst, os.path.basename(name)))
+
+
+def main() -> int:
+    copy_design_system()
+    with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
+        corpus = json.load(fh)
+    reg = Registry()
+    summaries, search = [], []
+    for cfg in corpus["diplomas"]:
+        path = os.path.join(ROOT, "data", "raw", cfg["slug"] + ".json")
+        if not os.path.exists(path):
+            sys.stderr.write(f"{cfg['slug']}: sem dados (corra pipeline/fetch.py)\n")
+            continue
+        with open(path, encoding="utf-8") as fh:
+            raw = json.load(fh)
+        raw["diploma"] = {**raw["diploma"], **cfg}
+        index, summary = build_diploma(raw, reg)
+        summary["n_artigos"] = sum(1 for n in index["arvore"] if n["tipo"] == "artigo")
+        summary["n_atos"] = sum(1 for a in reg.acts.values() if any(ch["diploma"] == cfg["slug"] for ch in a["alteracoes"]))
+        summaries.append(summary)
+        search.extend([cfg["slug"], n["artigo"], n["rotulo"], n["epigrafe"], n["estado"]] for n in index["arvore"] if n["tipo"] == "artigo")
+        sys.stderr.write(f"{cfg['slug']}: {summary['n_artigos']} artigos\n")
+    iniciativas = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"))
+    write(os.path.join(OUT, "iniciativas.json"), iniciativas)
+    for a in reg.acts.values():
+        a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
+    write(os.path.join(OUT, "atos.json"), reg.acts)
+    write(os.path.join(OUT, "index.json"), {"consultado_em": corpus["consultado_em"], "diplomas": summaries, "pesquisa": search})
+    sys.stderr.write(f"{len(reg.acts)} atos, {len(iniciativas)} iniciativas ligadas\n")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

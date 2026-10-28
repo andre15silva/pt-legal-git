@@ -58,6 +58,7 @@ Goal: hard numbers on feasibility before building the product.
 - [ ] Client for the DR consolidated API with a content-addressed cache; coverage census (how many diplomas and articles have versions, and how far back).
 - [ ] Grammar spike for amending instructions on 200 random acts from 2020–2026: share parsed deterministically.
 - [x] First replay test: Lei 13/2023 → Código do Trabalho, **90/97 articles exact** with 5 rules.
+- [x] **Visualizer prototype** ([`app/`](../app/), [`pipeline/`](../pipeline/)): CRP, CT, CIRC and NRAU from the DR consolidated API. It has word-level origin, comparison of any two versions, act and initiative pages, and links to 142 parliamentary initiatives. It is not yet verified by replay.
 - [ ] Replay spike on the CRP (7 revisions, each republished, so every version has an official checkpoint): compute M1/M2.
 - [ ] Talk to INCM (DR) and the AR open-data team about bulk access, and to legalize.dev about cooperating.
 - [ ] Align identifiers and the AKN export with the draft **AKN-PT / ELI-PT profile** (`dapl-sggov/akn-pt`, led by DAPL/SGGOV). Contact its authors early.

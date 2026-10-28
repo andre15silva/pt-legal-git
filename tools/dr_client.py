@@ -34,6 +34,7 @@ HEADERS = {
 LEGCONS = "LegislacaoConsolidada.LegCons_Detalhe"
 # (endpoint, apiVersion, viewName), observed 2026-10-28.
 EP = {
+    "initial_date": ("LegislacaoConsolidada/LegCons_Detalhe/DataActionGetInitialDate", "2fs9w33A1a5ZYqnjhzLjew", LEGCONS),
     "frag_info": ("LegislacaoConsolidada/LegCons_Detalhe/DataActionGetDiplomaFragByIdAndApplicationSetting", "nc_pvjc74SJq_vOvUM4nCg", LEGCONS),
     "as_of": ("LegislacaoConsolidada/LegCons_Detalhe/DataActionGetData", "0J5toCe4aZFDi88AoH0G0Q", LEGCONS),
     "timeline": ("LegislacaoConsolidada/AlteracoesTimelineByDiplomaLegisId/DataActionGetConsolidacaoByDiplomaFrag", "kqtmWKfgghZe4WM2Y1nYAQ", LEGCONS),
@@ -70,6 +71,14 @@ def diploma_header(frag_id: str, tipo: str, key: str) -> dict:
 def as_of(frag_id: str, legis_id: str, date: str, header: dict) -> dict:
     return call("as_of", {"DiplomaFragId": frag_id, "DiplomaLegisId": legis_id, "DataSelecionada": date,
                           "FragmentoVersaoId": "0", "GetDiplomaFragByIdAndApplicationSetting": header})
+
+
+def initial_date(frag_id: str, legis_id: str) -> dict:
+    return call("initial_date", {"DiplomaFragId": frag_id, "DiplomaLegisId": legis_id})
+
+
+def timeline(frag_id: str, legis_id: str, date: str) -> dict:
+    return call("timeline", {"DiplomaLegisId": legis_id, "DiplomaFragId": frag_id, "Data": date, "ModificanteFragId": "0"})
 
 
 def article_versions(fragment_version_id: str, frag_id: str, legis_id: str, date: str) -> list[dict]:

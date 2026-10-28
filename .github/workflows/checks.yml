@@ -13,8 +13,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Unit tests
-        run: python -I -m unittest discover -s tools -v
+        run: |
+          python -I -m unittest discover -s tools -v
+          python -I -m unittest discover -s pipeline -v
       - name: Copy follows PTS (docs/ESTILO.md)
-        run: python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js design-system/components/*/preview.html docs/ESTILO.md
+        run: python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js design-system/components/*/preview.html docs/ESTILO.md app/app.js
       - name: Design tokens meet contrast targets
         run: python -I tools/check_contrast.py design-system/tokens.json
