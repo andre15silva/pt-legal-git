@@ -25,6 +25,8 @@ python -I pipeline/build.py              # writes app/data/ and copies the desig
 python3 -m http.server 8000 -d app       # then open http://localhost:8000
 ```
 
+`app/data/d/<slug>.json` holds a diploma's índice and metadata. `app/data/d/<slug>/<artigo>.json` holds one article's history. A page loads only the files it shows: the Código do Trabalho índice is 144 KB, not 1.6 MB.
+
 Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.json). Each entry needs the DR consolidation ID (`frag_id`, `tipo`, `key`, all taken from the consolidated-text URL). Where the DR leaves a date out, the entry records the entry-into-force rule for the original text, with the provision that sets it.
 
 ## URLs
@@ -61,6 +63,6 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 - The text comes from the DR's consolidated legislation, which has no legal value. For the Constitution, `verificacao.py` checks every version against the official republications, and the article page says the result. The other diplomas are not checked yet.
 - The DR gives production of effects only as text notes. The app shows the notes, and warns when the "produção de efeitos" basis is selected.
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
-- Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. We show one cell per line.
+- Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. The pipeline writes each row as one line, `│ cell │ cell │ cell`, filling merged cells (colspan, rowspan) with empty cells so the rows of a table have the same number of cells. The app shows the rows as a grid: text in the first column, numbers right-aligned. Changes inside a cell are marked as in any line. In Origem do texto the rows of one table share one margin note.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
 - The especialidade votes in committee are only in PDFs (from legislatura XII). The app says that it does not have them.

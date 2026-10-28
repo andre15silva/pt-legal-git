@@ -15,6 +15,43 @@ _NUM = re.compile(r"^(\d+(?:\.\d+)*(?:-[A-Z])?)\s+[-–—]\s+")
 _TOKEN = re.compile(r"\n|\s+|\w+|[^\w\s]", re.UNICODE)
 
 
+CELULA = " │ "  # between the cells of a table row; a row line starts with "│ "
+
+
+def _tabela(m: re.Match) -> str:
+    """An HTML table -> one line per row, cells joined by CELULA, spans filled with empty cells.
+
+    Every row gets the same number of cells, so the app can lay them out as a grid and the
+    word diff compares cell by cell.
+    """
+    linhas: list[list[str]] = []
+    pendentes: dict[int, int] = {}  # column -> rows still covered by a rowspan from above
+    for tr in re.findall(r"(?is)<tr\b[^>]*>(.*?)</tr>", m.group(0)):
+        celulas, col = [], 0
+        for attrs, conteudo in re.findall(r"(?is)<t[dh]\b([^>]*)>(.*?)</t[dh]>", tr):
+            while pendentes.get(col, 0) > 0:
+                celulas.append("")
+                pendentes[col] -= 1
+                col += 1
+            txt = re.sub(r"<[^>]+>", " ", conteudo)
+            txt = re.sub(r"\s+", " ", html.unescape(txt).replace("\u00a0", " ")).strip()
+            cs = int((re.search(r'colspan="?(\d+)', attrs) or [0, 1])[1])
+            rs = int((re.search(r'rowspan="?(\d+)', attrs) or [0, 1])[1])
+            for k in range(cs):
+                celulas.append(txt if k == 0 else "")
+                if rs > 1:
+                    pendentes[col] = rs - 1
+                col += 1
+        while pendentes.get(col, 0) > 0:
+            celulas.append("")
+            pendentes[col] -= 1
+            col += 1
+        if any(celulas):
+            linhas.append(celulas)
+    n = max((len(c) for c in linhas), default=0)
+    return "\n" + "\n".join("│ " + CELULA.join(c + [""] * (n - len(c))) for c in linhas) + "\n"
+
+
 def normalise(texto: str | None) -> str:
     """DR fragment text -> lines joined by '\\n', one número or alínea per line.
 
@@ -27,6 +64,7 @@ def normalise(texto: str | None) -> str:
     # stripping does not swallow the text of the link. Any other U+FFFD stays visible.
     t = re.sub(r"</[^>\s\ufffd]?\ufffd", "</a>", t)
     t = re.sub(r"(<a\s[^>\ufffd]*?)[!\"]?\ufffd", r'\1">', t)
+    t = re.sub(r"(?is)<table\b.*?</table>", _tabela, t)
     t = re.sub(r"<br\s*/?>|</p>", "\n", t, flags=re.I)
     t = re.sub(r"<[^>]+>", "", t)
     t = t.replace("\r\n", "\n").replace("\r", "\n").replace(" ", " ")

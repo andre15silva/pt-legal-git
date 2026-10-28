@@ -85,7 +85,7 @@
   }
 
   // ---- TextOrigin -----------------------------------------------------------
-  // paragraphs: [{number?, kind?: 'n'|'al'|'rev', spans: [{text, act}]}]
+  // paragraphs: [{number?, kind?: 'n'|'al'|'rev'|'tab', spans: [{text, act}]}] ('tab': a table row, cells split by │)
   // acts: [{index, label, date, href?, hrefLabel?, diffHref?, beforeHref?, nota?}] (nota: a short line under "Escrito por")
   // margem: put a note beside each paragraph with the acts that wrote it (needs about 360 px on the right).
   // The chips mark words. They do not change the text. Choosing a phrase opens a popover under
@@ -111,12 +111,49 @@
     function about(a) {
       return ['Escrito por: ', h('strong', { key: 's' }, a.label), a.date ? ', publicação a ' + dataPorExtenso(a.date) + '.' : '.'];
     }
+    // The spans of one paragraph, each a phrase button. pi: the block the popover opens under.
+    function frases(spans, pi) {
+      return spans.map(function (s, si) {
+        var a = byIndex[s.act] || { label: '' };
+        var toggle = function () { var off = focus === s.act && para === pi; setFocus(off ? null : s.act); setPara(off ? null : pi); };
+        // Punctuation alone is not a phrase: it keeps its mark but is not a target.
+        if (!/[\p{L}\p{N}]/u.test(s.text)) return h('span', { key: si, className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim') }, s.text);
+        return h('span', {
+          key: si, role: 'button', tabIndex: 0,
+          className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim', focus === s.act && 'is-focus'),
+          'aria-pressed': focus === s.act,
+          'aria-label': s.text + '. Origem do texto: ' + a.label,
+          onClick: toggle,
+          onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }
+        }, s.text);
+      });
+    }
+    // A table row (kind 'tab'): the spans hold "cell │ cell │ cell". Each cell is a grid column.
+    function linhaTabela(p, pi, ri) {
+      var cels = [[]];
+      p.spans.forEach(function (s) {
+        s.text.split(/\s*│\s*/).forEach(function (t, k) { if (k) cels.push([]); if (t) cels[cels.length - 1].push({ text: t, act: s.act }); });
+      });
+      var txt = cels.map(function (c) { return c.map(function (x) { return x.text; }).join(''); });
+      var cab = !txt.some(function (c) { return /\d/.test(c); });
+      return h('p', { key: ri, className: cx('rd-statute', 'rd-p-tab', cab && 'rd-p-tab-cab'), style: { gridTemplateColumns: 'minmax(0, 2fr) repeat(' + Math.max(1, cels.length - 1) + ', minmax(0, 1fr))' } },
+        cels.map(function (c, k) {
+          return h('span', { key: k, className: cx('rd-cel', /^[\d\s,.%€−-]+$/.test(txt[k]) && txt[k] && 'rd-cel-num') },
+            k ? h('span', { className: 'rd-sr' }, '; ') : null, frases(c, pi));
+        }));
+    }
+    // Rows of one table make one block, with one note beside it: a note per row would not fit.
+    var blocos = [];
+    (props.paragraphs || []).forEach(function (p) {
+      var last = blocos[blocos.length - 1];
+      if (p.kind === 'tab' && last && last[0].kind === 'tab') last.push(p); else blocos.push([p]);
+    });
     return h('div', { className: 'rd-origin' },
       h('div', { className: 'rd-origin-text' },
-        (props.paragraphs || []).map(function (p, pi) {
+        blocos.map(function (ps, pi) {
           // margem: a note beside each paragraph names the acts that wrote words in it, newest first.
           var nos = [];
-          p.spans.forEach(function (s) { if (s.act !== 0 && /[\p{L}\p{N}]/u.test(s.text) && nos.indexOf(s.act) < 0) nos.push(s.act); });
+          ps.forEach(function (p) { p.spans.forEach(function (s) { if (s.act !== 0 && /[\p{L}\p{N}]/u.test(s.text) && nos.indexOf(s.act) < 0) nos.push(s.act); }); });
           nos.sort(function (a, b) { return a - b; });
           var linha = function (pEl, popEl) {
             if (!props.margem) return h(React.Fragment, { key: pi }, pEl, popEl);
@@ -125,28 +162,16 @@
               h('div', { className: 'rd-origin-margem' }, nos.map(function (ai) {
                 var a = byIndex[ai] || { label: '' };
                 return h('button', { key: ai, type: 'button', className: cx('rd-origin-marg', focus === ai && 'is-on'), 'aria-pressed': focus === ai,
-                  'aria-label': 'Marcar as palavras deste parágrafo escritas por ' + a.label,
+                  'aria-label': 'Marcar as palavras ' + (ps.length > 1 ? 'desta tabela' : 'deste parágrafo') + ' escritas por ' + a.label,
                   onClick: function () { var off = focus === ai && para === pi; setFocus(off ? null : ai); setPara(off ? null : pi); } },
                   h('span', { className: 'rd-origin-band rd-c-act-' + ai, 'aria-hidden': 'true' }), a.label);
               })));
           };
+          var p = ps[0];
           return linha(
-            h('p', { className: cx('rd-statute', p.kind && 'rd-p-' + p.kind) },
-              p.number ? h('span', { className: 'rd-num' }, p.number + ' ') : null,
-              p.spans.map(function (s, si) {
-                var a = byIndex[s.act] || { label: '' };
-                var toggle = function () { var off = focus === s.act && para === pi; setFocus(off ? null : s.act); setPara(off ? null : pi); };
-                // Punctuation alone is not a phrase: it keeps its mark but is not a target.
-                if (!/[\p{L}\p{N}]/u.test(s.text)) return h('span', { key: si, className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim') }, s.text);
-                return h('span', {
-                  key: si, role: 'button', tabIndex: 0,
-                  className: cx('rd-origin-span', 'rd-u-act-' + s.act, focus != null && focus !== s.act && 'is-dim', focus === s.act && 'is-focus'),
-                  'aria-pressed': focus === s.act,
-                  'aria-label': s.text + '. Origem do texto: ' + a.label,
-                  onClick: toggle,
-                  onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }
-                }, s.text);
-              })),
+            p.kind === 'tab' ? h('div', { className: 'rd-tabela' }, ps.map(function (r, ri) { return linhaTabela(r, pi, ri); }))
+              : h('p', { className: cx('rd-statute', p.kind && 'rd-p-' + p.kind) },
+                p.number ? h('span', { className: 'rd-num' }, p.number + ' ') : null, frases(p.spans, pi)),
             sel && para === pi ? h('div', { className: 'rd-origin-pop', role: 'group', 'aria-label': 'Origem do texto' },
               h('p', { className: 'rd-origin-pop-text' }, about(sel)),
               sel.nota ? h('p', { className: 'rd-origin-pop-nota' }, sel.nota) : null,

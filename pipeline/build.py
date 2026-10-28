@@ -185,8 +185,22 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
                "publicacao": original["publicacao"], "genitivo": cfg.get("genitivo")}
     if cfg.get("republicacoes"):
         index["verificacao"] = verificar_republicacoes(index, cfg["republicacoes"], reg)
-    write(os.path.join(OUT, "d", cfg["slug"] + ".json"), index)
+    escrever_diploma(index)
     return index, summary
+
+
+def escrever_diploma(index: dict) -> None:
+    """d/<slug>.json holds the tree and metadata; d/<slug>/<artigo>.json one article's history.
+
+    An article page then loads one small file instead of the whole code (the CPC has over a
+    thousand articles). Stale article files from an earlier build are removed first.
+    """
+    pasta = os.path.join(OUT, "d", index["slug"])
+    if os.path.isdir(pasta):
+        shutil.rmtree(pasta)
+    for aid, art in index["artigos"].items():
+        write(os.path.join(pasta, aid + ".json"), art)
+    write(os.path.join(OUT, "d", index["slug"] + ".json"), {k: v for k, v in index.items() if k != "artigos"})
 
 
 def verificar_republicacoes(index: dict, cfg: list[dict], reg: Registry) -> dict:

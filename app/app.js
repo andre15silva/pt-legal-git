@@ -175,6 +175,7 @@
     var paragraphs = v.linhas.map(function (l) {
       var spans = l.map(function (s) { return { text: s[1], act: corDe(art, s[0]) }; });
       var t = spans.map(function (s) { return s.text; }).join(''), p = partes(t), cut = t.length - p.resto.length;
+      if (TABELA.test(t)) { p = { kind: 'tab', nr: '', resto: t.replace(/^│\s?/, '') }; cut = t.length - p.resto.length; }
       // Take the número off the first span(s), so it can hang in the margin.
       while (cut > 0 && spans.length) {
         var f = spans[0];
@@ -560,8 +561,33 @@
     while ((m = re.exec(t))) m[1].split(/, | e /).forEach(function (x) { if (x) out[x] = true; });
     return out;
   }
+  // A table row: the pipeline writes it as one line, "│ cell │ cell │ cell". Rows of one table
+  // have the same number of cells, so a grid with the same columns lines them up. segs are
+  // [{op: 'eq'|'ins'|'del'|'novo', text}]: the cells keep the changes marked inside them.
+  var TABELA = /^│/;
+  function linhaTabela(segs, key) {
+    var cels = [[]];
+    segs.forEach(function (x, i) {
+      var t = i === 0 ? x.text.replace(/^│\s?/, '') : x.text;
+      nbsp(t).split(/\s*│\s*/).forEach(function (pt, k) { if (k) cels.push([]); if (pt) cels[cels.length - 1].push({ op: x.op, text: pt }); });
+    });
+    var texto = cels.map(function (c) { return c.filter(function (x) { return x.op !== 'del'; }).map(function (x) { return x.text; }).join(''); });
+    var cab = !texto.some(function (c) { return /\d/.test(c); });
+    return h('p', { key: key, className: 'lei-tab' + (cab ? ' lei-tab-cab' : ''), style: { gridTemplateColumns: 'minmax(0, 2fr) repeat(' + Math.max(1, cels.length - 1) + ', minmax(0, 1fr))' } },
+      cels.map(function (c, k) {
+        var num = /^[\d\s,.%€−-]+$/.test(texto[k]) && texto[k];
+        return h('span', { key: k, className: 'cel' + (num ? ' cel-num' : '') }, k ? h('span', { className: 'rd-sr' }, '; ') : null,
+          c.map(function (x, j) {
+            if (x.op === 'ins') return h('ins', { key: j, className: 'rd-ins' }, h('span', { className: 'rd-sr' }, '[início de texto acrescentado] '), x.text, h('span', { className: 'rd-sr' }, ' [fim de texto acrescentado]'));
+            if (x.op === 'del') return h('del', { key: j, className: 'rd-del' }, h('span', { className: 'rd-sr' }, '[início de texto eliminado] '), x.text, h('span', { className: 'rd-sr' }, ' [fim de texto eliminado]'));
+            if (x.op === 'novo') return h('span', { key: j, className: 'acabado' }, x.text);
+            return h('span', { key: j }, x.text);
+          }));
+      }));
+  }
   // One line of the law, with its número or alínea hanging in the margin.
   function linhaLei(t, key, marca) {
+    if (TABELA.test(t)) return linhaTabela([{ op: 'eq', text: t }], key);
     var p = partes(t);
     return h('p', { key: key, className: 'lei-p lei-' + (p.kind || 'x') + (revogada(p.resto) ? ' lei-rev' : '') + (marca && p.num && marca[p.num] ? ' lei-marca' : '') },
       p.nr ? h('span', { className: 'nr' }, p.nr + ' ') : null, nbsp(p.resto));
@@ -569,6 +595,7 @@
   // No-break spaces where a line must not break: before % and €, and inside "50 000".
   function nbsp(t) { return t.replace(/(\d) (%|€)/g, '$1 $2').replace(/(\d) (\d{3})(?!\d)/g, '$1 $2'); }
   function segsLei(segs, key) {
+    if (TABELA.test(segs.map(function (x) { return x.text; }).join(''))) return linhaTabela(segs, key);
     var first = segs[0], p = first && first.op === 'eq' ? partes(first.text) : { nr: '' };
     var rest = p.nr ? [{ op: 'eq', text: p.resto }].concat(segs.slice(1)) : segs;
     var novo = segs.filter(function (s) { return s.op !== 'del'; }).map(function (s) { return s.text; }).join('');
@@ -666,6 +693,7 @@
   var vista = { art: null, i: null, dir: null, desde: null };
   // One line of the law, with the words written after redação `desde` marked for a moment.
   function linhaMarcada(l, key, marca, desde) {
+    if (TABELA.test(l.map(function (x) { return x[1]; }).join(''))) return linhaTabela(l.map(function (x) { return { op: x[0] > desde ? 'novo' : 'eq', text: x[1] }; }), key);
     var t = l.map(function (x) { return x[1]; }).join(''), p = partes(t), corte = t.length - p.resto.length, pos = 0;
     return h('p', { key: key, className: 'lei-p lei-' + (p.kind || 'x') + (revogada(p.resto) ? ' lei-rev' : '') + (marca && p.num && marca[p.num] ? ' lei-marca' : '') },
       p.nr ? h('span', { className: 'nr' }, p.nr + ' ') : null,
@@ -711,13 +739,18 @@
       h('span', { className: 'tabs-linha', ref: linha, 'aria-hidden': 'true' }));
   }
   function Artigo(props) {
-    var r = useData(['d/' + props.slug + '.json', 'atos.json', 'passagem.json']);
+    // The diploma's index first; the article's own file only when the index lists it.
+    var ri = useData(['d/' + props.slug + '.json']);
+    var existe = ri.data && ri.data[0].arvore.some(function (x) { return x.artigo === props.id; });
+    var r = useData(existe ? ['d/' + props.slug + '.json', 'atos.json', 'passagem.json', 'd/' + props.slug + '/' + props.id + '.json'] : []);
     var cp = useState(0);
     var df = useState(0);   // the change in focus in Alterações
     var fl = useState(false);  // the phone sheet
-    if (!r.data) return h(Loading, { error: r.error });
-    var d = r.data[0], atos = r.data[1], ps = r.data[2], q = props.q;
-    var art = d.artigos[props.id];
+    if (!ri.data) return h(Loading, { error: ri.error });
+    var d = ri.data[0];
+    if (existe && !r.data) return h(Loading, { error: r.error });
+    var atos = existe ? r.data[1] : {}, ps = existe ? r.data[2] : {}, q = props.q;
+    var art = existe ? r.data[3] : null;
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo. Volte ao índice do diploma.'), h('a', { href: link(['d', d.slug]) }, d.titulo));
     var n = art.versoes.length, last = n - 1;
     var base = { vigor: 1, publicacao: 1 }[q.base] ? q.base : 'vigor';

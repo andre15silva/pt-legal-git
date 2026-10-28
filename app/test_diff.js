@@ -66,8 +66,9 @@ assert.strictEqual(JSON.stringify(periodo(art, 2, 'vigor')), '{"inicio":"2016-03
 let pairs = 0;
 const dir = path.join(__dirname, 'data', 'd');
 if (fs.existsSync(dir)) {
-  for (const f of fs.readdirSync(dir)) {
-    for (const [id, art] of Object.entries(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).artigos)) {
+  for (const f of fs.readdirSync(dir).filter(x => fs.statSync(path.join(dir, x)).isDirectory())) {
+    for (const g of fs.readdirSync(path.join(dir, f))) {
+      const id = g.replace(/\.json$/, ''), art = JSON.parse(fs.readFileSync(path.join(dir, f, g), 'utf8'));
       const t = art.versoes.map(v => v.linhas.map(l => l.map(s => s[1]).join('')).join('\n'));
       for (let i = 1; i < t.length; i++, pairs++) assert.ok(rebuilds(t[i - 1], t[i]), f + ' ' + id + ' ' + i);
     }

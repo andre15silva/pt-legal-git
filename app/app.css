@@ -211,6 +211,13 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .lei-al, .lei .rd-p-al { margin-top: 6px; padding-left: calc(var(--hang) + var(--hang-al)); text-indent: calc(-1 * var(--hang-al)); }
 .lei-al .nr, .lei .rd-p-al .rd-num { width: var(--hang-al); }
 .lei-x, .lei .rd-statute:not(.rd-p-n):not(.rd-p-al) { text-indent: 0; }
+.lei-tab { display: grid; margin: 0; padding: 5px 0 5px var(--hang); column-gap: 16px; border-bottom: 1px solid var(--rule); font-family: var(--font-serif); font-size: 16px; line-height: 24px; font-variant-numeric: lining-nums tabular-nums; }
+.lei-p + .lei-tab, .dobra + .lei-tab, .dif + .lei-tab { margin-top: 12px; border-top: 1px solid var(--ink); }
+.lei-tab-cab { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink-muted); }
+.cel-num { text-align: right; }
+.lei .rd-tabela { margin-left: var(--hang); }
+.lei .rd-statute.rd-p-tab { margin: 0; padding: 5px 0; text-indent: 0; font-size: 16px; line-height: 24px; }
+.lei .rd-p-tab-cab { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink-muted); }
 .lei-rev, .lei .rd-p-rev { font-size: 16px; line-height: 24px; color: var(--revogado); margin-top: 4px; }
 .lei-marca::before { content: ""; position: absolute; left: -14px; top: 7px; width: 3px; height: 16px; background: var(--aviso-rule); }
 .lei-origem { margin-left: calc(-1 * var(--hang)); }
