@@ -26,6 +26,7 @@ Lei n.º 64/2025 rewrote the Código do IRC's general rate from 20 % to **17 %**
 | [docs/RELATED-WORK.md](docs/RELATED-WORK.md) | Survey of law-as-git and point-in-time projects worldwide and in Portugal, and what we copy or avoid |
 | [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) | What the DR and parlamento.pt actually expose (probed live), legalize-pt, Lei 74/98 rules, rights |
 | [docs/DESIGN.md](docs/DESIGN.md) | Screens, information architecture, vocabulary, visual identity, accessibility |
+| [docs/UX-VERSIONS.md](docs/UX-VERSIONS.md) | Review of moving between versions (five viewpoints) and the ranked plan |
 | [docs/ESTILO.md](docs/ESTILO.md) | PTS (Português Técnico Simplificado): our pt-PT adaptation of ASD-STE100 for all product copy |
 | [design-system/](design-system/) | Source of the **Redação design system**: tokens, brand book (README), 11 React components with previews |
 | [design/screens/](design/screens/) | Source of the six screen designs (Claude Design canvas files) |
