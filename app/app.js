@@ -1172,6 +1172,23 @@
                   h('td', { className: 'num' }, p.so_forma), h('td', { className: 'num' }, p.diferente), h('td', { className: 'num' }, pct(p.m2)),
                   h('td', null, p.pdf ? h('a', { href: p.pdf, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null));
               })))),
+          rel.reproducao ? h('div', { className: 'reproducao' },
+            h('h3', { className: 'h3 rever-titulo' }, 'Reprodução das revisões'),
+            h('p', { className: 'lede' }, 'Aplicamos as instruções de cada lei de revisão ao texto oficial anterior e comparamos o resultado com a republicação. ',
+              'Reproduzimos palavra a palavra ' + pct(rel.m1) + ' dos artigos que as revisões alteraram. ',
+              'O limite é a coluna «Artigos não alterados»: mesmo nos artigos que nenhuma revisão tocou, dois textos oficiais seguidos nem sempre são iguais, por erros de transcrição.'),
+            h('div', { className: 'tabela-caixa', tabIndex: 0, role: 'region', 'aria-labelledby': 'rp-' + slug },
+              h('table', { className: 'tabela-votos tabela-verif' },
+                h('caption', { id: 'rp-' + slug }, 'Artigos reproduzidos, por revisão'),
+                h('thead', null, h('tr', null, ['Revisão', 'Instruções', 'Por ler', 'Artigos alterados', 'Reproduzidos', '', 'Artigos não alterados', 'Iguais'].map(function (c, k) { return h('th', { key: k, scope: 'col' }, c); }))),
+                h('tbody', null, rel.reproducao.map(function (p) {
+                  return h('tr', { key: p.ato },
+                    h('th', { scope: 'row' }, atos[p.ato] ? h('a', { href: link(['ato', p.ato]) }, p.designacao) : p.designacao),
+                    h('td', { className: 'num' }, p.instrucoes), h('td', { className: 'num' }, p.por_ler),
+                    h('td', { className: 'num' }, p.alterados), h('td', { className: 'num' }, p.alterados_iguais), h('td', { className: 'num' }, pct(p.m1)),
+                    h('td', { className: 'num' }, p.inalterados), h('td', { className: 'num' }, pct(p.teto)));
+                })))),
+            h('p', { className: 'muted small' }, 'Lemos as instruções com regras fixas, sem modelos de linguagem: cada palavra inserida vem do texto da lei de revisão. Uma instrução que não conseguimos ler fica na coluna «Por ler».')) : null,
           faltam.length ? h('p', { className: 'lede' }, 'O consolidado do Diário da República segue a numeração de hoje. Os artigos que uma revisão eliminou ou renumerou não têm história: faltam ',
             lista(faltam.map(function (p) { return p.falta_consolidado.length + ' artigos do texto de ' + p.data.slice(0, 4); })), '.') : null,
           h('h3', { className: 'h3 rever-titulo' }, 'Para rever (' + rel.divergentes.length + ')'),

@@ -186,7 +186,7 @@ Bootstrap: for diplomas we have not replayed yet, serve the DR consolidated per-
 
 | Metric | Definition | MVP target |
 |---|---|---|
-| M1 | Version transitions reproduced exactly by replay (after normalisation) | ≥ 97% (Lexifina: 361/365 ≈ 98.9%) |
+| M1 | Version transitions reproduced exactly by replay (after normalisation) | ≥ 97% (Lexifina: 361/365 ≈ 98.9%). Measured for the CRP on 2026-10-28: 70.8% of the articles the 7 revisions changed; see below |
 | M2 | Per-article exact match at each republication | ≥ 99% (measured for the DR consolidated CRP on 2026-10-28: 96.6% of 994 versions; see below) |
 | M3 | Alteration-ordinal chain consistent with Lei 74/98 art. 6.º, n.º 1 ("k.ª alteração" = k−1 known amenders) | 100% or listed as a gap |
 | M4 | Share of tokens attributed to a specific effect | ≥ 95% for post-1991 acts |
@@ -207,7 +207,25 @@ Bootstrap: for diplomas we have not replayed yet, serve the DR consolidated per-
 
 Per republication, 89–100% of articles match. The older acts (1982–1992) were transcribed from print and have their own slips, so a version counts as verified when one republication matches and no later run disagrees. The DR history also follows today's numbering: 36 articles of the older texts (17 of them from 1976) have no history at all.
 
-This is M2 for the consolidated text, not for our replay. M1 (replaying each revision's instructions) is next.
+This is M2 for the consolidated text, not for our replay.
+
+### First replay: the 7 revisions of the CRP (M1, 2026-10-28)
+
+`pipeline/replay.py` applies each Lei Constitucional to the previous official text and compares the result with the act's own republication. It reads the instructions with fixed rules and no language model, so every inserted word comes from the act. References use the numbers before the revision, so each unit keeps its original label. Two things the drafters leave implicit are done the way the republications do them: an inserted alínea pushes the next ones down, and references to moved articles take the new numbers.
+
+| Revision | Instructions (unread) | Changed articles reproduced | Unchanged articles equal (ceiling) |
+|---|---|---|---|
+| 1/82 | 523 (7) | 146 / 213 (68.5%) | 86.2% |
+| 1/89 | 416 (8) | 114 / 174 (65.5%) | 89.5% |
+| 1/92 | 10 (0) | 4 / 6 (66.7%) | 93.2% |
+| 1/97 | 509 (14) | 168 / 236 (71.2%) | 92.1% |
+| 1/2001 | 11 (0) | 6 / 6 (100%) | 96.6% |
+| 1/2004 | 108 (3) | 43 / 45 (95.6%) | 98.8% |
+| 1/2005 | 2 (0) | 2 / 2 (100%) | 100% |
+
+The ceiling column matters: even articles a revision did not touch differ between two consecutive official texts in 1–14% of cases, because the older acts were transcribed from print. The same slips hit the changed articles. The rest of the gap is in the republications themselves: they change punctuation, verb tenses and wording that the act does not mention (1997: "protegerá" became "protege"). The born-digital revisions (2001–2005) replay almost exactly.
+
+The gate (M6) is a test: `pipeline/test_pipeline.py` fails when M2 drops below 96% or M1 below 70%.
 
 ## 3. Text normalisation
 

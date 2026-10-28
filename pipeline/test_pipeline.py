@@ -8,6 +8,7 @@ import atos  # noqa: E402
 import build  # noqa: E402
 import passagem  # noqa: E402
 import verificacao  # noqa: E402
+import replay  # noqa: E402
 import texto  # noqa: E402
 
 
@@ -189,6 +190,56 @@ class Verificacao(unittest.TestCase):
         self.assertEqual(e(["igual", "diferente", "igual"]), ("verificado", None))      # a slip in one transcription
         self.assertEqual(e(["igual", "diferente"]), ("verificado", None))
         self.assertEqual(e(["igual", "diferente"], fim_digital=True), ("desatualizado", 1))
+
+
+class Replay(unittest.TestCase):
+    def antes(self):
+        t = ("CONSTITUIÇÃO DA REPÚBLICA PORTUGUESA\nArtigo 7.º\n(Relações internacionais)\n1. Portugal rege-se pelos princípios da paz.\n"
+             "2. Portugal preconiza o desarmamento geral, simultâneo e controlado.\n3. Texto três.\n"
+             "Artigo 9.º\n(Tarefas)\nSão tarefas do Estado:\na) Garantir a independência;\nb) Promover o bem-estar.\n"
+             "Artigo 10.º\n(Sufrágio)\nO povo exerce o poder.")
+        return replay.constituicao_de(t)
+
+    def correr(self, linhas):
+        ato = "Lei Constitucional\nArtigo 1.º\n" + "\n".join(linhas)
+        depois, falhas, _ = replay.aplicar(self.antes(), ato)
+        self.assertEqual(falhas, [])
+        return {k: replay.texto_de(a) for k, a in depois.items()}
+
+    def test_expression_between_anchors(self):
+        r = self.correr(["No n.º 1 do artigo 7.º é aditada, in fine, a expressão «e da cooperação»."])
+        self.assertIn("1. Portugal rege-se pelos princípios da paz e da cooperação.", r["7"])
+
+    def test_restatement_wins(self):
+        r = self.correr(["No n.º 2 do artigo 7.º a expressão «geral» é substituída por «universal», passando o preceito a ter a seguinte redacção:",
+                         "«2. Portugal preconiza o desarmamento universal.»"])
+        self.assertIn("2. Portugal preconiza o desarmamento universal.", r["7"])
+
+    def test_moves_use_the_old_numbers(self):
+        r = self.correr(["1 - O n.º 3 do artigo 7.º passa a n.º 4.", "2 - É aditado ao mesmo artigo um novo n.º 3, com a seguinte redacção:",
+                         "«3. Texto novo.»"])
+        self.assertEqual(r["7"].split("\n")[2:], ["3. Texto novo.", "4. Texto três."])
+
+    def test_new_alinea_pushes_the_old_ones_and_fixes_punctuation(self):
+        r = self.correr(["No artigo 9.º é aditada uma nova alínea b), com a seguinte redacção:", "«b) Defender a natureza.»"])
+        self.assertEqual(r["9"].split("\n")[1:], ["a) Garantir a independência;", "b) Defender a natureza;", "c) Promover o bem-estar."])
+
+    def test_article_moves_and_references_follow(self):
+        r = self.correr(["1 - O artigo 10.º passa a artigo 8.º", "2 - No n.º 1 do artigo 7.º é aditada, in fine, a expressão «, nos termos do artigo 10.º»."])
+        self.assertIn("8", r)
+        self.assertIn("nos termos do artigo 8.º", r["7"])
+
+
+@unittest.skipUnless(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json")),
+                     "run pipeline/build.py first")
+class Gate(unittest.TestCase):
+    """M6: the build is not good enough when a verification metric drops below its floor."""
+    def test_floors(self):
+        import json
+        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json"), encoding="utf-8") as fh:
+            r = json.load(fh)["diplomas"]["constituicao"]["relatorio"]
+        self.assertGreaterEqual(r["m2"], 0.96)   # measured 2026-10-28: 0.9658
+        self.assertGreaterEqual(r["m1"], 0.70)   # measured 2026-10-28: 0.7082
 
 
 if __name__ == "__main__":

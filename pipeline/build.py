@@ -30,6 +30,7 @@ import passagem  # noqa: E402
 import texto  # noqa: E402
 import fetch  # noqa: E402
 import verificacao  # noqa: E402
+import replay  # noqa: E402
 from parlamento import normalise as normalise_iniciativa  # noqa: E402
 
 OUT = os.path.join(ROOT, "app", "data")
@@ -182,6 +183,16 @@ def verificar_republicacoes(index: dict, cfg: list[dict], reg: Registry) -> dict
     rel = verificacao.verificar(index, reps)
     for x, r in zip(rel["republicacoes"], reps):
         x["pdf"] = r["pdf"]
+    # M1: replay each act on the official text before it (pipeline/replay.py).
+    if index["slug"] == "constituicao":
+        rel["reproducao"] = []
+        for antes, depois in zip(reps, reps[1:]):
+            m = replay.medir(antes["texto"], depois["texto"])
+            rel["reproducao"].append({"ato": depois["ato"], "designacao": depois["designacao"], "data": depois["data"],
+                                      **{k: m[k] for k in ("alterados", "alterados_iguais", "inalterados", "inalterados_iguais", "m1", "teto", "instrucoes", "por_ler")}})
+        alt = sum(x["alterados"] for x in rel["reproducao"])
+        rel["m1"] = round(sum(x["alterados_iguais"] for x in rel["reproducao"]) / alt, 4) if alt else None
+        sys.stderr.write(f"constituicao: reprodução das revisões, M1 = {rel['m1']:.1%} dos artigos alterados\n")
     v = rel["versoes"]
     sys.stderr.write(f"{index['slug']}: {v['total']} redações comparadas com republicações; "
                      f"{v.get('verificado', 0)} iguais, {v.get('forma', 0)} só na forma, {v.get('desatualizado', 0)} desatualizadas, "

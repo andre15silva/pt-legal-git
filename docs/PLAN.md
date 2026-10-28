@@ -61,7 +61,7 @@ Goal: hard numbers on feasibility before building the product.
 - [x] **Visualizer prototype** ([`app/`](../app/), [`pipeline/`](../pipeline/)): CRP, CT, CIRC and NRAU from the DR consolidated API. It has word-level origin, comparison of any two versions, act and initiative pages, and links to 142 parliamentary initiatives. It is not yet verified by replay.
 - [ ] Replay spike on the CRP (7 revisions, each republished, so every version has an official checkpoint): compute M1/M2.
   - [x] M2 for the DR consolidated text: 96.6% of 994 versions match an official republication; 5 versions are out of date and 29 differ ([ARCHITECTURE.md](ARCHITECTURE.md#first-measurement-the-dr-consolidated-crp-against-its-8-official-texts-2026-10-28)).
-  - [ ] M1: replay each revision's instructions.
+  - [x] M1: replay each revision's instructions with a deterministic grammar: 70.8% of changed articles exactly; 100% for 2001 and 2005, 95.6% for 2004 ([ARCHITECTURE.md](ARCHITECTURE.md#first-replay-the-7-revisions-of-the-crp-m1-2026-10-28)).
 - [ ] Talk to INCM (DR) and the AR open-data team about bulk access, and to legalize.dev about cooperating.
 - [ ] Align identifiers and the AKN export with the draft **AKN-PT / ELI-PT profile** (`dapl-sggov/akn-pt`, led by DAPL/SGGOV). Contact its authors early.
 - [ ] Evaluate against **timimata/lex**, an open PT-PT legal QA benchmark with dated questions and every Código do Trabalho article version since 2009.

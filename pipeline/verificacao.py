@@ -22,7 +22,7 @@ import unicodedata
 import texto
 
 _ART = re.compile(r"^Artigo\s+(\d+)\s*\.?\s*[ºo°]?\s*(?:-\s*([A-Z]))?\s*$", re.I)
-_EPIGRAFE = re.compile(r"^\((.+)\)$")
+_EPIGRAFE = re.compile(r"^\((.+)[)}]$")  # "(Promulgação e veto}" in the 1989 text
 _DIVISAO = re.compile(r"^(PARTE|T[ÍI]TULO|CAP[ÍI]TULO|SEC[ÇC][ÃA]O|SUBSEC[ÇC][ÃA]O)\b", re.I)
 # Signatures after the last article. Not "O Presidente da República …": articles start that way too.
 _FIM = re.compile(r"^(Aprovad[ao] em \d|Promulgad[ao] em \d|Publique-se\.?$|Referendad[ao] em \d)")
