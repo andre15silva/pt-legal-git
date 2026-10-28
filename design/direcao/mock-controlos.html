@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barra do tempo</title>
+<link rel="stylesheet" href="http://localhost:8765/ds/tokens.css">
+<link rel="stylesheet" href="http://localhost:8765/ds/bundle.css">
+<style>
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; display: flex; flex-direction: column; gap: 40px; }
+  .cap { font-size: 12px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--ink-muted); margin: 0 0 8px; }
+  .frame { border: 1px dashed var(--rule-strong); border-radius: var(--radius-md); padding: 20px 24px; background: var(--paper); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- Time panel: strip + date chip (scrolls away) ---------- */
+  .tp { background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); }
+  .tp-axis { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 12px 16px 8px; }
+  .strip { position: relative; display: flex; gap: 2px; height: 20px; }
+  .seg { flex: 1 1 0; min-width: 12px; padding: 0; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--verde-soft); cursor: pointer;
+         transition: background-color 120ms ease-out, border-color 120ms ease-out; }
+  .seg:hover { border-color: var(--verde); background: color-mix(in srgb, var(--verde-soft) 70%, var(--verde) 30%); }
+  .seg.tech { background: var(--paper-raised); border-style: dashed; }
+  .seg[aria-checked="true"] { background: var(--verde); border-color: var(--verde); }
+  .seg:focus-visible { outline-offset: 3px; }
+  .years { display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .today-tick { position: absolute; right: -4px; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+  .chip { font: inherit; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); cursor: pointer; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .chip:hover { background: var(--paper-sunken); }
+  .chip:active { background: var(--paper-sunken); box-shadow: inset 0 1px 2px rgb(0 0 0 / .12); }
+  .chip .k { color: var(--ink-muted); }
+  .caret { font-size: 11px; color: var(--ink-muted); }
+
+  /* ---------- Sticky row: one line, 52px ---------- */
+  .row { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 8px; border-top: 1px solid var(--rule); }
+  .tp.stuck .row { border-top: 0; }
+  .tp.stuck { box-shadow: var(--shadow-sheet); }
+  .step { font: inherit; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; min-width: 40px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .step:hover { background: var(--paper-sunken); }
+  .step:active { background: var(--rule); }
+  .step[aria-disabled="true"] { color: var(--ink-muted); opacity: .55; cursor: default; }
+  .step[aria-disabled="true"]:hover, .step[aria-disabled="true"]:active { background: transparent; }
+  .now { font: inherit; flex: 1 1 auto; min-width: 0; text-align: left; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--ink); cursor: pointer; }
+  .now:hover { background: var(--paper-sunken); }
+  .now-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .now-txt .m { color: var(--ink-muted); }
+  .state { font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); border: 1px solid currentColor; white-space: nowrap; }
+  .state-hoje { color: var(--verde); }
+  .state-passada { color: var(--aviso); background: var(--aviso-bg); }
+  .sep { width: 1px; align-self: stretch; margin: 6px 4px; background: var(--rule); }
+  .view { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 2px; gap: 2px; background: var(--paper); }
+  .view [role=radio] { font: inherit; font-size: 14px; min-height: 32px; padding: 0 12px; border: 0; border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .view [role=radio]:hover { background: var(--paper-sunken); }
+  .view [role=radio][aria-checked="true"] { background: var(--verde-soft); color: var(--verde); font-weight: 700; box-shadow: inset 0 0 0 1px var(--verde); }
+  .tp.passada { border-left: 4px solid var(--aviso); }
+  .hoje-btn { font: inherit; font-size: 14px; min-height: 32px; padding: 0 10px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--paper-raised); color: var(--verde); cursor: pointer; white-space: nowrap; }
+  .hoje-btn:hover { background: var(--verde-soft); }
+
+  /* ---------- Sub-row for "Alterações": ↑↓ within the text, compare base, layout ---------- */
+  .sub { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 16px; border-top: 1px solid var(--rule); font-size: 14px; }
+  .sub select { font: inherit; font-size: 14px; min-height: 32px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); padding: 0 6px; }
+  .difnav { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+  .difnav button { font: inherit; font-size: 14px; min-height: 32px; padding: 0 10px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--paper-raised); color: var(--ink); cursor: pointer; }
+  .difnav button:hover { background: var(--paper-sunken); }
+  .toggle { font: inherit; font-size: 14px; min-height: 32px; padding: 0 10px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--paper-raised); color: var(--ink); cursor: pointer; }
+  .toggle[aria-pressed="true"] { background: var(--verde-soft); border-color: var(--verde); color: var(--verde); font-weight: 700; }
+
+  /* ---------- Text ---------- */
+  .statute { margin-top: 16px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-md); padding: 24px 32px; }
+  .statute p { font-family: var(--font-serif); font-size: 19px; line-height: 31px; margin: 0 0 12px; max-width: 68ch; }
+  .fold { all: unset; box-sizing: border-box; display: block; cursor: pointer; padding: 6px 12px; margin: 0 0 12px; max-width: 68ch; border: 1px dashed var(--rule-strong); border-radius: var(--radius-sm); color: var(--ink-muted); font-size: 15px; }
+  .fold:hover { background: var(--paper-sunken); }
+  .fold:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .fold u { color: var(--verde); text-underline-offset: 3px; }
+  .flash { border-radius: 2px; animation: rd-flash 1600ms cubic-bezier(.2,0,0,1) both; }
+  @keyframes rd-flash { 0%, 35% { background: var(--ins-bg); box-shadow: 0 0 0 2px var(--ins-bg); } 100% { background: transparent; box-shadow: 0 0 0 2px transparent; } }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; } .seg { transition: none; } }
+
+  /* ---------- Popover ---------- */
+  .pop { position: absolute; z-index: 5; width: 340px; background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sheet); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .pop h3 { margin: 0; font-size: 16px; line-height: 22px; }
+  .pop .r { display: flex; gap: 8px; align-items: center; }
+  .pop details summary { font-size: 14px; cursor: pointer; color: var(--ink-muted); }
+  .pop fieldset { border: 0; padding: 8px 0 0; margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+  .pop .out { margin: 0; font-size: 14px; color: var(--ink-muted); }
+
+  /* ---------- Phone ---------- */
+  .phones { display: flex; gap: 32px; flex-wrap: wrap; }
+  .phone { position: relative; width: 390px; height: 700px; border: 1px solid var(--rule-strong); border-radius: 24px; overflow: hidden; background: var(--paper); }
+  .phone .content { padding: 16px; }
+  .phone .content p { font-family: var(--font-serif); font-size: 18px; line-height: 29px; margin: 0 0 12px; }
+  .pbar { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 48px 1fr 48px; gap: 4px; align-items: center; padding: 6px 8px 10px; background: var(--paper-raised); border-top: 1px solid var(--rule-strong); }
+  .pbar.passada { border-top: 3px solid var(--aviso); }
+  .pbar .step { min-height: 48px; min-width: 48px; justify-content: center; padding: 0; font-size: 22px; }
+  .pbar .now { min-height: 48px; justify-content: center; text-align: center; flex-direction: column; gap: 0; font-size: 14px; line-height: 18px; }
+  .pview { display: flex; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 2px; gap: 2px; margin-bottom: 16px; }
+  .pview [role=radio] { flex: 1 1 0; font: inherit; font-size: 14px; min-height: 40px; border: 0; border-radius: 3px; background: transparent; color: var(--ink); }
+  .pview [role=radio][aria-checked="true"] { background: var(--verde-soft); color: var(--verde); font-weight: 700; box-shadow: inset 0 0 0 1px var(--verde); }
+  .scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .32); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 84%; background: var(--paper-raised); border-radius: 16px 16px 0 0; box-shadow: var(--shadow-sheet); display: flex; flex-direction: column; }
+  .sheet-h { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 8px; }
+  .sheet-h h3 { margin: 0; font-size: 17px; }
+  .sheet-b { overflow: auto; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .opt { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; min-height: 48px; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; }
+  .opt[aria-selected="true"] { background: var(--verde-soft); border-color: var(--verde); }
+  .opt .dot { width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; border: 2px solid var(--ink-muted); }
+  .opt[aria-selected="true"] .dot { background: var(--verde); border-color: var(--verde); }
+  .opt b { font-weight: 700; } .opt small { display: block; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+  .opt.tech b { font-weight: 400; color: var(--ink-muted); }
+  .note { font-size: 13px; color: var(--ink-muted); margin: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section>
+  <p class="cap">A · Secretária, redação de hoje, vista «Texto» (interativo: ‹ ›, faixa, teclas ← → Home End)</p>
+  <div class="frame">
+    <p class="small" style="margin:0 0 4px;font-size:14px;color:var(--ink-muted)">Diplomas › CIRC › Capítulo IV › Artigo 87.º <span style="float:right"><a href="#" style="color:var(--verde)">‹ Artigo 86.º-B</a> &nbsp; <a href="#" style="color:var(--verde)">Artigo 87.º-A ›</a></span></p>
+    <h1 style="font-family:var(--font-serif);font-size:34px;line-height:40px;margin:8px 0 16px">Artigo 87.º — Taxas</h1>
+    <div class="tp" id="tp">
+      <div class="tp-axis">
+        <div>
+          <div class="strip" id="strip" role="radiogroup" aria-label="Redações do artigo 87.º"></div>
+          <div class="years" aria-hidden="true"><span>2014</span><span>2018</span><span>2022</span><span>hoje</span></div>
+        </div>
+        <button class="chip" id="chip" aria-haspopup="dialog" aria-expanded="false"><span class="k">Data</span> <span id="chipdate">hoje, 28 out. 2026</span> <span class="caret" aria-hidden="true">▾</span></button>
+      </div>
+      <div class="row">
+        <button class="step" id="prev" aria-describedby="nowtxt"><span aria-hidden="true">‹</span> Anterior</button>
+        <button class="now" aria-haspopup="listbox"><span class="now-txt" id="nowtxt" role="status"></span><span class="caret" aria-hidden="true">▾</span></button>
+        <span id="hojeSlot"></span>
+        <button class="step" id="next" aria-describedby="nowtxt">Seguinte <span aria-hidden="true">›</span></button>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="view" role="radiogroup" aria-label="Mostrar" id="view">
+          <button role="radio" aria-checked="true" tabindex="0">Texto</button>
+          <button role="radio" aria-checked="false" tabindex="-1">Alterações</button>
+          <button role="radio" aria-checked="false" tabindex="-1">Origem do texto</button>
+        </div>
+      </div>
+    </div>
+    <div class="statute" id="txt"></div>
+  </div>
+</section>
+
+<section>
+  <p class="cap">B · Secretária, depois de rolar: só a linha fixa fica no topo. Redação passada, vista «Alterações»</p>
+  <div class="frame" style="padding-top:0">
+    <div class="tp stuck passada">
+      <div class="row">
+        <button class="step"><span aria-hidden="true">‹</span> Anterior</button>
+        <button class="now"><span class="state state-passada">Não é a de hoje</span><span class="now-txt"><b>Redação 6 de 8</b> · Lei n.º 82/2023 <span class="m">· em vigor de 1 jan. 2024 a 31 dez. 2024</span></span><span class="caret" aria-hidden="true">▾</span></button>
+        <button class="hoje-btn">Ir para hoje</button>
+        <button class="step">Seguinte <span aria-hidden="true">›</span></button>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="view" role="radiogroup" aria-label="Mostrar">
+          <button role="radio" aria-checked="false" tabindex="-1">Texto</button>
+          <button role="radio" aria-checked="true" tabindex="0">Alterações</button>
+          <button role="radio" aria-checked="false" tabindex="-1">Origem do texto</button>
+        </div>
+      </div>
+      <div class="sub">
+        <label>Comparar com <select><option>a redação anterior (5 · Lei n.º 24-D/2022)</option><option>4 · Lei n.º 2/2020</option></select></label>
+        <button class="toggle" aria-pressed="false">Lado a lado</button>
+        <span class="difnav"><button><span aria-hidden="true">↑</span> Anterior</button><span role="status" style="padding:0 6px">Alteração 1 de 2</span><button>Seguinte <span aria-hidden="true">↓</span></button></span>
+      </div>
+    </div>
+    <div class="statute">
+      <p>1 — A taxa do IRC é de 21 %, exceto nos casos previstos nos números seguintes.</p>
+      <button class="fold" aria-expanded="false">⋯ 1 parágrafo sem alterações (n.º 2). <u>Mostrar</u></button>
+      <p style="outline:2px solid var(--focus);outline-offset:6px;border-radius:2px">3 — A aplicação <del class="rd-del">da taxa prevista no número anterior</del> <ins class="rd-ins">das taxas previstas nos n.os 2 e 8</ins> está sujeita às regras europeias aplicáveis em matéria de auxílios de minimis.</p>
+      <button class="fold" aria-expanded="false">⋯ 14 parágrafos sem alterações, do n.º 4 ao n.º 7. <u>Mostrar</u></button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="cap">C · O botão «Data» abre um painel. A página só muda com «Ver» ou Enter</p>
+  <div class="frame" style="position:relative;height:330px">
+    <div class="tp" style="max-width:none">
+      <div class="tp-axis">
+        <div><div class="strip" id="strip2" aria-hidden="true"></div><div class="years" aria-hidden="true"><span>2014</span><span>hoje</span></div></div>
+        <button class="chip" aria-expanded="true"><span class="k">Data</span> 15 mar. 2016 <span class="caret" aria-hidden="true">▴</span></button>
+      </div>
+    </div>
+    <div class="pop" role="dialog" aria-label="Ver a lei numa data" style="right:24px;top:72px">
+      <h3>Ver a lei como estava em</h3>
+      <div class="r"><input class="rd-input" type="date" value="2016-03-15" aria-label="Data"> <button class="rd-btn rd-btn-primary">Ver</button> <button class="rd-btn rd-btn-ghost">Hoje</button></div>
+      <p class="out">Mostra a redação 2 de 8 (Declaração de Retificação n.º 18/2014).</p>
+      <details><summary>Que data conta: entrada em vigor</summary>
+        <fieldset><legend class="rd-sr">Que data conta</legend>
+          <label><input type="radio" name="b" checked> Entrada em vigor</label>
+          <label><input type="radio" name="b"> Produção de efeitos</label>
+          <label><input type="radio" name="b"> Publicação</label>
+        </fieldset></details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="cap">D · Telemóvel, 390 px: barra em baixo e folha com a data e a lista</p>
+  <div class="phones">
+    <div class="phone">
+      <div class="content">
+        <p style="font-family:var(--font-sans);font-size:14px;color:var(--ink-muted);margin:0">CIRC › Artigo 87.º</p>
+        <h1 style="font-family:var(--font-serif);font-size:28px;line-height:34px;margin:4px 0 16px">Artigo 87.º — Taxas</h1>
+        <div class="pview" role="radiogroup" aria-label="Mostrar"><button role="radio" aria-checked="true">Texto</button><button role="radio" aria-checked="false">Alterações</button><button role="radio" aria-checked="false">Origem</button></div>
+        <p>1 — A taxa do IRC é de 21 %, exceto nos casos previstos nos números seguintes.</p>
+        <p>2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial…</p>
+      </div>
+      <div class="pbar passada">
+        <button class="step" aria-label="Redação anterior">‹</button>
+        <button class="now"><b>6 de 8 · Lei n.º 82/2023</b><span style="color:var(--aviso);font-weight:700">2024 · não é a de hoje ▾</span></button>
+        <button class="step" aria-label="Redação seguinte">›</button>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="content"><p>1 — A taxa do IRC é de 21 %, exceto nos casos previstos nos números seguintes.</p></div>
+      <div class="scrim"></div>
+      <div class="sheet" role="dialog" aria-label="Escolher a redação">
+        <div class="sheet-h"><h3>Escolher a redação</h3><button class="rd-btn">Fechar</button></div>
+        <div class="sheet-b">
+          <div class="r" style="display:flex;gap:8px"><input class="rd-input" type="date" value="2024-01-01" aria-label="Data" style="flex:1;min-height:48px"><button class="rd-btn rd-btn-primary" style="min-height:48px">Ver</button></div>
+          <div role="listbox" aria-label="Redações" style="display:flex;flex-direction:column;gap:2px">
+            <div class="opt" role="option" aria-selected="false"><span class="dot"></span><span><b>8 · Lei n.º 64/2025</b><small>em vigor hoje, desde 12 nov. 2025</small></span></div>
+            <div class="opt" role="option" aria-selected="false"><span class="dot"></span><span><b>7 · Lei n.º 45-A/2024</b><small>1 jan. 2025 a 11 nov. 2025</small></span></div>
+            <div class="opt" role="option" aria-selected="true"><span class="dot"></span><span><b>6 · Lei n.º 82/2023</b><small>1 jan. 2024 a 31 dez. 2024 · a ver</small></span></div>
+            <div class="opt" role="option" aria-selected="false"><span class="dot"></span><span><b>5 · Lei n.º 24-D/2022</b><small>1 jan. 2023 a 31 dez. 2023</small></span></div>
+            <div class="opt" role="option" aria-selected="false"><span class="dot"></span><span><b>4 · Lei n.º 2/2020</b><small>1 abr. 2020 a 31 dez. 2022</small></span></div>
+            <div class="opt" role="option" aria-selected="false"><span class="dot"></span><span><b>3 · Lei n.º 7-A/2016</b><small>31 mar. 2016 a 31 mar. 2020</small></span></div>
+            <div class="opt tech" role="option" aria-selected="false"><span class="dot"></span><span><b>2 · Declaração de Retificação n.º 18/2014</b><small>retificação · 21 jan. 2014 a 30 mar. 2016</small></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+(function () {
+  var V = [
+    { a: 'Texto original', s: '2014-01-21', e: '2014-01-21', p: '21 jan. 2014', n1: 23, n2: null, tech: false },
+    { a: 'Declaração de Retificação n.º 18/2014', s: '2014-01-21', e: '2016-03-30', p: '21 jan. 2014 a 30 mar. 2016', n1: 21, n2: null, tech: true },
+    { a: 'Lei n.º 7-A/2016', s: '2016-03-31', e: '2020-03-31', p: '31 mar. 2016 a 31 mar. 2020', n1: 21, n2: 17 },
+    { a: 'Lei n.º 2/2020', s: '2020-04-01', e: '2022-12-31', p: '1 abr. 2020 a 31 dez. 2022', n1: 21, n2: 17 },
+    { a: 'Lei n.º 24-D/2022', s: '2023-01-01', e: '2023-12-31', p: '1 jan. 2023 a 31 dez. 2023', n1: 21, n2: 17 },
+    { a: 'Lei n.º 82/2023', s: '2024-01-01', e: '2024-12-31', p: '1 jan. 2024 a 31 dez. 2024', n1: 21, n2: 17 },
+    { a: 'Lei n.º 45-A/2024', s: '2025-01-01', e: '2025-11-11', p: '1 jan. 2025 a 11 nov. 2025', n1: 20, n2: 16 },
+    { a: 'Lei n.º 64/2025', s: '2025-11-12', e: '2026-10-28', p: 'desde 12 nov. 2025', n1: 17, n2: 15 }
+  ];
+  var n = V.length, cur = n - 1, hoje = n - 1, from = null;
+  var strip = document.getElementById('strip'), strip2 = document.getElementById('strip2');
+  function days(a, b) { return Math.max(1, (Date.parse(b) - Date.parse(a)) / 864e5); }
+  V.forEach(function (v, i) {
+    var b = document.createElement('button');
+    b.className = 'seg' + (v.tech ? ' tech' : ''); b.setAttribute('role', 'radio');
+    b.setAttribute('aria-label', 'Redação ' + (i + 1) + ' de ' + n + ': ' + v.a + ', ' + v.p);
+    b.title = (i + 1) + ' · ' + v.a + ' · ' + v.p;
+    b.style.flexGrow = Math.round(days(v.s, v.e));
+    b.onclick = function () { go(i); };
+    strip.appendChild(b);
+    var c = b.cloneNode(); c.tabIndex = -1; c.removeAttribute('role'); c.setAttribute('aria-checked', i === 1); strip2.appendChild(c);
+  });
+  var t = document.createElement('span'); t.className = 'today-tick'; t.setAttribute('aria-hidden', 'true'); strip.appendChild(t);
+  strip.addEventListener('keydown', function (e) {
+    var k = { ArrowLeft: cur - 1, ArrowRight: cur + 1, Home: 0, End: n - 1 }[e.key];
+    if (k == null || k < 0 || k >= n) return;
+    e.preventDefault(); go(k); strip.children[k].focus();
+  });
+  ['prev', 'next'].forEach(function (id, j) {
+    var b = document.getElementById(id);
+    b.onclick = function () { go(cur + (j ? 1 : -1)); };
+    b.addEventListener('keydown', function (e) { var k = { ArrowLeft: cur - 1, ArrowRight: cur + 1, Home: 0, End: n - 1 }[e.key]; if (k != null) { e.preventDefault(); go(k); } });
+  });
+  var view = document.getElementById('view');
+  view.addEventListener('keydown', function (e) {
+    var bs = [].slice.call(view.children), i = bs.indexOf(document.activeElement);
+    var k = { ArrowLeft: i - 1, ArrowRight: i + 1 }[e.key]; if (k == null) return; e.preventDefault();
+    k = (k + bs.length) % bs.length; pick(bs, k); bs[k].focus();
+  });
+  [].slice.call(view.children).forEach(function (b, i, bs) { b.onclick = function () { pick(bs, i); }; });
+  function pick(bs, k) { bs.forEach(function (b, j) { b.setAttribute('aria-checked', j === k); b.tabIndex = j === k ? 0 : -1; }); }
+  function go(k) { if (k < 0 || k >= n || k === cur) return; from = cur; cur = k; render(); }
+  function num(x, old) { return (from != null && old !== x) ? '<span class="flash">' + x + '</span>' : String(x); }
+  function render() {
+    var v = V[cur], p = from != null ? V[from] : v, passada = cur < hoje;
+    [].forEach.call(strip.querySelectorAll('.seg'), function (b, i) { b.setAttribute('aria-checked', i === cur); b.tabIndex = i === cur ? 0 : -1; });
+    document.getElementById('prev').setAttribute('aria-disabled', cur === 0);
+    document.getElementById('next').setAttribute('aria-disabled', cur === n - 1);
+    document.getElementById('tp').classList.toggle('passada', passada);
+    document.getElementById('nowtxt').innerHTML = (passada ? '<span class="state state-passada">Não é a de hoje</span> ' : '<span class="state state-hoje">Em vigor hoje</span> ') +
+      '<b>Redação ' + (cur + 1) + ' de ' + n + '</b> · ' + v.a + ' <span class="m">· ' + (passada ? 'em vigor de ' : 'em vigor ') + v.p + '</span>';
+    document.getElementById('hojeSlot').innerHTML = passada ? '<button class="hoje-btn" id="hb">Ir para hoje</button>' : '';
+    var hb = document.getElementById('hb'); if (hb) hb.onclick = function () { go(hoje); };
+    document.getElementById('chipdate').textContent = passada ? 'a partir de ' + v.p.split(' a ')[0] : 'hoje, 28 out. 2026';
+    document.getElementById('txt').innerHTML =
+      '<p>1 — A taxa do IRC é de ' + num(v.n1, p.n1) + ' %, exceto nos casos previstos nos números seguintes.</p>' +
+      (v.n2 ? '<p>2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa, a taxa de IRC aplicável aos primeiros 50 000 € de matéria coletável é de ' + num(v.n2, p.n2) + ' %.</p>' : '');
+  }
+  render();
+  window.__go = go;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Art. 87.º CIRC · Redação</title>
+<link rel="stylesheet" href="http://localhost:8765/ds/tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<script>
+  try { if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark'; } catch (e) {}
+  if (location.hash === '#mudou') document.documentElement.classList.add('mudou');
+</script>
+<style>
+/* Proposed editorial layer on top of the real tokens */
+:root {
+  --step--1: 14px; --lh--1: 20px;   /* captions, controls */
+  --step-0: 16px;  --lh-0: 24px;    /* UI body, metadata */
+  --step-1: 19px;  --lh-1: 30px;    /* statute */
+  --step-2: 22px;  --lh-2: 28px;    /* section heads (serif) */
+  --step-4: 40px;  --lh-4: 44px;    /* article title */
+  --hang: 46px;                    /* width of "1 —" */
+  --hang-al: 30px;                 /* width of "a)" */
+  --line: 30px;                     /* baseline unit = statute line-height */
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 140px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: var(--step-0)/var(--lh-0) var(--font-sans); }
+a { color: var(--verde); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+.num, time, .data { font-family: var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+
+/* masthead: one hairline, no panel */
+.mast { border-bottom: 1px solid var(--rule); }
+.mast-in, .wrap { max-width: 1160px; margin: 0 auto; padding: 0 max(16px, 4vw); }
+.mast-in { display: flex; align-items: baseline; gap: 28px; padding-block: 14px; }
+.brand { font: 600 21px/28px var(--font-serif); color: var(--ink); text-decoration: none; }
+.mast nav { display: flex; gap: 20px; font-size: var(--step--1); }
+.mast nav a { color: var(--ink-muted); text-decoration: none; }
+
+/* page grid: text column + marginal column */
+.grid { display: grid; grid-template-columns: minmax(0, 660px) minmax(0, 300px); column-gap: 72px; justify-content: space-between; }
+
+/* article head */
+.head { padding: 40px 0 20px; }
+.runhead { margin: 0 0 10px; font: italic 400 17px/24px var(--font-serif); color: var(--ink-muted); }
+.runhead a { color: inherit; text-decoration-color: var(--rule-strong); }
+h1 { margin: 0; font: 600 var(--step-4)/var(--lh-4) var(--font-serif); letter-spacing: -0.01em; }
+h1 .epi { display: block; font-weight: 400; }
+.state { margin: 14px 0 0; font: 17px/26px var(--font-serif); color: var(--ink-muted); max-width: 60ch; }
+.state b { color: var(--verde); font-weight: 600; }
+.state .dot { color: var(--verde); }
+.vizinhos { display: flex; gap: 20px; justify-content: flex-end; align-self: end; padding-bottom: 22px; font-size: var(--step--1); }
+
+/* version bar: rules, not a box */
+.vbar { position: sticky; top: 0; z-index: 5; background: var(--paper); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 10px 0 0; }
+.vrow { display: flex; align-items: baseline; gap: 16px; }
+.vstat { flex: 1; text-align: center; font: 16px/24px var(--font-serif); }
+.vstat strong { font-weight: 600; }
+.vstat strong { font-weight: 700; }
+.step { font: inherit; font-size: var(--step--1); background: none; border: 0; padding: 10px 4px; min-height: 44px; color: var(--verde); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.step[aria-disabled="true"] { color: var(--ink-muted); text-decoration: none; cursor: default; }
+.axis { position: relative; height: 34px; margin: 2px 0 0; }
+.axis .base { position: absolute; left: 0; right: 0; top: 8px; height: 1px; background: var(--rule-strong); }
+.axis .cur { position: absolute; top: 6px; height: 5px; background: var(--verde); }
+.axis .tick { position: absolute; top: 3px; width: 1px; height: 11px; background: var(--ink); }
+.axis .tick.tec { height: 6px; top: 6px; background: var(--ink-muted); }
+.axis .yr { position: absolute; top: 15px; transform: translateX(-50%); font: 12px/16px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ink-muted); }
+.axis .yr.end { transform: translateX(-100%); }
+.vtools { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--rule); font-size: var(--step--1); }
+.tabs { display: flex; gap: 22px; }
+.tab { padding: 10px 0 8px; color: var(--ink); text-decoration: none; border-bottom: 2px solid transparent; }
+.tab[aria-current] { border-bottom-color: var(--verde); font-weight: 700; color: var(--verde); }
+.tools-r { display: flex; gap: 22px; }
+
+/* warning: a ruled note, no fill */
+.atencao { margin: 28px 0 0; padding: 0 0 0 14px; border-left: 3px solid var(--aviso); }
+.side-note { margin: 32px 0 8px; padding: 0 0 0 14px; border-left: 3px solid var(--aviso); }
+.side-note .lbl { margin: 0 0 6px; font-size: var(--step--1); line-height: var(--lh--1); } .side-note .lbl b { color: var(--aviso); }
+.side-note blockquote { margin: 0; font: 15px/24px var(--font-serif); }
+.side-note cite { display: block; margin-top: 6px; font: normal 13px/18px var(--font-sans); color: var(--ink-muted); }
+.hist h2 { margin-top: 0; }
+.atencao .lbl { margin: 0; font-size: var(--step--1); line-height: var(--lh--1); }
+.atencao .lbl b { color: var(--aviso); }
+.atencao blockquote { margin: 8px 0 0; font: 16px/26px var(--font-serif); }
+.atencao cite { display: block; margin-top: 4px; font: normal var(--step--1)/var(--lh--1) var(--font-sans); color: var(--ink-muted); }
+
+/* the law */
+.lei { margin: 32px 0 0 calc(-1 * var(--hang)); font: 400 var(--step-1)/var(--lh-1) var(--font-serif); font-optical-sizing: auto; hanging-punctuation: first; font-kerning: normal; }
+.lei p { margin: 0; }
+.n { padding-left: var(--hang); text-indent: calc(-1 * var(--hang)); margin-top: calc(var(--line) / 2) !important; position: relative; }
+.n:first-child { margin-top: 0 !important; }
+.n > .nr, .al > .nr { display: inline-block; text-indent: 0; white-space: nowrap; }
+.n > .nr { width: var(--hang); padding-right: .35em; text-align: right; box-sizing: border-box; }
+.al { padding-left: calc(var(--hang) + var(--hang-al)); text-indent: calc(-1 * var(--hang-al)); margin-top: 6px !important; }
+.al > .nr { width: var(--hang-al); }
+.rev { color: var(--revogado); font-size: 16px; line-height: 24px; }
+.al.rev { margin-top: 0 !important; }
+.n.rev + .n.rev { margin-top: 0 !important; }
+/* changes, only in "O que mudou" */
+ins { text-decoration: none; } del { display: none; }
+.mudou ins, .mudou del { text-decoration-thickness: 2px; border-radius: var(--radius-xs); padding: 0 2px; }
+.mudou ins { display: inline; color: var(--ins-ink); background: var(--ins-bg); text-decoration: underline; text-underline-offset: 4px; }
+.mudou del { display: inline; color: var(--del-ink); background: var(--del-bg); }
+.mudou .chg::before { content: ""; position: absolute; left: calc(-1 * var(--hang) + 8px); top: 6px; bottom: 6px; width: 3px; background: var(--ins-ink); }
+.key { display: none; margin: 24px 0 0; font-size: var(--step--1); color: var(--ink-muted); }
+.mudou .key { display: block; }
+
+/* below the text: rules, no boxes */
+.sec { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 16px; }
+h2 { margin: 0 0 12px; font: 600 var(--step-2)/var(--lh-2) var(--font-serif); }
+.sec p { margin: 0 0 12px; max-width: 65ch; }
+.small { font-size: var(--step--1); line-height: var(--lh--1); color: var(--ink-muted); }
+.cite { font: 17px/26px var(--font-serif); margin: 0 0 8px; }
+.textbtn { font: inherit; font-size: var(--step--1); background: none; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 0 12px; min-height: 36px; color: var(--ink); cursor: pointer; }
+
+/* marginal history: a register, not cards */
+.hist { padding-top: 0; }
+.hist .reg-wrap { margin-top: 36px; }
+.hist h2 { font-size: 19px; line-height: 24px; margin-bottom: 4px; }
+.hist .cap { margin: 0 0 12px; font-size: var(--step--1); color: var(--ink-muted); }
+.reg { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+.reg li { display: grid; grid-template-columns: 82px 1fr; column-gap: 12px; padding: 9px 0 10px; border-bottom: 1px solid var(--rule); font-size: var(--step--1); line-height: var(--lh--1); position: relative; }
+.reg time { font-size: 15px; color: var(--ink); }
+.reg .act { font: 600 15px/20px var(--font-serif); }
+.reg .act a { color: var(--ink); text-decoration-color: var(--rule-strong); }
+.reg .meta { grid-column: 2; color: var(--ink-muted); }
+.reg .meta .data { font-size: 14px; }
+.reg .meta a { color: var(--ink-muted); }
+.reg li.on { box-shadow: inset 3px 0 0 var(--verde); padding-left: 12px; margin-left: -12px; }
+.reg li.on .act a { color: var(--verde); text-decoration: none; }
+.reg li.on .here { color: var(--verde); font-weight: 700; }
+.reg li.tec .act { font-weight: 400; color: var(--ink-muted); }
+.reg li.tec time { color: var(--ink-muted); }
+
+.foot { margin-top: 64px; border-top: 1px solid var(--rule); padding: 16px 0 32px; font-size: var(--step--1); line-height: var(--lh--1); color: var(--ink-muted); }
+.foot b { color: var(--ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.only-phone { display: none; }
+
+@media (max-width: 760px) {
+  :root { --step-1: 18px; --lh-1: 28px; --line: 28px; --step-4: 30px; --lh-4: 34px; --hang: 38px; --hang-al: 28px; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .head { padding: 20px 0 14px; }
+  .runhead { font-size: 15px; line-height: 21px; margin-bottom: 6px; }
+  .state { margin-top: 8px; font-size: 15px; line-height: 22px; }
+  .vizinhos { display: none; }
+  /* bar: tabs stay above the text, stepping goes to the bottom of the screen */
+  .vbar { border-top: 1px solid var(--ink); padding-top: 0; }
+  .vbar .vrow, .vbar .axis { display: none; }
+  .vtools { border-top: 0; overflow-x: auto; }
+  .tabs { gap: 18px; white-space: nowrap; }
+  .tools-r { display: none; }
+  .only-phone { display: block; }
+  .dock.only-phone { display: grid; }
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; background: var(--paper); border-top: 2px solid var(--ink); padding: 4px 8px max(4px, env(safe-area-inset-bottom)); }
+  .dock .step { font-size: 22px; text-decoration: none; min-width: 48px; min-height: 48px; }
+  .dock .mid { text-align: center; font-size: var(--step--1); line-height: 18px; background: none; border: 0; color: var(--ink); font-family: inherit; min-height: 48px; }
+  .dock .mid strong { display: block; font-size: 15px; }
+  .atencao { margin-top: 20px; }
+  .atencao details summary { cursor: pointer; color: var(--verde); text-decoration: underline; text-underline-offset: 3px; font-size: var(--step--1); margin-top: 4px; }
+  .lei { margin: 24px 0 0 0; }
+  .n > .nr { text-align: left; }
+  .hist { padding-top: 8px; }
+  body { padding-bottom: 72px; }
+  .mudou .chg::before { left: -10px; }
+}
+@media (max-width: 760px) { .desk-only { display: none; } .atencao details { display: block; } .atencao blockquote { margin: 8px 0 0; font: 16px/26px var(--font-serif); } .atencao cite { display:block; font: 14px/20px var(--font-sans); color: var(--ink-muted); } }
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-in">
+  <a class="brand" href="#">Redação</a>
+  <nav><a href="#">Diplomas</a><a href="#">Sobre os dados</a></nav>
+</div></header>
+
+<main class="wrap">
+  <div class="grid">
+    <div class="head">
+      <p class="runhead"><a href="#">Código do Imposto sobre o Rendimento das Pessoas Coletivas</a> · <a href="#">Capítulo IV</a></p>
+      <h1>Artigo 87.º <span class="epi">Taxas</span></h1>
+      <p class="state"><span class="dot" aria-hidden="true">●</span> <b>Em vigor hoje.</b> Redação dada pela Lei n.º 64/2025, de 7 de novembro, em vigor desde <time datetime="2025-11-12">12 de novembro de 2025</time>.</p>
+    </div>
+    <div class="vizinhos"><a href="#">‹ Artigo 86.º-B</a><a href="#">Artigo 87.º-A ›</a></div>
+  </div>
+
+  <div class="vbar" role="region" aria-label="Redação mostrada">
+    <div class="vrow">
+      <button class="step" type="button">‹ Redação anterior</button>
+      <p class="vstat" role="status" style="margin:0"><strong>Redação 8 de 8</strong> · Lei n.º 64/2025 · em vigor desde <time datetime="2025-11-12">12 de novembro de 2025</time></p>
+      <button class="step" type="button" aria-disabled="true">Redação seguinte ›</button>
+    </div>
+    <div class="axis" aria-hidden="true">
+      <div class="base"></div>
+      <div class="cur" style="left:92.49%;right:0"></div>
+      <span class="tick" style="left:0%"></span><span class="tick tec" style="left:0.4%"></span>
+      <span class="tick" style="left:17.16%"></span><span class="tick" style="left:48.51%"></span>
+      <span class="tick" style="left:70.06%"></span><span class="tick" style="left:77.89%"></span>
+      <span class="tick" style="left:85.74%"></span><span class="tick" style="left:92.49%"></span>
+      <span class="yr" style="left:1.5%">2014</span><span class="yr" style="left:17.16%">2016</span>
+      <span class="yr" style="left:48.51%">2020</span><span class="yr" style="left:70.06%">2023</span>
+      <span class="yr" style="left:77.89%">2024</span><span class="yr" style="left:85.74%">2025</span>
+      <span class="yr end" style="left:100%">hoje</span>
+    </div>
+    <div class="vtools">
+      <nav class="tabs" aria-label="Mostrar">
+        <a class="tab" href="#" data-v="texto">Texto</a>
+        <a class="tab" href="#mudou" data-v="mudou">O que mudou</a>
+        <a class="tab" href="#" data-v="origem">Origem das palavras</a>
+      </nav>
+      <div class="tools-r"><a href="#">Ver noutra data</a><a href="#">Comparar redações</a></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <article aria-label="Artigo 87.º — Taxas">
+      <aside class="atencao">
+        <p class="lbl"><b>Atenção:</b> a Lei n.º 64/2025, artigo 3.º, tem uma norma que muda a forma como esta redação se aplica. Leia a norma antes de aplicar o texto.</p>
+        <details class="only-phone" id="norma"><summary>Ler a norma</summary><blockquote>A taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2028. Nos períodos de tributação que se iniciem durante o ano de 2026, a taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC é de 19&nbsp;%. Nos períodos de tributação que se iniciem durante o ano de 2027, a taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC é de 18&nbsp;%. A taxa prevista no n.º 2 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2026.<cite>Lei n.º 64/2025, artigo 3.º · <a href="#">Ver o ato</a></cite></blockquote></details>
+      </aside>
+
+      <div class="lei">
+        <p class="n chg"><span class="nr">1 —</span>A taxa do IRC é de <del>20</del><ins>17</ins>&nbsp;%, exceto nos casos previstos nos números seguintes.</p>
+        <p class="n chg"><span class="nr">2 —</span>No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (Small Mid Cap), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50&#8239;000&nbsp;€ de matéria coletável é de <del>16</del><ins>15</ins>&nbsp;%, aplicando-se a taxa prevista no número anterior ao excedente.</p>
+        <p class="n"><span class="nr">3 —</span>A aplicação das taxas previstas nos n.os 2 e 8 está sujeita às regras europeias aplicáveis em matéria de auxílios de <i>minimis</i>.</p>
+        <p class="n"><span class="nr">4 —</span>Tratando-se de rendimentos de entidades que não tenham sede nem direção efetiva em território português e aí não possuam estabelecimento estável ao qual os mesmos sejam imputáveis, a taxa do IRC é de 25&nbsp;%, exceto relativamente aos seguintes rendimentos:</p>
+        <p class="al rev"><span class="nr">a)</span>(Revogada.)</p>
+        <p class="al rev"><span class="nr">b)</span>(Revogada.)</p>
+        <p class="al rev"><span class="nr">c)</span>(Revogada.)</p>
+        <p class="al"><span class="nr">d)</span>Prémios de rifas, totoloto, jogo de loto, bem como importâncias ou prémios atribuídos em quaisquer sorteios ou concursos, em que a taxa é de 35&nbsp;%;</p>
+        <p class="al rev"><span class="nr">e)</span>(Revogada.)</p>
+        <p class="al rev"><span class="nr">f)</span>(Revogada.)</p>
+        <p class="al rev"><span class="nr">g)</span>(Revogada.)</p>
+        <p class="al"><span class="nr">h)</span>Rendimentos de capitais sempre que sejam pagos ou colocados à disposição em contas abertas em nome de um ou mais titulares mas por conta de terceiros não identificados, em que a taxa é de 35&nbsp;%, exceto quando seja identificado o beneficiário efetivo, termos em que se aplicam as regras gerais;</p>
+        <p class="al"><span class="nr">i)</span>Rendimentos de capitais, tal como definidos no artigo 5.º do Código do IRS, obtidos por entidades não residentes em território português, que sejam domiciliadas em país, território ou região sujeitas a um regime fiscal claramente mais favorável, constante de lista aprovada por portaria do membro do Governo responsável pela área das finanças, em que a taxa é de 35&nbsp;%.</p>
+        <p class="n chg"><span class="nr">5 —</span>Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de <del>20</del><ins>17</ins>&nbsp;%.</p>
+        <p class="n rev"><span class="nr">6 —</span>(Revogado.)</p>
+        <p class="n rev"><span class="nr">7 —</span>(Revogado.)</p>
+        <p class="n"><span class="nr">8 —</span>Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como <i>startup</i>, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea f) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5&nbsp;%.</p>
+      </div>
+      <p class="key">3 alterações em relação à redação 7 (Lei n.º 45-A/2024). <ins style="display:inline">acrescentado</ins> <del style="display:inline">eliminado</del></p>
+
+      <section class="sec">
+        <h2>Notas</h2>
+        <p>A Lei n.º 2/2014 aplica-se aos períodos de tributação que começam, ou aos factos tributários que ocorrem, a partir de 1 de janeiro de 2014. <span class="small">Lei n.º 2/2014, artigo 14.º</span></p>
+      </section>
+      <section class="sec">
+        <h2>Citar</h2>
+        <p class="cite">Artigo 87.º do Código do IRC, na redação dada pela Lei n.º 64/2025, de 7 de novembro.</p>
+        <button class="textbtn" type="button">Copiar citação</button>
+      </section>
+      <p class="small" style="margin-top:32px">Texto do consolidado do Diário da República. Ainda não verificamos este texto com uma reprodução própria (<b>não verificado</b>). <a href="#">Ver Lei n.º 64/2025 no Diário da República</a></p>
+    </article>
+
+    <aside class="hist" aria-labelledby="h-hist">
+      <div class="side-note desk-only" aria-label="Norma transitória"><p class="lbl"><b>Atenção:</b> norma transitória</p><blockquote>A taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2028. Nos períodos de tributação que se iniciem durante o ano de 2026, a taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC é de 19&nbsp;%. Nos períodos de tributação que se iniciem durante o ano de 2027, a taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC é de 18&nbsp;%. A taxa prevista no n.º 2 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2026.<cite>Lei n.º 64/2025, artigo 3.º · <a href="#">Ver o ato</a></cite></blockquote></div>
+      <div class="reg-wrap">
+      <h2 id="h-hist">História deste artigo</h2>
+      <p class="cap">8 redações. A mais recente primeiro.</p>
+      <ol class="reg" reversed>
+        <li class="on"><time datetime="2025-11-12">12/11/2025</time><span class="act"><a href="#" aria-current="true">Lei n.º 64/2025</a></span><span class="meta"><span class="here">A ver esta redação.</span> Em vigor hoje. <a href="#mudou">Ver a alteração</a></span></li>
+        <li><time datetime="2025-01-01">01/01/2025</time><span class="act"><a href="#">Lei n.º 45-A/2024</a></span><span class="meta">até <span class="data">11/11/2025</span> · <a href="#">Ver a alteração</a></span></li>
+        <li><time datetime="2024-01-01">01/01/2024</time><span class="act"><a href="#">Lei n.º 82/2023</a></span><span class="meta">até <span class="data">31/12/2024</span> · <a href="#">Ver a alteração</a></span></li>
+        <li><time datetime="2023-01-01">01/01/2023</time><span class="act"><a href="#">Lei n.º 24-D/2022</a></span><span class="meta">até <span class="data">31/12/2023</span> · <a href="#">Ver a alteração</a></span></li>
+        <li><time datetime="2020-04-01">01/04/2020</time><span class="act"><a href="#">Lei n.º 2/2020</a></span><span class="meta">até <span class="data">31/12/2022</span> · <a href="#">Ver a alteração</a></span></li>
+        <li><time datetime="2016-03-31">31/03/2016</time><span class="act"><a href="#">Lei n.º 7-A/2016</a></span><span class="meta">até <span class="data">31/03/2020</span> · <a href="#">Ver a alteração</a></span></li>
+        <li class="tec"><time datetime="2014-01-21">21/01/2014</time><span class="act"><a href="#">Declaração de Retificação n.º 18/2014</a></span><span class="meta">Retificação · até <span class="data">30/03/2016</span></span></li>
+        <li><time datetime="2014-01-21">21/01/2014</time><span class="act"><a href="#">Texto original</a></span><span class="meta"><span class="data">Lei n.º 2/2014</span></span></li>
+      </ol>
+      <p class="small" style="margin-top:10px">Datas de entrada em vigor. <a href="#">Ver também as datas de publicação</a></p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot"><b>Texto não oficial. Só a publicação no Diário da República faz fé.</b> Fontes: Diário da República e Assembleia da República.</footer>
+</main>
+
+<div class="dock only-phone" role="region" aria-label="Redação mostrada">
+  <button class="step" type="button" aria-label="Redação anterior">‹</button>
+  <button class="mid" type="button"><strong>Redação 8 de 8</strong>em vigor desde <span class="data">12/11/2025</span></button>
+  <button class="step" type="button" aria-disabled="true" aria-label="Redação seguinte">›</button>
+</div>
+<script>
+  var v = document.documentElement.classList.contains('mudou') ? 'mudou' : 'texto';
+  document.querySelector('.tab[data-v="' + v + '"]').setAttribute('aria-current', 'page');
+  
+</script>
+</body>
+</html>

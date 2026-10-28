@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artigo 87.º do Código do IRC</title>
+<link rel="stylesheet" href="http://localhost:8765/ds/tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400;1,8..60,600&display=swap">
+<script>
+  (function () { var m = matchMedia('(prefers-color-scheme: dark)'); document.documentElement.setAttribute('data-theme', m.matches ? 'dark' : 'light'); })();
+</script>
+<style>
+  html { color-scheme: light; } html[data-theme="dark"] { color-scheme: dark; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/24px var(--font-sans); }
+  a { color: inherit; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: currentColor; }
+  .num { font-family: var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+  .sc { font-variant-caps: all-small-caps; letter-spacing: .04em; }
+
+  /* Masthead: one hairline, no box */
+  .mast { display: flex; gap: 24px; align-items: baseline; padding: 14px 24px 10px; border-bottom: 1px solid var(--ink); }
+  .mast b { font: 600 22px/28px var(--font-serif); }
+  .mast nav { display: flex; gap: 20px; font-size: 15px; }
+  .mast nav a { text-decoration: none; color: var(--ink-muted); }
+  .mast .q { margin-left: auto; font: 15px/20px var(--font-sans); border: 0; border-bottom: 1px solid var(--rule-strong); background: transparent; color: var(--ink); width: 280px; padding: 4px 0; }
+
+  /* Running head, as in a printed code */
+  .run { display: flex; justify-content: space-between; gap: 16px; padding: 10px 24px; font-size: 14px; color: var(--ink-muted); border-bottom: 1px solid var(--rule); }
+  .run a { text-decoration: none; }
+
+  .sheet { display: grid; grid-template-columns: 170px minmax(0, 66ch) 300px; column-gap: 40px; justify-content: center; padding: 40px 24px 64px; }
+  .text-col { grid-column: 2; }
+  .side { grid-column: 3; grid-row: 1 / span 3; font-size: 14px; line-height: 20px; }
+
+  /* Heading set like the Diário da República: centred number, epígrafe below */
+  .art-h { text-align: center; margin: 0 0 6px; }
+  .art-h .n { display: block; font: 400 30px/36px var(--font-serif); }
+  .art-h .e { display: block; font: 600 22px/30px var(--font-serif); margin-top: 2px; }
+  .formula { text-align: center; margin: 14px auto 0; max-width: 52ch; font: italic 400 17px/26px var(--font-serif); color: var(--ink-muted); }
+  .formula a { color: var(--ink); }
+  .formula .vig { font-style: normal; font-family: var(--font-sans); font-size: 14px; display: block; margin-top: 4px; }
+
+  /* Time ruler: hairline, ticks where a redação starts, current span heavy */
+  .ruler { margin: 28px 0 8px; position: relative; height: 34px; }
+  .ruler .base { position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: var(--rule-strong); }
+  .ruler .cur { position: absolute; top: 10px; height: 5px; background: var(--ink); }
+  .ruler .tk { position: absolute; top: 5px; width: 1px; height: 15px; background: var(--ink-muted); }
+  .ruler .tk.t { background: var(--rule-strong); height: 9px; top: 8px; }
+  .ruler .yr { position: absolute; top: 20px; font-size: 12px; color: var(--ink-muted); transform: translateX(-50%); }
+  .steps { display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-muted); margin-bottom: 28px; }
+  .steps a { color: var(--verde); }
+
+  /* Transitional norm: ruled, stated as a consequence, with the numbers that apply */
+  .trans { border-top: 2px solid var(--aviso); border-bottom: 1px solid var(--aviso); padding: 10px 0 12px; margin-bottom: 28px; font-size: 15px; line-height: 22px; }
+  .trans p { margin: 0 0 8px; }
+  .trans table { border-collapse: collapse; font-size: 14px; }
+  .trans td, .trans th { padding: 2px 18px 2px 0; text-align: left; font-weight: 400; }
+  .trans th { color: var(--ink-muted); }
+  .trans td.r { text-align: right; font-family: var(--font-serif); font-size: 16px; }
+
+  /* Statute: on the paper, no card. Marginal notes carry provenance per número. */
+  .lei { position: relative; }
+  .n-row { position: relative; margin: 0 0 14px; }
+  .n-row p { margin: 0; font: 400 19px/31px var(--font-serif); }
+  .n-row.rev p { color: var(--revogado); }
+  .n-row.al { padding-left: 1.6em; margin-bottom: 4px; }
+  .mg { position: absolute; left: calc(-170px - 40px); width: 170px; text-align: right; top: 6px; font-size: 13px; line-height: 17px; color: var(--ink-muted); }
+  .mg a { text-decoration: none; }
+  .mg a::after { content: ""; display: inline-block; width: 3px; height: 13px; margin-left: 8px; vertical-align: -2px; background: var(--c); }
+  .mg em { font-style: normal; color: var(--ink); }
+  .mk { font: 600 12px/1 var(--font-sans); color: var(--aviso); vertical-align: super; margin-left: 2px; text-decoration: none; }
+
+  /* Notes as in an annotated edition */
+  .notas { margin-top: 40px; border-top: 1px solid var(--ink); padding-top: 10px; }
+  .notas h2, .side h2 { font: 400 15px/20px var(--font-sans); margin: 0 0 10px; }
+  .notas ol { margin: 0; padding-left: 1.4em; font: 15px/23px var(--font-serif); }
+  .notas li { margin-bottom: 12px; }
+  .notas .src { display: block; font: 13px/18px var(--font-sans); color: var(--ink-muted); margin-top: 2px; }
+  .fonte { margin-top: 28px; font-size: 13px; line-height: 19px; color: var(--ink-muted); border-top: 1px solid var(--rule); padding-top: 10px; }
+
+  /* Redações: a ledger, not a timeline of cards */
+  .side { border-top: 1px solid var(--ink); padding-top: 10px; align-self: start; position: sticky; top: 16px; }
+  .side table { width: 100%; border-collapse: collapse; }
+  .side td { padding: 6px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .side td.o { width: 2.2em; color: var(--ink-muted); font-family: var(--font-serif); }
+  .side td.d { text-align: right; color: var(--ink-muted); white-space: nowrap; padding-left: 8px; }
+  .side tr.on td { font-weight: 700; color: var(--ink); }
+  .side tr.on td.o::before { content: "▸"; position: absolute; margin-left: -12px; }
+  .side tr.tec td { color: var(--ink-muted); font-style: italic; }
+  .side .sw { display: inline-block; width: 3px; height: 13px; margin-right: 8px; vertical-align: -2px; background: var(--c); }
+  .side .more { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .side .more a { color: var(--verde); }
+
+  .foot { padding: 16px 24px 28px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-muted); }
+  .foot b { color: var(--ink); font-weight: 700; }
+
+  @media (max-width: 1100px) {
+    .sheet { grid-template-columns: minmax(0, 66ch); padding-top: 24px; }
+    .text-col, .side { grid-column: 1; }
+    .side { grid-row: auto; position: static; margin-top: 32px; }
+    .mg { position: static; width: auto; text-align: left; display: block; margin-bottom: 0; }
+    .mg a::after { display: none; }
+    .mg a::before { content: ""; display: inline-block; width: 3px; height: 11px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+    .mast .q { display: none; }
+    .art-h .n { font-size: 26px; }
+  }
+  @media (max-width: 480px) {
+    .mast, .run { padding-left: 16px; padding-right: 16px; }
+    .sheet { padding-left: 16px; padding-right: 16px; }
+    .n-row p { font-size: 18px; line-height: 29px; }
+    .run .sigla-long { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="mast">
+  <b>Redação</b>
+  <nav><a href="#">Diplomas</a><a href="#">Sobre os dados</a></nav>
+  <input class="q" placeholder="art. 87.º CIRC, licença parental…" aria-label="Pesquisar um artigo">
+</header>
+<div class="run">
+  <span><a href="#">Código do IRC</a><span class="sigla-long"> · Capítulo IV — Taxas</span></span>
+  <span><a href="#">‹ 86.º-B</a> &nbsp; <a href="#">87.º-A ›</a></span>
+</div>
+
+<main class="sheet">
+  <div class="text-col">
+    <h1 class="art-h"><span class="n">Artigo 87.º</span><span class="e">Taxas</span></h1>
+    <p class="formula">Redação dada pela <a href="#">Lei n.º 64/2025, de 7 de novembro</a>
+      <span class="vig">Em vigor desde 12 nov. 2025 · 8.ª redação · <a href="#">ver noutra data</a></span></p>
+
+    <div class="ruler" aria-label="Redações de 2014 a hoje">
+      <div class="base"></div>
+      <div class="tk" style="left:0%"></div><div class="tk t" style="left:0.6%"></div>
+      <div class="tk" style="left:17.9%"></div><div class="tk" style="left:48.6%"></div>
+      <div class="tk" style="left:69.6%"></div><div class="tk" style="left:77.4%"></div>
+      <div class="tk" style="left:85.1%"></div><div class="tk" style="left:92.1%"></div>
+      <div class="cur" style="left:92.1%; right:0"></div>
+      <span class="yr num" style="left:2%">2014</span><span class="yr num" style="left:48.6%">2020</span><span class="yr num" style="left:85.1%">2025</span><span class="yr" style="left:97%">hoje</span>
+    </div>
+    <div class="steps"><a href="#">‹ 7.ª redação (Lei n.º 45-A/2024)</a><a href="#">O que mudou nesta redação</a></div>
+
+    <aside class="trans" id="t">
+      <p><b>Atenção:</b> uma norma transitória fixa outras taxas para 2026 e 2027. Nesses anos, a taxa do n.º 1 e do n.º 5 não é 17 %.</p>
+      <table>
+        <tr><th>Período que começa em</th><th>N.º 1 e n.º 5</th><th>N.º 2</th></tr>
+        <tr><td class="num">2026</td><td class="r">19 %</td><td class="r">15 %</td></tr>
+        <tr><td class="num">2027</td><td class="r">18 %</td><td class="r">15 %</td></tr>
+        <tr><td class="num">2028 e seguintes</td><td class="r">17 %</td><td class="r">15 %</td></tr>
+      </table>
+    </aside>
+
+    <div class="lei">
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-7)">Lei 64/2025</a></span><p>1 — A taxa do IRC é de 17 %, exceto nos casos previstos nos números seguintes.<a class="mk" href="#t" aria-label="Nota 1: norma transitória">1</a></p></div>
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-7)">Lei 64/2025</a></span><p>2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (Small Mid Cap), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50 000 € de matéria coletável é de 15 %, aplicando-se a taxa prevista no número anterior ao excedente.<a class="mk" href="#t">1</a></p></div>
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-5)">Lei 82/2023</a></span><p>3 — A aplicação das taxas previstas nos n.os 2 e 8 está sujeita às regras europeias aplicáveis em matéria de auxílios de minimis.</p></div>
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-0)">Texto original</a></span><p>4 — Tratando-se de rendimentos de entidades que não tenham sede nem direção efetiva em território português e aí não possuam estabelecimento estável ao qual os mesmos sejam imputáveis, a taxa do IRC é de 25 %, exceto relativamente aos seguintes rendimentos:</p></div>
+      <div class="n-row al rev"><p>a) (Revogada.)</p></div>
+      <div class="n-row al rev"><p>b) (Revogada.)</p></div>
+      <div class="n-row al rev"><p>c) (Revogada.)</p></div>
+      <div class="n-row al"><p>d) Prémios de rifas, totoloto, jogo de loto, bem como importâncias ou prémios atribuídos em quaisquer sorteios ou concursos, em que a taxa é de 35 %;</p></div>
+      <div class="n-row al rev"><p>e) (Revogada.)</p></div>
+      <div class="n-row al rev"><p>f) (Revogada.)</p></div>
+      <div class="n-row al rev"><p>g) (Revogada.)</p></div>
+      <div class="n-row al"><p>h) Rendimentos de capitais sempre que sejam pagos ou colocados à disposição em contas abertas em nome de um ou mais titulares mas por conta de terceiros não identificados, em que a taxa é de 35 %, exceto quando seja identificado o beneficiário efetivo, termos em que se aplicam as regras gerais;</p></div>
+      <div class="n-row al" style="margin-bottom:14px"><p>i) Rendimentos de capitais, tal como definidos no artigo 5.º do Código do IRS, obtidos por entidades não residentes em território português, que sejam domiciliadas em país, território ou região sujeitas a um regime fiscal claramente mais favorável, constante de lista aprovada por portaria do membro do Governo responsável pela área das finanças, em que a taxa é de 35 %.</p></div>
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-7)">Lei 64/2025</a></span><p>5 — Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 17 %.<a class="mk" href="#t">1</a></p></div>
+      <div class="n-row rev"><p>6 — (Revogado.)</p></div>
+      <div class="n-row rev"><p>7 — (Revogado.)</p></div>
+      <div class="n-row"><span class="mg"><a href="#" style="--c:var(--act-5)">Aditado · Lei 82/2023</a></span><p>8 — Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como startup, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea f) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5 %.</p></div>
+    </div>
+
+    <section class="notas">
+      <h2>Notas</h2>
+      <ol>
+        <li><b>Norma transitória.</b> «A taxa prevista nos n.os 1 e 5 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2028. Nos períodos de tributação que se iniciem durante o ano de 2026, a taxa […] é de 19 %. […] durante o ano de 2027, […] é de 18 %.»<span class="src">Lei n.º 64/2025, artigo 3.º · <a href="#">ler a norma completa</a></span></li>
+        <li><b>Produção de efeitos.</b> A Lei n.º 2/2014 aplica-se aos períodos de tributação que começam, ou aos factos tributários que ocorrem, a partir de 1 de janeiro de 2014.<span class="src">Lei n.º 2/2014, artigo 14.º</span></li>
+      </ol>
+    </section>
+
+    <p class="fonte">Texto do consolidado do Diário da República. Ainda não o comparámos com o ato publicado. <a href="#">Lei n.º 64/2025 no Diário da República</a> · <a href="#">Copiar citação</a></p>
+  </div>
+
+  <aside class="side" aria-label="Redações deste artigo">
+    <h2>Redações</h2>
+    <table class="num-t">
+      <tr><td class="o">1.ª</td><td><span class="sw" style="--c:var(--act-0)"></span>Texto original</td><td class="d num">21/01/2014</td></tr>
+      <tr class="tec"><td class="o">2.ª</td><td><span class="sw" style="--c:transparent"></span>Retificação n.º 18/2014</td><td class="d num">21/01/2014</td></tr>
+      <tr><td class="o">3.ª</td><td><span class="sw" style="--c:var(--act-1)"></span>Lei n.º 7-A/2016</td><td class="d num">31/03/2016</td></tr>
+      <tr><td class="o">4.ª</td><td><span class="sw" style="--c:var(--act-2)"></span>Lei n.º 2/2020</td><td class="d num">01/04/2020</td></tr>
+      <tr><td class="o">5.ª</td><td><span class="sw" style="--c:var(--act-3)"></span>Lei n.º 24-D/2022</td><td class="d num">01/01/2023</td></tr>
+      <tr><td class="o">6.ª</td><td><span class="sw" style="--c:var(--act-5)"></span>Lei n.º 82/2023</td><td class="d num">01/01/2024</td></tr>
+      <tr><td class="o">7.ª</td><td><span class="sw" style="--c:var(--act-4)"></span>Lei n.º 45-A/2024</td><td class="d num">01/01/2025</td></tr>
+      <tr class="on"><td class="o">8.ª</td><td><span class="sw" style="--c:var(--act-7)"></span>Lei n.º 64/2025</td><td class="d num">12/11/2025</td></tr>
+    </table>
+    <p class="muted" style="color:var(--ink-muted); margin:8px 0 0">Data de entrada em vigor de cada redação.</p>
+    <div class="more"><a href="#">Comparar duas redações</a><a href="#">Iniciativa: Proposta de Lei n.º 16/XVII</a></div>
+  </aside>
+</main>
+<footer class="foot"><b>Texto não oficial.</b> Só a publicação no Diário da República faz fé. Fontes: Diário da República e Assembleia da República. Não é aconselhamento jurídico.</footer>
+</body>
+</html>
