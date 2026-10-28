@@ -97,6 +97,9 @@ def main(argv: list[str]) -> int:
             continue
         t = time.monotonic()
         raw = fetch(d, corpus["consultado_em"])
+        # Official full texts to check the consolidated text against (pipeline/verificacao.py).
+        for r in d.get("republicacoes", []):
+            cached("act", r["tipo"], r["key"])
         sys.stderr.write(f"{d['slug']}: {len(raw['versions'])} artigos, {time.monotonic() - t:.0f}s\n")
     return 0
 

@@ -39,6 +39,7 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 | Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
 | One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
 | One parliamentary initiative | `#/iniciativa/315386` |
+| The check of the text against the official republications | `#/verificacao` |
 
 Old links still work: a redação index (`redacao=3`) and the old compare page (`/comparar?de=…&ate=…&vista=lado`), which redirects to the Alterações view.
 
@@ -53,10 +54,11 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
 4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md). For now the app shows only the votação na generalidade: each initiative's own vote, and the vote on the committee's texto de substituição when there is one.
 5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.
+6. `verificacao.py` compares each version with the official republications listed in `corpus.json` (for the Constitution: the 1976 text and the 7 revisions, fetched by `fetch.py`). Each version gets a verdict (igual, só na forma, desatualizada, divergente); `data/verificacao.json` holds the report.
 
 ## Known limits
 
-- The text comes from the DR's consolidated legislation, which has no legal value. We have not yet checked it against our own replay of the amending acts (see the plan, Phase 0).
+- The text comes from the DR's consolidated legislation, which has no legal value. For the Constitution, `verificacao.py` checks every version against the official republications, and the article page says the result. The other diplomas are not checked yet.
 - The DR gives production of effects only as text notes. The app shows the notes, and warns when the "produção de efeitos" basis is selected.
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.

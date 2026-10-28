@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import atos  # noqa: E402
 import build  # noqa: E402
 import passagem  # noqa: E402
+import verificacao  # noqa: E402
 import texto  # noqa: E402
 
 
@@ -157,6 +158,37 @@ class Passagem(unittest.TestCase):
         self.assertTrue(proprios[1]["baixa_sem_votacao"])
         self.assertEqual([t["grupos"] for t in textos], [{"PS": "favor"}])
         self.assertEqual(textos[0]["citadas"], ["847", "129", "1043"])
+
+
+class Verificacao(unittest.TestCase):
+    def test_republished_articles(self):
+        t = ("Lei Constitucional n.º 1/2005\nArtigo 1.º\nÉ aditado…\nCONSTITUIÇÃO DA REPÚBLICA PORTUGUESA\nPreâmbulo\nA 25 de Abril…\n"
+             "PARTE III\nOrganização do poder político\nTÍTULO II\nPresidente da República\nARTIGO 120.º\n(Definição)\n"
+             "O Presidente da República representa a República Portuguesa.\nArtigo 15.º-A\n(Novo)\n1 - Um.\n2 - Dois.\n"
+             "Disposições finais e transitórias\nArtigo 296.º\n(Data)\nTexto.")
+        a = verificacao.artigos(verificacao.republicacao(t), {"disposições finais e transitórias"})
+        self.assertEqual(list(a), ["artigo-120", "artigo-15-a", "artigo-296"])
+        self.assertEqual(a["artigo-120"]["texto"], "O Presidente da República representa a República Portuguesa.")
+        self.assertEqual(a["artigo-120"]["epigrafe"], "Definição")
+        self.assertEqual(a["artigo-15-a"]["texto"], "1 — Um.\n2 — Dois.")
+
+    def test_comparison(self):
+        self.assertEqual(verificacao.comparar("1 — Nasce em l974.", "1 - Nasce em 1974.")["veredicto"], "igual")
+        self.assertEqual(verificacao.comparar("Estados membros, e", "Estados-membros e")["veredicto"], "so_forma")
+        r = verificacao.comparar("ou os direitos de soberania", "ou dos direitos de soberania")
+        self.assertEqual(r["veredicto"], "diferente")
+        self.assertEqual(verificacao.comparar(None, "x")["veredicto"], "falta_consolidado")
+
+    def test_verdict_over_republications(self):
+        e = verificacao._estado
+        self.assertEqual(e(["igual", "igual"]), ("verificado", None))
+        self.assertEqual(e(["igual", "so_forma"]), ("verificado", None))
+        self.assertEqual(e(["so_forma"]), ("forma", None))
+        self.assertEqual(e(["diferente", "diferente"]), ("divergente", None))
+        self.assertEqual(e(["igual", "diferente", "diferente"]), ("desatualizado", 1))   # the DR missed a change
+        self.assertEqual(e(["igual", "diferente", "igual"]), ("verificado", None))      # a slip in one transcription
+        self.assertEqual(e(["igual", "diferente"]), ("verificado", None))
+        self.assertEqual(e(["igual", "diferente"], fim_digital=True), ("desatualizado", 1))
 
 
 if __name__ == "__main__":

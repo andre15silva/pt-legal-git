@@ -87,6 +87,11 @@ def article_versions(fragment_version_id: str, frag_id: str, legis_id: str, date
     return data["List"]["List"]
 
 
+def act(tipo: str, key: str) -> dict:
+    """One published act: metadata, plain text (Texto) and HTML (TextoFormatado)."""
+    return call("act", {"Tipo": tipo, "Key": key})["DetalheConteudo"]
+
+
 def plain(text: str | None) -> str:
     text = re.sub(r"<[^>]+>", "\n", html.unescape(text or ""))
     return re.sub(r"\n+", "\n", text).strip()

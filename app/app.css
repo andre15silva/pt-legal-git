@@ -223,6 +223,23 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .mudou-frase { font-family: var(--font-serif); font-size: 17px; line-height: 28px; font-variant-numeric: lining-nums; }
 .lede { margin: 0; font-family: var(--font-serif); font-size: 17px; line-height: 28px; max-width: 64ch; font-variant-numeric: lining-nums; }
 
+/* Verificação against the official republications */
+.estado .verif { margin-top: 6px; font-family: var(--font-sans); font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.estado .verif > span { color: var(--verde); }
+.dif-lista { display: flex; flex-direction: column; gap: 2px; margin-top: 6px !important; }
+.dif-legenda { font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.dif-oficial { margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 26px; }
+.meta-grande { gap: 16px 40px; }
+.meta-grande dd { font-size: 26px; line-height: 32px; font-variant-numeric: lining-nums tabular-nums; }
+.tabela-verif td.num, .tabela-verif th:nth-child(n+3) { text-align: right; font-family: var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+.tabela-verif tbody th { min-width: 220px; }
+.rever-titulo { margin: 16px 0 0 !important; }
+.rever { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+.rever li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
+.rever p { margin: 0; }
+.rever-cab { font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.rever-estado { margin-left: 12px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--aviso); }
+
 /* Votação na generalidade */
 .voto { max-width: 650px; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--ink); }
 .voto p { margin: 0; }

@@ -14,7 +14,50 @@
         "data": "1976-04-25",
         "regra": "explicita",
         "fonte": "Constituição, artigo 296.º, n.º 2"
-      }
+      },
+      "republicacoes": [
+        {
+          "ato": "decreto-de-aprovacao-da-constituicao",
+          "tipo": "decreto-aprovacao-constituicao",
+          "key": "1976-502635",
+          "nota": "Texto original"
+        },
+        {
+          "ato": "lei-constitucional-1-82",
+          "tipo": "lei-constitucional",
+          "key": "1-1982-375254"
+        },
+        {
+          "ato": "lei-constitucional-1-89",
+          "tipo": "lei-constitucional",
+          "key": "1-1989-496551"
+        },
+        {
+          "ato": "lei-constitucional-1-92",
+          "tipo": "lei-constitucional",
+          "key": "1-1992-174316"
+        },
+        {
+          "ato": "lei-constitucional-1-97",
+          "tipo": "lei-constitucional",
+          "key": "1-1997-653562"
+        },
+        {
+          "ato": "lei-constitucional-1-2001",
+          "tipo": "lei-constitucional",
+          "key": "1-2001-577358"
+        },
+        {
+          "ato": "lei-constitucional-1-2004",
+          "tipo": "lei-constitucional",
+          "key": "1-2004-506783"
+        },
+        {
+          "ato": "lei-constitucional-1-2005",
+          "tipo": "lei-constitucional",
+          "key": "1-2005-243729"
+        }
+      ]
     },
     {
       "slug": "codigo-do-trabalho",

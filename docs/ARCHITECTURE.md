@@ -187,12 +187,27 @@ Bootstrap: for diplomas we have not replayed yet, serve the DR consolidated per-
 | Metric | Definition | MVP target |
 |---|---|---|
 | M1 | Version transitions reproduced exactly by replay (after normalisation) | ≥ 97% (Lexifina: 361/365 ≈ 98.9%) |
-| M2 | Per-article exact match at each republication | ≥ 99% |
+| M2 | Per-article exact match at each republication | ≥ 99% (measured for the DR consolidated CRP on 2026-10-28: 96.6% of 994 versions; see below) |
 | M3 | Alteration-ordinal chain consistent with Lei 74/98 art. 6.º, n.º 1 ("k.ª alteração" = k−1 known amenders) | 100% or listed as a gap |
 | M4 | Share of tokens attributed to a specific effect | ≥ 95% for post-1991 acts |
 | M5 | Date provenance mix: explícita / supletiva / transitória / desconhecida | Always reported, never hidden |
 | M6 (gate) | Release blocked when M1 or M2 drops below target, as sejm2git does with `--fail-under` | CI |
 | M7 | Iniciativa → ato linkage rate | ≥ 99% (measured: 136/136 for the XVII legislature via `TextosAprovados`; 99.4% across all legislaturas) |
+
+### First measurement: the DR consolidated CRP against its 8 official texts (2026-10-28)
+
+`pipeline/verificacao.py` compares every consolidated version of every CRP article with the official texts in its period: the 1976 text and the republication in each of the 7 revisions. Results are in `app/data/verificacao.json` and on the app's Verificação page.
+
+| Verdict | Versions | Meaning |
+|---|---|---|
+| igual | 939 | Same text as at least one republication, and no run of later republications disagrees |
+| só na forma | 21 | Same words; punctuation, capitals or line breaks differ |
+| desatualizada | 5 | Matches the first republications, then every later one has other words: the DR missed a change (arts. 5.º, 84.º, 179.º, 196.º, 280.º) |
+| divergente | 29 | No republication has this text. Some are DR typos ("inviolával", art. 24.º), some are slips in the digital transcription of the old acts ("Constitutição"). A person must check each against the PDF |
+
+Per republication, 89–100% of articles match. The older acts (1982–1992) were transcribed from print and have their own slips, so a version counts as verified when one republication matches and no later run disagrees. The DR history also follows today's numbering: 36 articles of the older texts (17 of them from 1976) have no history at all.
+
+This is M2 for the consolidated text, not for our replay. M1 (replaying each revision's instructions) is next.
 
 ## 3. Text normalisation
 

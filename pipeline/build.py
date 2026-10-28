@@ -28,6 +28,8 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import atos  # noqa: E402
 import passagem  # noqa: E402
 import texto  # noqa: E402
+import fetch  # noqa: E402
+import verificacao  # noqa: E402
 from parlamento import normalise as normalise_iniciativa  # noqa: E402
 
 OUT = os.path.join(ROOT, "app", "data")
@@ -161,8 +163,30 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
              "eli": frag.get("ELI") or None, "sumario": reg.acts[original["id"]]["sumario"], "arvore": tree, "artigos": artigos}
     summary = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "designacao": original["designacao"],
                "publicacao": original["publicacao"], "genitivo": cfg.get("genitivo")}
+    if cfg.get("republicacoes"):
+        index["verificacao"] = verificar_republicacoes(index, cfg["republicacoes"], reg)
     write(os.path.join(OUT, "d", cfg["slug"] + ".json"), index)
     return index, summary
+
+
+def verificar_republicacoes(index: dict, cfg: list[dict], reg: Registry) -> dict:
+    """Check every version against the official republications (cached by fetch.py)."""
+    reps = []
+    for r in cfg:
+        act = fetch.cached("act", r["tipo"], r["key"])
+        starts = sorted(v.get("vigor") or v["publicacao"] for a in index["artigos"].values() for v in a["versoes"] if v["ato"] == r["ato"] and (v.get("vigor") or v.get("publicacao")))
+        data = starts[0] if starts else act["DataPublicacao"][:10]
+        a = reg.acts.get(r["ato"], {})
+        reps.append({"ato": r["ato"], "designacao": a.get("designacao") or act.get("Titulo", "").strip(), "data": data,
+                     "link": a.get("link"), "pdf": act.get("URL_PDF"), "texto": act["Texto"]})
+    rel = verificacao.verificar(index, reps)
+    for x, r in zip(rel["republicacoes"], reps):
+        x["pdf"] = r["pdf"]
+    v = rel["versoes"]
+    sys.stderr.write(f"{index['slug']}: {v['total']} redações comparadas com republicações; "
+                     f"{v.get('verificado', 0)} iguais, {v.get('forma', 0)} só na forma, {v.get('desatualizado', 0)} desatualizadas, "
+                     f"{v.get('divergente', 0)} divergentes\n")
+    return rel
 
 
 def apply_vigor_rules(hist: dict, aid: str, cfg: dict) -> None:
@@ -299,7 +323,7 @@ def main() -> int:
     with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
         corpus = json.load(fh)
     reg = Registry()
-    summaries, search = [], []
+    summaries, search, relatorios = [], [], {}
     for cfg in corpus["diplomas"]:
         path = os.path.join(ROOT, "data", "raw", cfg["slug"] + ".json")
         if not os.path.exists(path):
@@ -312,6 +336,8 @@ def main() -> int:
         summary["n_artigos"] = sum(1 for n in index["arvore"] if n["tipo"] == "artigo")
         summary["n_atos"] = sum(1 for a in reg.acts.values() if any(ch["diploma"] == cfg["slug"] for ch in a["alteracoes"]))
         summaries.append(summary)
+        if index.get("verificacao"):
+            relatorios[cfg["slug"]] = index["verificacao"]
         search.extend([cfg["slug"], n["artigo"], n["rotulo"], n["epigrafe"], n["estado"]] for n in index["arvore"] if n["tipo"] == "artigo")
         sys.stderr.write(f"{cfg['slug']}: {summary['n_artigos']} artigos\n")
     iniciativas, passagens = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"))
@@ -323,6 +349,9 @@ def main() -> int:
         a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
     write(os.path.join(OUT, "atos.json"), reg.acts)
     write(os.path.join(OUT, "index.json"), {"consultado_em": corpus["consultado_em"], "diplomas": summaries, "pesquisa": search})
+    # The check against official republications, per diploma, for the Verificação page.
+    write(os.path.join(OUT, "verificacao.json"), {"consultado_em": corpus["consultado_em"], "diplomas": {
+        x["slug"]: {"titulo": x["titulo"], "sigla": x["sigla"], "relatorio": relatorios.get(x["slug"])} for x in summaries}})
     sys.stderr.write(f"{len(reg.acts)} atos, {len(iniciativas)} iniciativas ligadas\n")
     return 0
 

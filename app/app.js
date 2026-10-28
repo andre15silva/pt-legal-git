@@ -338,6 +338,7 @@
           props.casa ? null : h(Pesquisa),
           h('nav', { 'aria-label': 'Principal', className: 'top-nav' },
             h('a', { href: '#/' }, 'Diplomas'),
+            h('a', { href: '#/verificacao' }, 'Verificação'),
             h('a', { href: '#/sobre' }, 'Sobre os dados')))),
       h('main', { id: 'conteudo', className: 'page' }, props.children),
       h('footer', { className: 'foot' },
@@ -606,6 +607,44 @@
     try { navigator.clipboard.writeText(t).then(done, function () { }); } catch (e) { /* no clipboard */ }
   }
   var copiado = { chave: null };
+  // ---- Verificação: the check of a redação against the official republications --------------------
+  function republicacaoDe(d, ato) { return ((d.verificacao || {}).republicacoes || []).filter(function (r) { return r.ato === ato; })[0] || null; }
+  // One difference: the consolidated words struck, the official ones underlined.
+  function DifOficial(props) {
+    var l = diffLines(props.par[0].replace(/ ¶ /g, ' '), props.par[1].replace(/ ¶ /g, ' '))[0] || [];
+    return h('p', { className: 'dif-oficial' }, '«…', l.map(function (x, k) {
+      if (x.op === 'eq') return h('span', { key: k }, x.text);
+      return h(x.op === 'ins' ? 'ins' : 'del', { key: k, className: x.op === 'ins' ? 'rd-ins' : 'rd-del' },
+        h('span', { className: 'rd-sr' }, x.op === 'ins' ? '[texto oficial: ' : '[texto aqui: '), x.text, h('span', { className: 'rd-sr' }, ']'));
+    }), '…»');
+  }
+  // The line under the status: "Texto verificado: igual à republicação oficial da …".
+  function linhaVerificacao(v, d, atos) {
+    var x = v.verificacao;
+    if (!x) return null;
+    var ok = x.pontos.filter(function (p) { return p.veredicto === 'igual' || p.veredicto === 'so_forma'; });
+    if (x.estado !== 'verificado' && x.estado !== 'forma') return null;
+    var p = ok[ok.length - 1], r = republicacaoDe(d, p.ato);
+    return h('p', { className: 'verif' }, h('span', { 'aria-hidden': 'true' }, '✓ '),
+      x.estado === 'forma' ? 'Texto igual ao da republicação oficial, exceto pontuação ou maiúsculas (' : 'Texto igual ao da republicação oficial (',
+      r ? r.designacao : p.ato, '). ', h('a', { href: '#/verificacao' }, 'Como verificamos'));
+  }
+  // The Atenção note when the official text is different.
+  function avisoVerificacao(v, d) {
+    var x = v.verificacao;
+    if (!x || (x.estado !== 'desatualizado' && x.estado !== 'divergente')) return null;
+    var dif = x.pontos.filter(function (p) { return p.veredicto === 'diferente'; });
+    var r0 = republicacaoDe(d, (x.desde || dif[0].ato)), ult = republicacaoDe(d, dif[dif.length - 1].ato);
+    var pares = dif[dif.length - 1].diff || [];
+    return h('aside', { className: 'regra regra-aviso', 'aria-labelledby': 'verif-aviso' },
+      h('p', { id: 'verif-aviso' }, h('strong', null, 'Atenção: '),
+        x.estado === 'desatualizado'
+          ? 'desde a republicação oficial de ' + (r0 ? r0.data.slice(0, 4) : '') + ' (' + (r0 ? r0.designacao : '') + '), o texto oficial deste artigo é diferente do texto aqui mostrado. O consolidado do Diário da República não tem essa mudança.'
+          : 'este texto é diferente do texto da republicação oficial (' + (ult ? ult.designacao : '') + '). Ainda não confirmámos qual dos dois está certo.'),
+      h('div', { className: 'dif-lista' }, h('p', { className: 'dif-legenda' }, 'Riscado: o texto aqui. Sublinhado: o texto oficial.'),
+        pares.slice(0, 4).map(function (par, k) { return h(DifOficial, { key: k, par: par }); })),
+      ult && ult.pdf ? h('p', null, h('a', { href: ult.pdf, target: '_blank', rel: 'noopener' }, 'Abrir a republicação oficial (PDF) ↗')) : null);
+  }
   // The last redação shown, to know which way the reader moved and which words are new to them.
   var vista = { art: null, i: null, dir: null, desde: null };
   // One line of the law, with the words written after redação `desde` marked for a moment.
@@ -780,7 +819,8 @@
         passada ? h('p', { className: 'estado-passada' }, (per.fim === 'mesma' ? 'Substituída no mesmo dia pela redação seguinte' : 'Esteve em vigor de ' + extenso(per.inicio) + ' a ' + extenso(per.fim)) + ' · ', h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ir para hoje'))
           : futura ? h('p', { className: 'estado-futura' }, 'Ainda não está em vigor. Entra em vigor a ' + extenso(per.inicio) + '. ', hojeIdx != null ? h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ir para hoje') : null)
           : h('p', null, (cur.tipo === 'revogado' ? 'Revogado desde ' : 'Em vigor desde ') + extenso(per.inicio) + (sel.incerta ? ' (data de publicação)' : '') + '.'),
-        sel.i !== last && epigrafe ? h('p', { className: 'muted small' }, 'Epígrafe de hoje. A desta redação pode ser outra.') : null) : null,
+        sel.i !== last && epigrafe ? h('p', { className: 'muted small' }, 'Epígrafe de hoje. A desta redação pode ser outra.') : null,
+        linhaVerificacao(cur, d, atos)) : null,
       sel ? h(R.TimeRuler, { id: 'regua', current: sel.i, today: hoje(), onGo: function (k) { substituir(versionHref(k)); },
         versions: art.versoes.map(function (v, i) {
           return { start: startOf(v, base), technical: v.tipo === 'retificado' || periodo(art, i, base).fim === 'mesma', pending: hojeIdx == null || i > hojeIdx,
@@ -799,6 +839,7 @@
               transitorias[0].artigo_do_ato ? ' (' + transitorias[0].artigo_do_ato.toLowerCase() + ')' : '', ' muda a aplicação deste artigo no tempo. Leia a norma antes de aplicar o texto.'),
             h('details', null, h('summary', null, 'Ler a norma'),
               transitorias.map(function (x, k) { return h('blockquote', { key: k, 'data-citacao': '' }, x.texto); }))) : null,
+          cur ? avisoVerificacao(cur, d) : null,
           porAto ? h('nav', { className: 'regra regra-ato', 'aria-label': 'Artigos alterados por este ato' },
             h('p', null, 'Está a percorrer os artigos que a ', h(ActLink, { id: porAto.ato.id, atos: atos }), ' mudou no ' + d.sigla + ': artigo ' + (porAto.k + 1) + ' de ' + porAto.lista.length + '.'),
             h('p', { className: 'regra-links' }, porAto.ir(porAto.k - 1, '‹ Artigo anterior'), porAto.ir(porAto.k + 1, 'Artigo seguinte ›'), h('a', { href: link(['ato', porAto.ato.id]) }, 'Voltar ao ato'))) : null,
@@ -820,7 +861,9 @@
             h(R.Citation, { key: citacao, text: citacao.charAt(0).toUpperCase() + citacao.slice(1) + '.', permalink: permalink })) : null,
           cur ? h('section', { className: 'secao', 'aria-labelledby': 'fonte' },
             h('h2', { id: 'fonte' }, 'Fonte'),
-            h('p', { className: 'fonte' }, 'Copiámos este texto do consolidado do Diário da República. Ainda não o comparámos com o ato publicado. Só o Diário da República faz fé.')) : null),
+            h('p', { className: 'fonte' }, 'Copiámos este texto do consolidado do Diário da República. ',
+              cur.verificacao ? ['Comparámo-lo com as republicações oficiais da ' + (d.genitivo || d.titulo).replace(/^d[ao]s? /, '') + '. ', h('a', { key: 'v', href: '#/verificacao' }, 'Ver a verificação'), '. ']
+                : 'Ainda não o comparámos com o ato publicado. ', 'Só o Diário da República faz fé.')) : null),
         h('aside', { className: 'art-registo', 'aria-labelledby': 'historia' },
           h('h2', { id: 'historia', tabIndex: -1 }, 'Redações'),
           h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: art.versoes.map(function (v, i) {
@@ -1095,6 +1138,58 @@
         h('ol', { className: 'fases' }, ini.eventos.map(function (e, i) { return h('li', { key: i }, h('span', { className: 'fase-data' }, curta(e[0])), h('span', null, e[1])); }))));
   }
 
+  // ---- Verification report ---------------------------------------------------------------------
+  var ESTADO = { verificado: 'Iguais', forma: 'Só na forma', desatualizado: 'Desatualizadas', divergente: 'Divergentes' };
+  function pct(x) { return x == null ? '—' : (Math.round(x * 1000) / 10).toString().replace('.', ',') + ' %'; }
+  function Verificacao() {
+    var r = useData(['verificacao.json', 'atos.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var vj = r.data[0], atos = r.data[1];
+    document.title = 'Verificação · Redação';
+    var com = Object.keys(vj.diplomas).filter(function (k) { return vj.diplomas[k].relatorio; });
+    var sem = Object.keys(vj.diplomas).filter(function (k) { return !vj.diplomas[k].relatorio; });
+    return h('div', { className: 'pagina-ato' },
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Verificação do texto'),
+        h('p', { className: 'lead' }, 'O texto que mostramos vem do consolidado do Diário da República, que não tem valor legal. Uma republicação tem valor legal: é o texto completo publicado com uma alteração. Comparamos cada redação com as republicações do seu período.')),
+      com.map(function (slug) {
+        var x = vj.diplomas[slug], rel = x.relatorio, v = rel.versoes;
+        var faltam = rel.republicacoes.filter(function (p) { return p.falta_consolidado.length; });
+        return h('section', { key: slug, className: 'secao', 'aria-labelledby': 'v-' + slug },
+          h('h2', { id: 'v-' + slug }, x.titulo),
+          h('dl', { className: 'meta meta-grande' },
+            h('div', null, h('dt', null, 'Redações comparadas'), h('dd', null, v.total)),
+            ['verificado', 'forma', 'desatualizado', 'divergente'].map(function (k) { return h('div', { key: k }, h('dt', null, ESTADO[k]), h('dd', null, v[k] || 0)); }),
+            h('div', null, h('dt', null, 'Iguais ao texto oficial'), h('dd', null, pct(rel.m2)))),
+          h('div', { className: 'tabela-caixa', tabIndex: 0, role: 'region', 'aria-labelledby': 'tr-' + slug },
+            h('table', { className: 'tabela-votos tabela-verif' },
+              h('caption', { id: 'tr-' + slug }, 'Artigos de cada republicação'),
+              h('thead', null, h('tr', null, ['Republicação', 'Em vigor', 'Artigos', 'Iguais', 'Só na forma', 'Diferentes', 'Iguais ou só na forma', ''].map(function (c, k) { return h('th', { key: k, scope: 'col' }, c); }))),
+              h('tbody', null, rel.republicacoes.map(function (p) {
+                return h('tr', { key: p.ato },
+                  h('th', { scope: 'row' }, atos[p.ato] ? h('a', { href: link(['ato', p.ato]) }, p.designacao) : p.designacao),
+                  h('td', { className: 'tv-res' }, curta(p.data)), h('td', { className: 'num' }, p.artigos), h('td', { className: 'num' }, p.igual),
+                  h('td', { className: 'num' }, p.so_forma), h('td', { className: 'num' }, p.diferente), h('td', { className: 'num' }, pct(p.m2)),
+                  h('td', null, p.pdf ? h('a', { href: p.pdf, target: '_blank', rel: 'noopener' }, 'PDF ↗') : null));
+              })))),
+          faltam.length ? h('p', { className: 'lede' }, 'O consolidado do Diário da República segue a numeração de hoje. Os artigos que uma revisão eliminou ou renumerou não têm história: faltam ',
+            lista(faltam.map(function (p) { return p.falta_consolidado.length + ' artigos do texto de ' + p.data.slice(0, 4); })), '.') : null,
+          h('h3', { className: 'h3 rever-titulo' }, 'Para rever (' + rel.divergentes.length + ')'),
+          h('p', { className: 'muted small' }, 'Desatualizada: a partir de uma revisão, todas as republicações têm outro texto. Divergente: nenhuma republicação tem este texto. Uma pessoa tem de confirmar cada caso no PDF.'),
+          h('ol', { className: 'rever' }, rel.divergentes.slice().sort(function (a, b) { return a.estado === b.estado ? 0 : a.estado === 'desatualizado' ? -1 : 1; }).map(function (x2, k) {
+            var dif = x2.pontos.filter(function (p) { return p.veredicto === 'diferente'; }), ult = dif[dif.length - 1];
+            return h('li', { key: k },
+              h('p', { className: 'rever-cab' }, h('a', { href: link(['d', slug, x2.artigo], { redacao: x2.ato }) }, x2.rotulo + ', ' + ordinal(x2.versao) + ' redação'),
+                h('span', { className: 'rever-estado' }, x2.estado === 'desatualizado' ? 'Desatualizada' : 'Divergente'),
+                h('span', { className: 'muted' }, ' · ' + dif.length + (dif.length === 1 ? ' republicação diferente' : ' republicações diferentes'))),
+              (ult.diff || []).slice(0, 2).map(function (par, j) { return h(DifOficial, { key: j, par: par }); }));
+          })));
+      }),
+      h('section', { className: 'secao', 'aria-labelledby': 'v-sem' },
+        h('h2', { id: 'v-sem' }, 'Ainda não verificados'),
+        h('p', { className: 'lede' }, lista(sem.map(function (k) { return vj.diplomas[k].titulo; })) + '. Os códigos fiscais quase nunca são republicados: o Orçamento do Estado altera-os sem os republicar. Para estes, vamos comparar o texto com uma reprodução própria dos atos que os alteraram.')));
+  }
+
   // ---- About -------------------------------------------------------------------------------------
   function Sobre() {
     var r = useData(['index.json']);
@@ -1112,7 +1207,7 @@
         h('li', null, h('strong', null, 'Produção de efeitos: '), 'os factos ou os períodos a que a redação se aplica. O consolidado do Diário da República só tem esta informação em notas de texto. Mostramos as notas.')),
       h('h2', { className: 'h2' }, 'Limites conhecidos'),
       h('ul', null,
-        h('li', null, 'Ainda não verificamos o texto com uma reprodução própria dos atos. O texto é o do consolidado do Diário da República, que não tem valor legal.'),
+        h('li', null, 'O texto é o do consolidado do Diário da República, que não tem valor legal. Na Constituição, comparámos cada redação com as republicações oficiais (', h('a', { href: '#/verificacao' }, 'Verificação'), '). Nos outros diplomas, ainda não verificámos o texto.'),
         h('li', null, 'Algumas datas de entrada em vigor faltam no consolidado do Diário da República. Nos textos originais, indicamos a norma que fixa a data.'),
         h('li', null, 'Mostramos só a votação na generalidade. A Assembleia da República publica o sentido de voto de cada grupo e, em algumas votações, o número de deputados. Quando não tem o número, contamos pelos assentos de cada grupo nesse dia.')));
   }
@@ -1132,6 +1227,7 @@
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
+    else if (s[0] === 'verificacao') view = h(Verificacao);
     else view = h(Home);
     // A new page fades in. Another redação of the same article does not: only its text moves.
     return h(Shell, { casa: !s.length }, h('div', { key: s.join('/'), className: 'vista' }, view));
