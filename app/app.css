@@ -72,15 +72,6 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 .search-label { font-weight: 500; }
 .search-input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 17px; }
 .results { max-width: 860px; }
-/* Life situations (pipeline/temas.json): a grid of entry points on the home page. */
-.situacoes { margin-top: 64px; }
-.sit-lista { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 32px; border-top: 1px solid var(--ink); }
-.sit-lista li { padding: 14px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
-.sit-lista p { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
-.sit-link { font-family: var(--font-serif); font-size: 19px; line-height: 26px; font-weight: 500; }
-.sit-res { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.sit-arts { margin-top: 8px; }
-.pesq-sit .pesq-art { font-weight: 600; }
 .cards { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
 .card { display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .card p { margin: 0; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }

@@ -303,13 +303,12 @@
       return function () { document.removeEventListener('keydown', tecla); };
     }, []);
     var index = r.data ? r.data[0] : null;
-    // Situations first (at most 2), then articles: one list for the arrow keys.
-    var res = index && qs[0] ? situacoes(index, qs[0]).slice(0, 2).map(function (x) { return { sit: x }; }).concat(search(index, qs[0]).slice(0, 8)) : [];
+    var res = index && qs[0] ? search(index, qs[0]).slice(0, 8) : [];
     var nomes = {};
     if (index) index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
     var aberto = ab[0] && qs[0].length > 0;
     var cur = Math.min(at[0], Math.max(0, res.length - 1));
-    function ir(x) { ab[1](false); qs[1](''); location.hash = x.sit ? link(['situacao', x.sit.slug]) : link(['d', x[0], x[1]]); }
+    function ir(x) { ab[1](false); qs[1](''); location.hash = link(['d', x[0], x[1]]); }
     return h('div', { className: 'pesq', role: 'search' },
       h('label', { htmlFor: 'pesq', className: 'rd-sr' }, 'Pesquisar um artigo'),
       h('input', { id: 'pesq', ref: ref, type: 'search', className: 'pesq-campo', placeholder: 'Pesquisar: art 87 circ, inquilino, férias…', autoComplete: 'off', value: qs[0],
@@ -325,10 +324,8 @@
         } }),
       aberto ? h('div', { className: 'pesq-caixa' },
         res.length ? h('ul', { id: 'pesq-lista', role: 'listbox', 'aria-label': 'Artigos encontrados', className: 'pesq-lista' }, res.map(function (x, k) {
-          var at_ = { id: 'pesq-' + k, role: 'option', 'aria-selected': k === cur, className: (k === cur ? 'is-on' : '') + (x.sit ? ' pesq-sit' : ''),
-            onMouseDown: function (e) { e.preventDefault(); ir(x); }, onMouseEnter: function () { at[1](k); } };
-          if (x.sit) return h('li', Object.assign({ key: 's' + x.sit.slug }, at_), h('span', { className: 'pesq-art' }, x.sit.titulo), h('span', { className: 'pesq-dip' }, 'Situação'));
-          return h('li', Object.assign({ key: x[0] + x[1] }, at_),
+          return h('li', { key: x[0] + x[1], id: 'pesq-' + k, role: 'option', 'aria-selected': k === cur, className: k === cur ? 'is-on' : '',
+            onMouseDown: function (e) { e.preventDefault(); ir(x); }, onMouseEnter: function () { at[1](k); } },
             h('span', { className: 'pesq-art' }, x[2]), x[3] ? h('span', { className: 'pesq-ep' }, ' ' + epigrafe(x[3])) : null,
             h('span', { className: 'pesq-dip' }, nomes[x[0]] ? nomes[x[0]].sigla : x[0]));
         })) : h('p', { id: 'pesq-lista', className: 'pesq-vazio' }, index ? 'Nenhum artigo. Escreva o número e a sigla («87 circ», «crp 1») ou palavras como «renda» ou «férias».' : 'A carregar…')) : null);
@@ -377,12 +374,12 @@
     csc: 'codigo-sociedades-comerciais', sociedades: 'codigo-sociedades-comerciais', civa: 'codigo-iva', iva: 'codigo-iva',
     lgt: 'lei-geral-tributaria', ebf: 'estatuto-beneficios-fiscais' };
   function fold(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
-  // Everyday words (pipeline/temas.json): "inquilino" finds "arrendatário", "horas extra" finds
+  // Everyday words (pipeline/sinonimos.json): "inquilino" finds "arrendatário", "horas extra" finds
   // "trabalho suplementar". Each word or phrase of the query becomes a group of alternatives; an
   // article matches when its epígrafe has one alternative of every group.
   function grupos(index, q) {
     var f = ' ' + fold(q).replace(/[º.]/g, ' ').replace(/\s+/g, ' ').trim() + ' ', out = [];
-    var sin = (index.temas && index.temas.sinonimos) || [];
+    var sin = index.sinonimos || [];
     // Longest phrases first, so "aumento da renda" wins over "renda".
     var frases = [];
     sin.forEach(function (x) { x.palavras.forEach(function (p) { frases.push([fold(p), x.termos.concat(p.indexOf(' ') < 0 ? [fold(p)] : [])]); }); });
@@ -413,14 +410,6 @@
       return rest.every(function (alt) { return alt.some(function (w) { return e.indexOf(w) >= 0; }); });
     }).sort(function (a, b) { return (a[4] === 'revogado') - (b[4] === 'revogado'); }).slice(0, 30);
   }
-  // Life situations whose words appear in the query.
-  function situacoes(index, q) {
-    var f = ' ' + fold(q).replace(/\s+/g, ' ').trim() + ' ';
-    if (f.trim().length < 3) return [];
-    return ((index.temas && index.temas.situacoes) || []).filter(function (s) {
-      return s.palavras.some(function (p) { return f.indexOf(' ' + fold(p)) >= 0; }) || fold(s.titulo).indexOf(f.trim()) >= 0;
-    });
-  }
   function epigrafe(e) { return (e || '').replace(/^\((.*)\)$/, '$1'); }
   function Home() {
     var r = useData(['index.json', 'atos.json']);
@@ -429,7 +418,7 @@
     var index = r.data[0], atos = r.data[1];
     var nomes = {};
     index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
-    var results = search(index, qs[0]), sits = situacoes(index, qs[0]);
+    var results = search(index, qs[0]);
     var recent = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.length; })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; }).slice(0, 8);
@@ -442,19 +431,11 @@
           h('input', { id: 'q', type: 'search', className: 'rd-input search-input', value: qs[0], autoComplete: 'off',
             placeholder: 'Por exemplo: «art 87 circ», «inquilino», «horas extra», «crp 1»', onChange: function (e) { qs[1](e.target.value); } })),
         qs[0] ? h('section', { 'aria-live': 'polite', className: 'results' },
-          sits.length ? h('ul', { className: 'sit-res' }, sits.map(function (x) {
-            return h('li', { key: x.slug }, h('a', { href: link(['situacao', x.slug]) }, h('strong', null, x.titulo)), h('span', { className: 'muted' }, ' · ' + x.artigos.length + ' artigos'));
-          })) : null,
           h('p', { className: 'muted' }, results.length ? results.length + (results.length === 1 ? ' artigo encontrado' : ' artigos encontrados') : 'Não encontrámos artigos. Escreva o número do artigo e a sigla do diploma (CRP, CT, CIRC, NRAU) ou palavras como «despedimento», «renda», «férias».'),
           h('ul', { className: 'list' }, results.map(function (x) {
             return h('li', { key: x[0] + x[1] }, h('a', { href: link(['d', x[0], x[1]]) }, h('strong', null, x[2]), x[3] ? ' ' + epigrafe(x[3]) : ''),
               h('span', { className: 'muted' }, ' · ' + nomes[x[0]].sigla), x[4] === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))) : null),
-      index.temas && index.temas.situacoes.length ? h('section', { className: 'situacoes', 'aria-labelledby': 'sit' },
-        h('h2', { id: 'sit', className: 'h2' }, 'Situações'),
-        h('ul', { className: 'sit-lista' }, index.temas.situacoes.map(function (x) {
-          return h('li', { key: x.slug }, h('a', { className: 'sit-link', href: link(['situacao', x.slug]) }, x.titulo), h('p', null, x.texto));
-        }))) : null,
       h('div', { className: 'duas duas-largo' },
         h('section', { 'aria-labelledby': 'dipl' },
           h('h2', { id: 'dipl', className: 'h2' }, 'Diplomas'),
@@ -472,43 +453,6 @@
               h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + Object.keys(ds).map(function (k) { return nomes[k].sigla + ' (' + ds[k] + ')'; }).join(', ')),
               a.sumario ? h('span', { className: 'recente-sum' }, a.sumario) : null);
           })))));
-  }
-
-  // ---- Situação: the articles for one life situation (pipeline/temas.json) ------------------
-  function Situacao(props) {
-    var r = useData(['index.json', 'pendentes.json']);
-    if (!r.data) return h(Loading, { error: r.error });
-    var index = r.data[0], x = ((index.temas || {}).situacoes || []).filter(function (s) { return s.slug === props.slug; })[0];
-    if (!x) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos esta situação.'));
-    document.title = x.titulo + ' · Redação';
-    var nomes = {}, ep = {};
-    index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
-    index.pesquisa.forEach(function (p) { ep[p[0] + '/' + p[1]] = p; });
-    var porDip = [];
-    x.artigos.forEach(function (a) {
-      var g = porDip.filter(function (z) { return z.slug === a[0]; })[0];
-      if (!g) porDip.push(g = { slug: a[0], arts: [] });
-      g.arts.push(a[1]);
-    });
-    return h('div', { className: 'pagina-ato' },
-      h(Crumbs, { items: [['Diplomas', '#/'], ['Situações'], [x.titulo]] }),
-      h('header', { className: 'ato-cabeca' },
-        h('h1', { className: 'display' }, x.titulo),
-        h('p', { className: 'lead' }, x.texto),
-        h('p', { className: 'muted small' }, 'Uma seleção de artigos para começar. Não é aconselhamento jurídico: a lei tem outras regras e exceções.')),
-      porDip.map(function (g) {
-        var d = nomes[g.slug] || { titulo: g.slug };
-        var propostas = pendentesDe(r.data[1], g.slug, null);
-        return h('section', { key: g.slug, className: 'secao', 'aria-labelledby': 'sit-' + g.slug },
-          h('h2', { id: 'sit-' + g.slug }, h('a', { href: link(['d', g.slug]) }, d.titulo)),
-          h('ul', { className: 'toc-list sit-arts' }, g.arts.map(function (a) {
-            var p = ep[g.slug + '/' + a] || [g.slug, a, a, ''];
-            var prop = propostas.some(function (i) { return i.diplomas[g.slug].artigos.indexOf(a) >= 0; });
-            return h('li', { key: a }, h('a', { className: 'toc-row', href: link(['d', g.slug, a]) },
-              h('span', { className: 'toc-n' }, p[2].replace(/^Artigo\s*/, '')),
-              h('span', { className: 'toc-ep' }, epigrafe(p[3]), prop ? h('span', { className: 'toc-parl' }, h('span', { 'aria-hidden': 'true' }, '◌ '), 'proposta em curso') : null)));
-          })));
-      }));
   }
 
   // ---- Diploma -------------------------------------------------------------------------------
@@ -1505,7 +1449,6 @@
     else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
-    else if (s[0] === 'situacao' && s[1]) view = h(Situacao, { slug: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else if (s[0] === 'verificacao') view = h(Verificacao);
     else view = h(Home);

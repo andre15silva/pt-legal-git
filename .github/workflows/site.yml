@@ -1,0 +1,87 @@
+name: site
+
+# Every day: fetch what changed in the Diário da República and the Parlamento, rebuild the
+# data, check it, and publish app/ on GitHub Pages. See app/README.md, "Website".
+
+on:
+  schedule:
+    - cron: "41 5 * * *"   # 05:41 UTC, after the DR's morning edition
+  workflow_dispatch:
+    inputs:
+      completo:
+        description: "Fetch every diploma again, not only the ones that changed"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300   # the first run fetches everything: about 2 hours
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: pdftotext, to read the bills' texts
+        run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils
+
+      # data/ is kept between runs in the Actions cache (about 1 GB, mostly the AR open data).
+      # Each run saves a new copy; GitHub drops the oldest when the repository passes 10 GB.
+      - name: Restore data
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: dados-${{ github.run_id }}
+          restore-keys: dados-
+
+      - name: Date
+        run: echo "REDACAO_HOJE=$(date -u +%F)" >> "$GITHUB_ENV"
+      - name: Parlamento open data (all files once, then the current legislatura every day)
+        run: |
+          python -I pipeline/fetch_parlamento.py
+          python -I pipeline/fetch_parlamento.py --refresh XVII
+      - name: Diário da República (only the diplomas whose amending acts changed)
+        run: python -I pipeline/fetch.py ${{ inputs.completo && ' ' || '--se-mudou' }}
+      - name: Texts of the bills now in Parliament
+        run: python -I pipeline/pendentes.py
+
+      - name: Drop DR responses older than a week (they hold old dates)
+        if: always()
+        run: find data/cache -type f -mtime +7 -delete 2>/dev/null || true
+      - name: Save data
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data
+          key: dados-${{ github.run_id }}
+
+      - name: Build
+        run: python -I pipeline/build.py
+      - name: Check the data (tests, and the verification floors)
+        run: |
+          python -I -m unittest discover -s pipeline
+          node app/test_diff.js
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

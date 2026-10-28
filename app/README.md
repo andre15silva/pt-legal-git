@@ -32,6 +32,20 @@ The corpus has 14 diplomas: the Constitution, the Código do Trabalho, the Códi
 
 Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.json). Each entry needs the DR consolidation ID (`frag_id`, `tipo`, `key`, all taken from the consolidated-text URL). Where the DR leaves a date out, the entry records the entry-into-force rule for the original text, with the provision that sets it.
 
+## Website
+
+[`.github/workflows/site.yml`](../.github/workflows/site.yml) builds the data and publishes `app/` on GitHub Pages every day at 05:41 UTC:
+
+1. It restores `data/` from the Actions cache (about 1 GB, mostly the AR open data).
+2. It downloads the AR files of the current legislatura again (`fetch_parlamento.py --refresh XVII`).
+3. It asks the DR for each diploma's list of amending acts as of today, and fetches again only the diplomas whose list changed (`fetch.py --se-mudou`, with `REDACAO_HOJE` set to the day).
+4. It reads the texts of new bills (`pendentes.py`), builds, and runs the tests and the verification floors. If anything fails, the site keeps the last good version.
+5. It saves `data/` to the cache and deploys.
+
+To set it up once: in the repository settings, Pages → Build and deployment → Source: **GitHub Actions**. Then run the workflow by hand (Actions → site → Run workflow). The first run has no cache and fetches everything, which takes about 2 hours. Later runs take minutes. To fetch every diploma again, run it by hand with "completo" ticked.
+
+When the DR changes its web app, `dr_client.py` stops with `StaleApiVersion` and the run fails; the hashes need updating (see that file).
+
 ## URLs
 
 | What | URL |
@@ -44,7 +58,6 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 | Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
 | One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
 | One parliamentary initiative (or a bill now in Parliament) | `#/iniciativa/315386` |
-| A life situation and its articles | `#/situacao/despedimento` |
 | The check of the text against the official republications | `#/verificacao` |
 
 Old links still work: a redação index (`redacao=3`) and the old compare page (`/comparar?de=…&ate=…&vista=lado`), which redirects to the Alterações view.
@@ -61,7 +74,7 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md). For now the app shows only the votação na generalidade: each initiative's own vote, and the vote on the committee's texto de substituição when there is one.
 5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.
 6. `pendentes.py` finds the bills now in Parliament (current legislatura) that would change a diploma: Projetos and Propostas de Lei not yet law, not rejected on the generalidade vote, not withdrawn, and not replaced by a text that became law. The bill's title names the diploma (the `iniciativas` pattern in `corpus.json`). The bill's text names the articles: each of its articles that amends the diploma says so in its first sentence ("São alterados os artigos 170.º e 178.º do Código Penal"). The diploma page lists the bills and marks the articles they would change; the article page lists the bills that name it. `data/pendentes.json` holds them.
-7. [`pipeline/temas.json`](../pipeline/temas.json) holds the words people use and the words the law uses ("inquilino" and "arrendatário", "horas extra" and "trabalho suplementar"), and a few life situations, each a short list of articles. Search uses both; the build checks that every article exists.
+7. [`pipeline/sinonimos.json`](../pipeline/sinonimos.json) holds the words people use and the words the law uses ("inquilino" and "arrendatário", "horas extra" and "trabalho suplementar"). Search matches either.
 8. `verificacao.py` compares each version with the official republications listed in `corpus.json` (for the Constitution: the 1976 text and the 7 revisions, fetched by `fetch.py`). Each version gets a verdict (igual, só na forma, desatualizada, divergente); `data/verificacao.json` holds the report. `replay.py` then applies each revision's instructions to the previous official text and measures how much of the next one it reproduces (M1).
 
 ## Known limits

@@ -232,9 +232,6 @@ class Replay(unittest.TestCase):
         self.assertIn("nos termos do artigo 8.º", r["7"])
 
 
-@unittest.skipUnless(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json")),
-                     "run pipeline/build.py first")
-
 class Pendentes(unittest.TestCase):
     """Bills in Parliament: which articles of a diploma a bill's text amends."""
     CP = re.compile(r"C[óo]digo Penal")
@@ -275,6 +272,9 @@ Os artigos 15.º-EA, 15.º I e 15.ºJ do NRAU passam a ter a seguinte redação:
         self.assertTrue(pendentes.no_intervalo("artigo-1083-a", {"de": 1022, "ate": 1113}))
         self.assertFalse(pendentes.no_intervalo("artigo-824", {"de": 1022, "ate": 1113}))
 
+
+@unittest.skipUnless(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json")),
+                     "run pipeline/build.py first")
 class Gate(unittest.TestCase):
     """M6: the build is not good enough when a verification metric drops below its floor."""
     def test_floors(self):

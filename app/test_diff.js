@@ -74,10 +74,10 @@ if (fs.existsSync(dir)) {
     }
   }
 }
-// Search in everyday words (pipeline/temas.json): the words people use find the law's words.
+// Search in everyday words (pipeline/sinonimos.json): the words people use find the law's words.
 const { search } = window.RedacaoApp;
-const temas = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'pipeline', 'temas.json'), 'utf8'));
-const indice = { temas, pesquisa: [
+const { sinonimos } = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'pipeline', 'sinonimos.json'), 'utf8'));
+const indice = { sinonimos, pesquisa: [
   ['codigo-civil-locacao', 'artigo-1100', 'Artigo 1100.º', 'Denúncia pelo arrendatário', 'vigente'],
   ['codigo-do-trabalho', 'artigo-268', 'Artigo 268.º', 'Pagamento de trabalho suplementar', 'vigente'],
   ['codigo-do-trabalho', 'artigo-338', 'Artigo 338.º', 'Proibição de despedimento sem justa causa', 'vigente'],

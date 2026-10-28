@@ -383,18 +383,10 @@ def link_parliament(reg: Registry, pdir: str) -> tuple[dict, dict]:
     return out, passagens
 
 
-def temas(ids: dict[str, set[str]]) -> dict:
-    """Everyday words and life situations for search (pipeline/temas.json). Situations keep
-    only the articles of diplomas in this build; a missing article is an error in temas.json."""
-    with open(os.path.join(ROOT, "pipeline", "temas.json"), encoding="utf-8") as fh:
-        t = json.load(fh)
-    t.pop("_nota", None)
-    for s in t["situacoes"]:
-        falta = [a for a in s["artigos"] if a[0] in ids and a[1] not in ids[a[0]]]
-        if falta:
-            raise ValueError(f"temas.json, {s['slug']}: artigos que não existem: {falta}")
-        s["artigos"] = [a for a in s["artigos"] if a[0] in ids]
-    return t
+def sinonimos() -> list[dict]:
+    """Everyday words and the law's words, for search (pipeline/sinonimos.json)."""
+    with open(os.path.join(ROOT, "pipeline", "sinonimos.json"), encoding="utf-8") as fh:
+        return json.load(fh)["sinonimos"]
 
 
 def copy_design_system() -> None:
@@ -436,7 +428,7 @@ def main() -> int:
     pdir = os.path.join(ROOT, "data", "parlamento")
     pend = pendentes.pendentes([c for c in corpus["diplomas"] if c["slug"] in ids], ids,
                                passagem.carregar_composicoes(pdir) if os.path.isdir(pdir) else {})
-    pend["consultado_em"] = corpus["consultado_em"]
+    pend["consultado_em"] = fetch.hoje(corpus)
     write(os.path.join(OUT, "pendentes.json"), pend)
     print(f"{len(pend['iniciativas'])} iniciativas pendentes")
     falhas = sum(p["verificacao"].get("falha", 0) for p in passagens.values())
@@ -444,10 +436,10 @@ def main() -> int:
     for a in reg.acts.values():
         a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
     write(os.path.join(OUT, "atos.json"), reg.acts)
-    write(os.path.join(OUT, "index.json"), {"consultado_em": corpus["consultado_em"], "diplomas": summaries, "pesquisa": search,
-                                            "temas": temas(ids)})
+    write(os.path.join(OUT, "index.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": summaries, "pesquisa": search,
+                                            "sinonimos": sinonimos()})
     # The check against official republications, per diploma, for the Verificação page.
-    write(os.path.join(OUT, "verificacao.json"), {"consultado_em": corpus["consultado_em"], "diplomas": {
+    write(os.path.join(OUT, "verificacao.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": {
         x["slug"]: {"titulo": x["titulo"], "sigla": x["sigla"], "relatorio": relatorios.get(x["slug"])} for x in summaries}})
     sys.stderr.write(f"{len(reg.acts)} atos, {len(iniciativas)} iniciativas ligadas\n")
     return 0

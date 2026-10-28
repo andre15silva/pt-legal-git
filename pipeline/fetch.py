@@ -7,6 +7,11 @@ fetches what is missing.
 
     python -I pipeline/fetch.py                 # every diploma in corpus.json
     python -I pipeline/fetch.py codigo-irc nrau # only these
+    REDACAO_HOJE=2026-11-02 python -I pipeline/fetch.py --se-mudou
+                                                # the daily update: as of that date, and only
+                                                # the diplomas whose list of amending acts changed
+
+The date of the fetch is corpus.json "consultado_em", or REDACAO_HOJE when set.
 """
 from __future__ import annotations
 
@@ -59,6 +64,23 @@ def cached(name: str, *args):
     return data
 
 
+def hoje(corpus: dict) -> str:
+    """The date the data is fetched as of: REDACAO_HOJE (the daily job), else corpus.json."""
+    return os.environ.get("REDACAO_HOJE") or corpus["consultado_em"]
+
+
+def mudou(d: dict, today: str) -> bool:
+    """Whether a diploma needs a new fetch: no data yet, or its list of amending acts (the DR
+    timeline as of today) differs from the one we have."""
+    path = os.path.join(RAW, d["slug"] + ".json")
+    if not os.path.exists(path):
+        return True
+    with open(path, encoding="utf-8") as fh:
+        antes = json.load(fh)
+    timeline = cached("timeline", d["frag_id"], antes["legis_id"], today)
+    return timeline != antes["timeline"]
+
+
 def no_intervalo(f: dict, d: dict) -> bool:
     """corpus.json may keep only part of a large code: "artigos": {"de": 1022, "ate": 1113}."""
     r = d.get("artigos")
@@ -101,12 +123,16 @@ def fetch(d: dict, today: str) -> dict:
 def main(argv: list[str]) -> int:
     with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
         corpus = json.load(fh)
-    wanted = set(argv[1:])
+    wanted = {a for a in argv[1:] if not a.startswith("--")}
+    so_mudados, today = "--se-mudou" in argv, hoje(corpus)
     for d in corpus["diplomas"]:
         if wanted and d["slug"] not in wanted:
             continue
+        if so_mudados and not mudou(d, today):
+            sys.stderr.write(f"{d['slug']}: sem alterações\n")
+            continue
         t = time.monotonic()
-        raw = fetch(d, corpus["consultado_em"])
+        raw = fetch(d, today)
         # Official full texts to check the consolidated text against (pipeline/verificacao.py).
         for r in d.get("republicacoes", []):
             cached("act", r["tipo"], r["key"])
