@@ -27,6 +27,20 @@ class Texto(unittest.TestCase):
         # "geral" comes from version 2; "17" keeps its origin in version 1
         self.assertEqual(spans[2], [(0, "A taxa "), (2, "geral"), (0, " é de "), (1, "17"), (0, " %, exceto.")])
 
+    def test_rewritten_phrase_is_one_change(self):
+        # CRP art. 1.º, Lei Constitucional n.º 1/89: "sociedade" is part of the new phrase
+        v = ["empenhada na sua transformação numa sociedade sem classes.",
+             "empenhada na construção de uma sociedade livre, justa e solidária."]
+        self.assertEqual(texto.blame(v)[1], [(0, "empenhada na "), (1, "construção de uma sociedade livre, justa e solidária"), (0, ".")])
+
+    def test_long_unchanged_run_stays(self):
+        v = ["A taxa é de 20 % e de 10 %.", "A taxa é de 21 % e de 11 %."]
+        self.assertEqual(texto.blame(v)[1], [(0, "A taxa é de "), (1, "21"), (0, " % e de "), (1, "11"), (0, " %.")])
+
+    def test_line_break_stays(self):
+        v = ["1 — Um.\n2 — Dois.", "1 — Uno.\n2 — Duo."]
+        self.assertEqual(texto.lines_of(texto.blame(v)[1]), [[(0, "1 — "), (1, "Uno"), (0, ".")], [(0, "2 — "), (1, "Duo"), (0, ".")]])
+
     def test_lines(self):
         spans = texto.blame(["1 — Um.\n2 — Dois."])[0]
         self.assertEqual(texto.lines_of(spans), [[(0, "1 — Um.")], [(0, "2 — Dois.")]])

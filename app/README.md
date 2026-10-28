@@ -30,6 +30,7 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
    - Each version has the act that made it, its publication date, its entry-into-force date (when the DR gives one), and its text.
    - Revocations become "(Revogado.)".
    - It diffs consecutive versions word by word. Each word keeps the index of the version that wrote it; this is the *origem do texto*.
+   - A rewritten phrase is one change. A short unchanged run between two replacements joins them when it is not longer than either replacement (the diff-match-patch semantic rule). The compare view uses the same rule, in `app.js`. `node app/test_diff.js` checks it and, when `app/data` exists, checks that every compare view rebuilds both texts exactly.
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
 
 ## Known limits

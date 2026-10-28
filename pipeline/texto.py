@@ -51,8 +51,7 @@ def blame(versions: list[str]) -> list[list[tuple[int, str]]]:
         tok = tokens(texto)
         org = [i] * len(tok)
         if i > 0:
-            sm = difflib.SequenceMatcher(None, prev_tok, tok, autojunk=False)
-            for op, a1, a2, b1, b2 in sm.get_opcodes():
+            for op, a1, a2, b1, b2 in opcodes(prev_tok, tok):
                 if op == "equal":
                     org[b1:b2] = prev_org[a1:a2]
         # A space between two words takes the older of their origins, so a changed word's
@@ -63,6 +62,44 @@ def blame(versions: list[str]) -> list[list[tuple[int, str]]]:
         out.append(_merge(tok, org))
         prev_tok, prev_org = tok, org
     return out
+
+
+def opcodes(a: list[str], b: list[str]) -> list[tuple[str, int, int, int, int]]:
+    """difflib opcodes on tokens, with one rewritten phrase kept as one change.
+
+    The same rule as the comparison view in app/app.js: an unchanged run of spaces between
+    two changes joins them. A short unchanged run between two replacements also joins them
+    when it is not longer than either replacement (the diff-match-patch semantic rule). So
+    "sua transformação numa sociedade sem classes" -> "construção de uma sociedade livre,
+    justa e solidária" is one change, and "sociedade" takes the origin of the new text.
+    Unchanged runs with a line break stay.
+    """
+    ops = [list(o) for o in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes()]
+
+    def size(o, side):
+        return sum(len(t) for t in (a[o[1]:o[2]] if side == "a" else b[o[3]:o[4]]))
+
+    def join(semantic):
+        i, joined = 1, False
+        while i < len(ops) - 1:
+            p, e, n = ops[i - 1], ops[i], ops[i + 1]
+            run = "".join(a[e[1]:e[2]])
+            if e[0] == "equal" and p[0] != "equal" and n[0] != "equal" and "\n" not in run:
+                chars = len(run.strip())
+                if chars == 0 or (semantic and p[0] == n[0] == "replace"
+                                  and chars <= max(size(p, "a"), size(p, "b"))
+                                  and chars <= max(size(n, "a"), size(n, "b"))):
+                    ops[i - 1:i + 2] = [["replace", p[1], n[2], p[3], n[4]]]
+                    joined = True
+                    continue
+            i += 1
+        return joined
+
+    # Spaces first, so each side of a short run is measured as the whole phrase.
+    join(False)
+    while join(True):
+        pass
+    return [tuple(o) for o in ops]
 
 
 def _merge(tok: list[str], org: list[int]) -> list[tuple[int, str]]:

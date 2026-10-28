@@ -148,36 +148,63 @@
     ops.reverse();
     return group(ops);
   }
-  // Changes separated only by spaces read as one change: "da taxa prevista" -> "das taxas
-  // previstas" shows one deleted phrase and one added phrase, not alternating words.
+  // One rewritten phrase reads as one change. Changes separated only by spaces merge. A
+  // short unchanged run between two replacements also merges when it is not longer than the
+  // replacements next to it (the diff-match-patch semantic rule): "sua transformação numa
+  // sociedade sem classes" -> "construção de uma sociedade livre, justa e solidária" is one
+  // change, not two changes around the word "sociedade". Unchanged runs with a line break
+  // stay, so each número keeps its own changes.
   function group(ops) {
-    var out = [], del = '', ins = '', gap = '';
+    var segs = [];
+    ops.forEach(function (o) {
+      var last = segs[segs.length - 1];
+      if (o[0] === 'eq') { if (last && last.eq != null) last.eq += o[1]; else segs.push({ eq: o[1] }); return; }
+      if (!last || last.eq != null) { last = { del: '', ins: '' }; segs.push(last); }
+      last[o[0]] += o[1];
+    });
+    function join(semantic) {
+      var joined = false;
+      for (var i = 1; i < segs.length - 1; i++) {
+        var e = segs[i], p = segs[i - 1], n = segs[i + 1];
+        if (e.eq == null || p.eq != null || n.eq != null || e.eq.indexOf('\n') >= 0) continue;
+        var size = e.eq.trim().length;
+        var short = semantic && p.del && p.ins && n.del && n.ins &&
+          size <= Math.max(p.del.length, p.ins.length) && size <= Math.max(n.del.length, n.ins.length);
+        // The unchanged run goes into both texts, so join only when both texts change.
+        if ((size === 0 || short) && (p.del || n.del) && (p.ins || n.ins)) {
+          segs.splice(i - 1, 3, { del: p.del + e.eq + n.del, ins: p.ins + e.eq + n.ins });
+          joined = true;
+          i--;
+        }
+      }
+      return joined;
+    }
+    // Spaces first, so each side of a short run is measured as the whole phrase.
+    join(false);
+    while (join(true)) { /* until stable */ }
+    var out = [];
     function push(op, t) {
       if (!t) return;
       var last = out[out.length - 1];
       if (last && last.op === op) last.text += t; else out.push({ op: op, text: t });
     }
-    function flush() {
-      // Spaces at the end of a change belong to the unchanged text after it.
-      var tail = (del.match(/[ \t]+$/) || [''])[0];
-      var tailIns = (ins.match(/[ \t]+$/) || [''])[0];
-      var keep = !del ? tailIns : !ins ? tail : (tail.length < tailIns.length ? tail : tailIns);
-      push('del', del.slice(0, del.length - (del ? keep.length : 0)));
-      push('ins', ins.slice(0, ins.length - (ins ? keep.length : 0)));
-      push('eq', keep);
-      del = ins = '';
-    }
-    ops.forEach(function (o) {
-      var op = o[0], t = o[1];
-      if (op === 'eq' && /^[ \t]+$/.test(t) && (del || ins)) { gap += t; return; }
-      if (op === 'eq') { flush(); push('eq', gap + t); gap = ''; return; }
-      if (gap) { if (del) del += gap; if (ins) ins += gap; gap = ''; }
-      if (op === 'del') del += t; else ins += t;
+    segs.forEach(function (sg) {
+      if (sg.eq != null) { push('eq', sg.eq); return; }
+      // Spaces at both ends of a replacement belong to the unchanged text next to it. A change
+      // on one side only keeps its spaces, or the other text would gain a space.
+      var l = '', t = '';
+      if (sg.del && sg.ins) {
+        l = common(sg.del.match(/^[ \t]*/)[0], sg.ins.match(/^[ \t]*/)[0]);
+        t = common(sg.del.match(/[ \t]*$/)[0], sg.ins.match(/[ \t]*$/)[0]);
+      }
+      push('eq', l);
+      push('del', sg.del.slice(l.length, sg.del.length - t.length));
+      push('ins', sg.ins.slice(l.length, sg.ins.length - t.length));
+      push('eq', t);
     });
-    flush();
-    push('eq', gap);
     return out;
   }
+  function common(a, b) { return a.length < b.length ? a : b; }
   function diffLines(a, b) {
     var lines = [[]];
     diff(a, b).forEach(function (s) {
@@ -414,7 +441,8 @@
     };
     var set = function (k) { return function (e) { var q = { de: de, ate: ate }; q[k] = e.target.value; location.hash = link(['d', d.slug, art.id, 'comparar'], q); }; };
     var lines = diffLines(texto(art.versoes[de]), texto(art.versoes[ate]));
-    var changes = lines.reduce(function (c, l) { return c + l.filter(function (s) { return s.op !== 'eq'; }).length; }, 0);
+    // A deletion followed by its insertion is one change.
+    var changes = lines.reduce(function (c, l) { return c + l.filter(function (s, k) { return s.op !== 'eq' && !(s.op === 'ins' && k && l[k - 1].op === 'del'); }).length; }, 0);
     var lo = Math.min(de, ate), hi = Math.max(de, ate);
     var modes = [['inline', 'Alterações marcadas'], ['final', 'Só a redação nova'], ['previous', 'Só a redação anterior']];
     return h('div', { className: 'stack' },
@@ -545,6 +573,7 @@
       h('p', null, 'O texto de cada redação vem da legislação consolidada do Diário da República' + (when ? ', consultada a ' + when : '') + '. A ligação de cada lei à sua iniciativa e às votações vem dos dados abertos da Assembleia da República.'),
       h('h2', { className: 'h2' }, 'Como calculamos a origem do texto'),
       h('p', null, 'Comparamos cada redação com a redação anterior, palavra a palavra. Cada palavra que uma alteração acrescentou fica com a cor dessa alteração. As palavras que não mudaram mantêm a origem anterior.'),
+      h('p', null, 'Quando uma alteração escreve de novo uma frase, marcamos a frase toda como alterada. Uma palavra curta que fica igual no meio da frase não divide a alteração em duas.'),
       h('h2', { className: 'h2' }, 'As três datas'),
       h('ul', null,
         h('li', null, h('strong', null, 'Publicação: '), 'o dia em que o ato saiu no Diário da República.'),
