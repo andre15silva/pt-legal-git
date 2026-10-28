@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passagem no Parlamento</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+  :root {
+    --paper: #ffffff; --ink: #1b1c1d; --muted: #5d6166; --rule: #e6e6e3; --rule-strong: #8d9093;
+    --verde: #1e5b45; --aviso: #8a5a00; --focus: #1e5b45;
+    --act-7: #a3324a; --act-6: #7a4fa0; --act-5: #8a6d00; --act-4: #1f7a5a; --act-3: #b35a12; --act-2: #2e5ea8; --act-0: #b7b7b2;
+    --serif: "Source Serif 4", Georgia, serif; --sans: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/24px var(--sans); }
+  a { color: var(--verde); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .num, .d { font-family: var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+  .ex { font: 400 12px/16px var(--sans); color: var(--aviso); white-space: nowrap; }
+  .ex::before { content: "«"; } .ex::after { content: "»"; }
+  .mockhead { padding: 10px 24px; font: 13px/18px var(--sans); color: var(--muted); border-bottom: 1px solid var(--rule); }
+
+  .mast { display: flex; gap: 28px; align-items: baseline; padding: 16px 24px 12px; border-bottom: 1px solid var(--ink); }
+  .mast b { font: 600 22px/28px var(--serif); }
+  .mast nav { display: flex; gap: 22px; font-size: 15px; } .mast nav a { color: var(--muted); text-decoration: none; }
+  .mast .q { margin-left: auto; width: 280px; border: 0; border-bottom: 1px solid var(--rule-strong); font: 15px var(--sans); padding: 4px 0; color: var(--muted); }
+  .run { display: flex; justify-content: space-between; padding: 10px 24px; font-size: 14px; color: var(--muted); border-bottom: 1px solid var(--rule); }
+
+  /* (a) article page */
+  .sheet { display: grid; grid-template-columns: 160px minmax(0, 64ch) 290px; column-gap: 44px; justify-content: center; padding: 44px 24px 56px; }
+  .col { grid-column: 2; }
+  .side { grid-column: 3; grid-row: 1 / span 4; font-size: 14px; line-height: 20px; }
+  h1.art { margin: 0; font: 600 40px/44px var(--serif); }
+  h1.art span { display: block; font-weight: 400; font-size: 24px; line-height: 32px; margin-top: 4px; }
+  .status { font: italic 17px/26px var(--serif); margin: 16px 0 2px; }
+  .status a { color: var(--ink); }
+  .status2 { font: 15px/22px var(--serif); color: var(--muted); }
+  .tabs { display: flex; gap: 26px; margin: 26px 0 0; padding: 0 0 0; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); font-size: 15px; }
+  .tabs span { padding: 12px 0 10px; color: var(--muted); }
+  .tabs .on { color: var(--ink); box-shadow: inset 0 -2px 0 var(--verde); }
+  .key { font-size: 14px; line-height: 20px; color: var(--muted); margin: 12px 0 26px; }
+  .key u { text-decoration: underline 2px var(--ink); text-underline-offset: 4px; }
+  .key .dot { text-decoration: underline dotted 2px var(--ink); text-underline-offset: 4px; }
+
+  .n { position: relative; margin: 0 0 15px; }
+  .n p { margin: 0; font: 19px/30px var(--serif); padding-left: 46px; text-indent: -46px; }
+  .mg { position: absolute; left: -204px; width: 160px; text-align: right; top: 4px; font: 14px/19px var(--serif); color: var(--muted); }
+  .mg b { font-weight: 400; color: var(--ink); }
+  .mg b::after { content: ""; display: inline-block; width: 3px; height: 14px; margin-left: 8px; vertical-align: -2px; background: var(--c); }
+  .mg i { display: block; font-style: normal; font-family: var(--sans); font-size: 13px; padding-right: 11px; }
+  .w { text-decoration: underline 2px var(--c); text-underline-offset: 5px; }
+  .w.parl { text-decoration-style: dotted; text-decoration-thickness: 3px; }
+  .w.sel { background: #f3eef0; outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 1px; }
+
+  /* the popover: the one framed thing */
+  .pop { position: relative; margin: 10px 0 22px 46px; max-width: 520px; background: var(--paper); border: 1px solid var(--rule-strong); box-shadow: 0 8px 28px rgba(0,0,0,.10); padding: 18px 20px 16px; font-size: 15px; line-height: 22px; }
+  .pop::before { content: ""; position: absolute; top: -7px; left: 252px; width: 12px; height: 12px; background: var(--paper); border-left: 1px solid var(--rule-strong); border-top: 1px solid var(--rule-strong); transform: rotate(45deg); }
+  .pop .who { font: 17px/25px var(--serif); margin: 0; }
+  .pop .who em { font-style: normal; }
+  .pop .was { margin: 2px 0 0; font: 15px/22px var(--serif); color: var(--muted); }
+  .pop .acts { margin: 8px 0 0; display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; }
+  .pop h3 { margin: 16px 0 6px; padding-top: 14px; border-top: 1px solid var(--rule); font: 600 16px/22px var(--serif); }
+  .pop p { margin: 0 0 6px; }
+  .serif { font-family: var(--serif); }
+  .conf { font: 14px/20px var(--sans); color: var(--muted); }
+  .conf b { font-weight: 400; color: var(--ink); border-bottom: 1px dashed var(--rule-strong); }
+  dl.v { display: grid; grid-template-columns: 92px 1fr; column-gap: 12px; row-gap: 2px; margin: 6px 0 8px; font: 15px/22px var(--serif); }
+  dl.v dt { font-family: var(--sans); font-size: 14px; color: var(--muted); }
+  dl.v dd { margin: 0; }
+  dl.v dd .s { color: var(--muted); }
+  .more { display: inline-block; margin-top: 4px; font-size: 15px; }
+
+  .side h2 { font: 600 16px/22px var(--serif); margin: 0 0 8px; padding-top: 12px; border-top: 1px solid var(--ink); }
+  .reg { list-style: none; margin: 0; padding: 0; }
+  .reg li { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; padding: 7px 0 7px 8px; border-bottom: 1px solid var(--rule); font-family: var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+  .reg li span:nth-child(2)::before { content: ""; display: inline-block; width: 3px; height: 13px; margin-right: 8px; vertical-align: -1px; background: var(--c); }
+  .reg li.on { box-shadow: inset 3px 0 0 var(--verde); font-weight: 600; }
+  .reg .open { grid-column: 1 / -1; font: 14px/20px var(--sans); font-weight: 400; color: var(--muted); padding: 6px 0 4px 38px; }
+  .reg .open p { margin: 0 0 4px; } .reg .open .serif { color: var(--ink); font-size: 15px; }
+
+  /* (b) act page, passage */
+  .divider { border: 0; border-top: 6px double var(--rule-strong); margin: 0; }
+  .page { max-width: 1040px; margin: 0 auto; padding: 44px 24px 64px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; column-gap: 56px; }
+  .page > .main { min-width: 0; }
+  h1.act { margin: 0; font: 600 40px/44px var(--serif); }
+  .sum { font: 19px/28px var(--serif); margin: 10px 0 6px; max-width: 60ch; }
+  .dates { font: 15px/22px var(--serif); color: var(--muted); margin: 0 0 30px; }
+  h2.sec { font: 600 22px/28px var(--serif); margin: 0 0 6px; padding-top: 14px; border-top: 1px solid var(--ink); }
+  .lede { font: 17px/26px var(--serif); margin: 0 0 14px; max-width: 62ch; }
+  .focus { font-size: 15px; color: var(--muted); margin: 0 0 22px; }
+  .focus b { font-weight: 400; color: var(--ink); box-shadow: inset 3px 0 0 var(--verde); padding-left: 10px; }
+  ol.pass { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  ol.pass > li { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 20px; padding: 14px 0 14px; border-bottom: 1px solid var(--rule); }
+  ol.pass > li.quiet { padding: 8px 0; }
+  ol.pass > li.quiet .st, ol.pass > li.quiet .txt { color: var(--muted); }
+  ol.pass .d { font-size: 15px; line-height: 24px; color: var(--muted); }
+  ol.pass .st { font: 600 17px/24px var(--serif); margin: 0; }
+  ol.pass .st .res { font-weight: 400; }
+  ol.pass .txt { margin: 2px 0 0; font: 16px/24px var(--serif); }
+  ol.pass .links { margin: 4px 0 0; font-size: 15px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .thread { margin: 10px 0 2px; padding: 2px 0 2px 14px; box-shadow: inset 3px 0 0 var(--verde); font-size: 15px; line-height: 22px; }
+  .thread .serif { font-size: 16px; }
+  .thr { font-size: 14px; color: var(--muted); margin: 0 0 4px; }
+  table.seats { border-collapse: collapse; margin: 8px 0 4px; font: 15px/22px var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+  table.seats th, table.seats td { padding: 2px 22px 2px 0; text-align: left; font-weight: 400; vertical-align: top; }
+  table.seats thead th { font: 14px/20px var(--sans); color: var(--muted); }
+  table.seats td.r { text-align: right; padding-right: 14px; }
+  table.seats tfoot td { border-top: 1px solid var(--rule); color: var(--muted); }
+  h3.sub { font: 600 18px/26px var(--serif); margin: 40px 0 6px; padding-top: 12px; border-top: 1px solid var(--ink); }
+  table.mx { border-collapse: collapse; font: 15px/22px var(--serif); width: 100%; max-width: 560px; }
+  table.mx th, table.mx td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--rule); font-weight: 400; }
+  table.mx thead th { font: 14px/18px var(--sans); color: var(--muted); vertical-align: bottom; }
+  table.mx tbody th { font-weight: 600; }
+  .note { font-size: 14px; line-height: 20px; color: var(--muted); max-width: 62ch; }
+  .aside h2 { font: 600 16px/22px var(--serif); margin: 0 0 8px; padding-top: 12px; border-top: 1px solid var(--ink); }
+  .aside { font-size: 14px; line-height: 20px; }
+  .aside p { margin: 0 0 10px; }
+  .variants { max-width: 1040px; margin: 0 auto; padding: 0 24px 64px; }
+  .variants ol.pass { margin-bottom: 26px; }
+
+  @media (max-width: 720px) {
+    .mast .q, .mast nav { display: none; }
+    .run { padding: 10px 16px; }
+    .sheet { display: block; padding: 24px 16px 140px; }
+    .side { display: none; }
+    h1.art { font-size: 30px; line-height: 34px; } h1.art span { font-size: 21px; }
+    .tabs { gap: 18px; }
+    .n p { font-size: 18px; line-height: 28px; padding-left: 34px; text-indent: -34px; }
+    .mg { position: static; width: auto; text-align: left; padding-left: 34px; margin-bottom: 2px; font-size: 13px; }
+    .mg b::after { display: none; } .mg b::before { content: ""; display: inline-block; width: 3px; height: 12px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+    .mg i { display: inline; padding: 0 0 0 6px; }
+    .pop { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; max-width: none; border: 0; border-top: 1px solid var(--rule-strong); box-shadow: 0 -8px 28px rgba(0,0,0,.12); padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); max-height: 72vh; overflow: auto; z-index: 5; }
+    .pop::before { content: ""; position: static; display: block; margin: 0 auto 12px; width: 40px; height: 4px; border: 0; background: var(--rule-strong); transform: none; border-radius: 2px; }
+    .pop .close { display: block; }
+    .page { display: block; padding: 28px 16px 48px; }
+    h1.act { font-size: 30px; line-height: 34px; }
+    ol.pass > li { grid-template-columns: 1fr; row-gap: 0; }
+    ol.pass .d { font-size: 14px; }
+    dl.v { grid-template-columns: 84px 1fr; }
+    .aside { margin-top: 36px; }
+    .variants { padding: 0 16px 48px; }
+  }
+  .pop .close { display: none; position: absolute; right: 12px; top: 10px; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<p class="mockhead">Mock de produto, Redação. Votações, datas e textos de lei: dados reais (app/data). Marcado <span class="ex">dados de exemplo</span>: ligação de frases à proposta e às propostas de alteração, que ainda não temos.</p>
+
+<header class="mast"><b>Redação</b><nav><a href="#">Diplomas</a><a href="#">Sobre os dados</a></nav><span class="q">art. 87.º CIRC, licença parental…</span></header>
+<div class="run"><span>Código do IRC · Capítulo IV — Taxas</span><span>‹ 86.º-B &nbsp; 87.º-A ›</span></div>
+
+<!-- (a) Article in "Origem do texto" with the phrase popover open -->
+<main class="sheet" id="a">
+  <div class="col">
+    <h1 class="art">Artigo 87.º<span>Taxas</span></h1>
+    <p class="status">Redação dada pela <a href="#">Lei n.º 64/2025, de 7 de novembro</a></p>
+    <p class="status2">Em vigor desde 12 de novembro de 2025 · 8.ª de 8</p>
+    <div class="tabs" role="tablist"><span>Texto</span><span>Alterações</span><span class="on">Origem do texto</span></div>
+    <p class="key">Sublinhado: texto escrito depois da republicação de <span class="d">2014</span>. <span class="dot">Ponteado</span>: texto que o Parlamento mudou na iniciativa.</p>
+
+    <div class="n" style="--c: var(--act-7)">
+      <div class="mg"><b>Lei 64/2025</b><i>proposta do Governo</i></div>
+      <p>1 — A taxa do IRC é de <span class="w sel" style="--c: var(--act-7)" role="button" aria-pressed="true" tabindex="0">17</span> %, exceto nos casos previstos nos números seguintes.</p>
+    </div>
+
+    <div class="pop" role="dialog" aria-label="Origem do texto: «17»">
+      <a class="close" href="#">Fechar</a>
+      <p class="who"><em>A Lei n.º 64/2025, de 7 de novembro, escreveu «17».</em></p>
+      <p class="was">Antes: «20», na redação da Lei n.º 45-A/2024.</p>
+      <p class="acts"><a href="#">Ver a alteração</a><a href="#">Ver como estava antes</a></p>
+
+      <h3>No Parlamento</h3>
+      <p class="serif">O Governo apresentou este texto na Proposta de Lei n.º 16/XVII. O Parlamento não o mudou.</p>
+      <p class="conf"><b>Provável</b>. Comparámos a proposta com a lei publicada. <span class="ex">dados de exemplo</span></p>
+      <p class="serif" style="margin-top:10px">Votação final global a 17 de outubro de 2025. <strong style="font-weight:600">Aprovada.</strong></p>
+      <dl class="v">
+        <dt>A favor</dt><dd>PSD, CH, IL, CDS-PP, PAN, JPP</dd>
+        <dt>Contra</dt><dd>PS, L, PCP, BE</dd>
+        <dt>Abstenção</dt><dd class="s">nenhum grupo</dd>
+      </dl>
+      <a class="more" href="#b">Ver a passagem no Parlamento</a>
+    </div>
+
+    <div class="n" style="--c: var(--act-7)">
+      <div class="mg"><b>Lei 64/2025</b><i>mudado no Parlamento</i><span class="ex">dados de exemplo</span></div>
+      <p>2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial<span class="w" style="--c:var(--act-3)">,</span> que sejam qualificados como pequena ou média empresa <span class="w" style="--c:var(--act-4)">ou empresa de pequena-média capitalização (Small Mid Cap)</span>, nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros <span class="w" style="--c:var(--act-4)">50</span><span class="w" style="--c:var(--act-3)">&#8239;000</span>&nbsp;<span class="w" style="--c:var(--act-6)">€</span> de matéria coletável é de <span class="w parl" style="--c:var(--act-7)">15</span>&nbsp;%, aplicando-se a taxa prevista no número anterior ao excedente.</p>
+    </div>
+    <div class="n" style="--c: var(--act-5)">
+      <div class="mg"><b>Lei 82/2023</b></div>
+      <p>3 — A aplicação <span class="w" style="--c:var(--act-5)">das taxas previstas nos n.<sup>os</sup> 2 e 8</span> está sujeita às regras <span class="w" style="--c:var(--act-2)">europeias aplicáveis em matéria de</span> auxílios de minimis.</p>
+    </div>
+  </div>
+
+  <aside class="side">
+    <h2>Redações</h2>
+    <ol class="reg">
+      <li style="--c:var(--act-0)"><span>1.ª</span><span>Republicação, Lei n.º 2/2014</span><span>21/01/2014</span></li>
+      <li style="--c:var(--act-2)"><span>3.ª</span><span>Lei n.º 7-A/2016</span><span>31/03/2016</span></li>
+      <li style="--c:var(--act-3)"><span>4.ª</span><span>Lei n.º 2/2020</span><span>01/04/2020</span></li>
+      <li style="--c:var(--act-4)"><span>5.ª</span><span>Lei n.º 24-D/2022</span><span>01/01/2023</span></li>
+      <li style="--c:var(--act-5)"><span>6.ª</span><span>Lei n.º 82/2023</span><span>01/01/2024</span></li>
+      <li style="--c:var(--act-6)"><span>7.ª</span><span>Lei n.º 45-A/2024</span><span>01/01/2025</span></li>
+      <li class="on" style="--c:var(--act-7)"><span>8.ª</span><span>Lei n.º 64/2025</span><span>12/11/2025</span>
+        <div class="open">
+          <p>Publicada a <span class="d">7 de novembro de 2025</span>. Artigo 2.º da lei.</p>
+          <p><span class="serif">Proposta de Lei n.º 16/XVII, do Governo.</span><br>Aprovada a <span class="d">17 de outubro de 2025</span>.</p>
+          <p><a href="#b">Ver a passagem no Parlamento</a> · <a href="#">Ver o ato</a></p>
+        </div>
+      </li>
+    </ol>
+  </aside>
+</main>
+
+<hr class="divider">
+
+<!-- (b) Act page: Passagem no Parlamento, focused on one article -->
+<header class="mast"><b>Redação</b><nav><a href="#">Diplomas</a><a href="#">Sobre os dados</a></nav><span class="q">art. 87.º CIRC, licença parental…</span></header>
+<div class="run"><span>Atos · Lei n.º 56/2023</span><span><a href="#">‹ Voltar ao artigo 15.º-A do NRAU</a></span></div>
+
+<div class="page" id="b">
+  <div class="main">
+    <h1 class="act">Lei n.º 56/2023, de 6 de outubro</h1>
+    <p class="sum">Aprova medidas no âmbito da habitação, procedendo a diversas alterações legislativas.</p>
+    <p class="dates">Publicada a 6 de outubro de 2023 · Diário da República n.º 194/2023, Série I · Altera 26 artigos do NRAU</p>
+
+    <h2 class="sec">Passagem no Parlamento</h2>
+    <p class="lede">O Governo apresentou a Proposta de Lei n.º 71/XV. O Parlamento aprovou o texto final da comissão. O Presidente da República vetou o decreto. O Parlamento confirmou o decreto e o Presidente promulgou-o.</p>
+    <p class="focus"><b>Marcado: o que diz respeito ao artigo 15.º-A do NRAU</b> (artigo 36.º desta lei) · <a href="#">Mostrar a passagem completa</a></p>
+
+    <ol class="pass">
+      <li><span class="d">14/04/2023</span><div>
+        <p class="st">Iniciativa</p>
+        <p class="txt">Proposta de Lei n.º 71/XV, do Governo. «Aprova medidas no âmbito do plano de intervenção Mais Habitação».</p>
+        <p class="links"><a href="#">Ler a proposta ↗</a><a href="#">Comparar a proposta com a lei publicada</a></p>
+        <div class="thread"><p class="serif" style="margin:0">A proposta já alterava o artigo 15.º-A. Acrescentava a injunção em matéria de arrendamento.</p>
+          <p class="conf" style="margin:0"><b>Provável</b>. Comparámos os textos. <span class="ex">dados de exemplo</span></p></div>
+      </div></li>
+
+      <li><span class="d">19/05/2023</span><div>
+        <p class="st">Votação na generalidade <span class="res">· Aprovada</span></p>
+        <dl class="v">
+          <dt>A favor</dt><dd>PS</dd>
+          <dt>Contra</dt><dd>PSD, CH, IL, PCP, BE</dd>
+          <dt>Abstenção</dt><dd>PAN, L</dd>
+        </dl>
+      </div></li>
+
+      <li><span class="d">19/05/2023<br>a 19/07/2023</span><div>
+        <p class="st">Especialidade</p>
+        <p class="txt">A Comissão de Economia, Obras Públicas, Planeamento e Habitação votou as propostas de alteração e aprovou um texto final.</p>
+        <p class="txt">Cinco grupos pediram ao Plenário para votar 52 propostas de alteração: PSD (26), CH (1), IL (7), PCP (12), BE (6). O Plenário rejeitou 51. Uma ficou prejudicada.</p>
+        <p class="links"><a href="#votacoes">Ver as 52 votações no Plenário</a></p>
+        <div class="thread"><p class="serif" style="margin:0">Nenhuma destas 52 propostas tratava do artigo 15.º-A.</p><p class="conf" style="margin:0"><b>Provável</b>. A proposta e o texto final numeram os artigos de outra forma.</p>
+          <p style="margin:2px 0 0">Não temos as votações da comissão. Por isso, não sabemos se a comissão mudou o texto da proposta neste artigo.</p></div>
+      </div></li>
+
+      <li><span class="d">19/07/2023</span><div>
+        <p class="st">Votação final global <span class="res">· Aprovada</span></p>
+        <p class="txt">Texto final da comissão.</p>
+        <dl class="v">
+          <dt>A favor</dt><dd>PS</dd>
+          <dt>Contra</dt><dd>PSD, CH, IL, PCP, BE</dd>
+          <dt>Abstenção</dt><dd>PAN, L</dd>
+        </dl>
+      </div></li>
+
+      <li class="quiet"><span class="d">25/07/2023</span><div><p class="st">Redação final</p><p class="txt">A comissão fixou a redação final. O decreto da Assembleia saiu a 1 de agosto.</p></div></li>
+
+      <li><span class="d">21/08/2023</span><div>
+        <p class="st">Veto</p>
+        <p class="txt">O Presidente da República vetou o decreto e devolveu-o ao Parlamento. O Parlamento leu a mensagem a 6 de setembro.</p>
+        <p class="links"><a href="#">Ler a mensagem do Presidente ↗</a></p>
+      </div></li>
+
+      <li><span class="d">22/09/2023</span><div>
+        <p class="st">Confirmação do decreto <span class="res">· Confirmado</span></p>
+        <p class="txt">Para confirmar um decreto vetado, a Constituição exige a maioria absoluta dos deputados em funções: 116 de 230.</p>
+        <table class="seats">
+          <thead><tr><th>Sentido</th><th class="r">Votos</th><th>Grupos (deputados que votaram)</th></tr></thead>
+          <tbody>
+            <tr><th>A favor</th><td class="r">119</td><td>PS 119</td></tr>
+            <tr><th>Contra</th><td class="r">87</td><td>PSD 68 · CH 6 · IL 4 · PCP 6 · BE 3</td></tr>
+            <tr><th>Abstenção</th><td class="r">2</td><td>PAN 1 · L 1</td></tr>
+          </tbody>
+          <tfoot><tr><td>Votaram</td><td class="r">208</td><td>de 230 deputados</td></tr></tfoot>
+        </table>
+      </div></li>
+
+      <li class="quiet"><span class="d">26/09/2023</span><div><p class="st">Promulgação</p><p class="txt">O Presidente da República promulgou a lei. O Primeiro-Ministro referendou-a a 3 de outubro.</p></div></li>
+      <li class="quiet"><span class="d">06/10/2023</span><div><p class="st">Publicação</p><p class="txt">Diário da República n.º 194/2023, Série I.</p></div></li>
+      <li><span class="d">07/10/2023</span><div>
+        <p class="st">Entrada em vigor</p>
+        <div class="thread"><p class="serif" style="margin:0">A nova redação do artigo 15.º-A entrou em vigor a 7 de outubro de 2023.</p>
+          <p class="links" style="margin-top:2px"><a href="#">Ver o artigo 15.º-A nesta redação</a></p></div>
+      </div></li>
+    </ol>
+
+    <h3 class="sub" id="votacoes">Votações por grupo parlamentar</h3>
+    <table class="mx">
+      <thead><tr><th>Grupo parlamentar</th><th>Generalidade<br><span class="d">19/05/2023</span></th><th>Final global<br><span class="d">19/07/2023</span></th><th>Confirmação<br><span class="d">22/09/2023</span></th></tr></thead>
+      <tbody>
+        <tr><th>PS</th><td>A favor</td><td>A favor</td><td>A favor</td></tr>
+        <tr><th>PSD</th><td>Contra</td><td>Contra</td><td>Contra</td></tr>
+        <tr><th>CH</th><td>Contra</td><td>Contra</td><td>Contra</td></tr>
+        <tr><th>IL</th><td>Contra</td><td>Contra</td><td>Contra</td></tr>
+        <tr><th>PCP</th><td>Contra</td><td>Contra</td><td>Contra</td></tr>
+        <tr><th>BE</th><td>Contra</td><td>Contra</td><td>Contra</td></tr>
+        <tr><th>PAN</th><td>Abstenção</td><td>Abstenção</td><td>Abstenção</td></tr>
+        <tr><th>L</th><td>Abstenção</td><td>Abstenção</td><td>Abstenção</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Ordem dos grupos: a da Assembleia da República nesta legislatura. Votações na especialidade no Plenário (52) · <a href="#">Mostrar</a></p>
+  </div>
+
+  <aside class="aside">
+    <h2>Fontes</h2>
+    <p>Assembleia da República, dados abertos: fases e votações por grupo. Os dados não dão o voto de cada deputado.</p>
+    <p>Diário da República: o texto publicado.</p>
+    <h2 style="margin-top:22px">Como sabemos</h2>
+    <p><span class="serif">Certo</span>: está no registo da Assembleia.</p>
+    <p><span class="serif">Provável</span>: comparámos textos. Os textos coincidem, mas a Assembleia não o diz.</p>
+    <p><span class="serif">Não sabemos</span>: não temos o registo.</p>
+  </aside>
+</div>
+
+<hr class="divider">
+<div class="variants">
+  <h2 class="sec" style="margin-top:44px">Outros atos: a mesma estrutura</h2>
+  <p class="note" style="margin-bottom:14px">Decreto-Lei: sem votação no Parlamento. Revisão constitucional: maioria de dois terços, sem veto. Exemplos de estrutura, sem datas reais. <span class="ex">dados de exemplo</span></p>
+  <ol class="pass">
+    <li><span class="d">dd/mm/aaaa</span><div><p class="st">Aprovação em Conselho de Ministros</p><p class="txt">O Governo aprovou este decreto-lei. O Parlamento não votou o texto.</p></div></li>
+    <li class="quiet"><span class="d">dd/mm/aaaa</span><div><p class="st">Autorização legislativa</p><p class="txt">O Governo usou a autorização da Lei n.º …. <a href="#">Ver a passagem dessa lei</a></p></div></li>
+    <li class="quiet"><span class="d">dd/mm/aaaa</span><div><p class="st">Promulgação · Publicação · Entrada em vigor</p></div></li>
+  </ol>
+  <ol class="pass">
+    <li><span class="d">dd/mm/aaaa</span><div><p class="st">Projetos de revisão constitucional</p><p class="txt">Seis projetos: PS, PSD (dois), CDS-PP, PCP, PEV. A comissão eventual juntou-os num texto.</p></div></li>
+    <li><span class="d">22/06/2005</span><div><p class="st">Votação na especialidade de um artigo novo <span class="res">· Aprovado</span></p><p class="txt">Proposta conjunta do PS, do PSD e do CDS-PP. A Constituição exige dois terços dos deputados em funções.</p>
+      <dl class="v"><dt>A favor</dt><dd>PS 101, PSD 63, CDS-PP 10, BE 7 <span class="s">· 181</span></dd><dt>Abstenção</dt><dd>PCP 11, PEV 2 <span class="s">· 13</span></dd></dl>
+      <p class="conf"><b>Atenção aos números</b>: o registo da Assembleia diz «Favor: 180» (e, numa cópia, «Contra: 180»). A soma por grupo dá 181. Mostramos os dois números.</p></div></li>
+    <li class="quiet"><span class="d">dd/mm/aaaa</span><div><p class="st">Promulgação</p><p class="txt">O Presidente não pode vetar uma revisão constitucional.</p></div></li>
+  </ol>
+</div>
+</body>
+</html>

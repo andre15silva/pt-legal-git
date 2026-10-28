@@ -148,12 +148,55 @@ From top to bottom. Desktop measure about 64ch, a 46 px hang for números, and a
 4. **One counting rule on all pages.** Today the article's "O que mudou" says 4 and the compare page says 3 for the same pair.
 5. **The citation copies a link and has a short form for use inside a sentence:** "art. 87.º do CIRC, na redação da Lei n.º 82/2023, de 29 de dezembro".
 
-## 8. Order of work
+## 8. Visual language: white and Nordic ("Hvit")
 
-1. **Article page skeleton.**
+The owner asked for a white ground and a Scandinavian, minimal style. The references are lovdata.no, retsinformation.dk, finlex.fi, riksdagen.se, designsystemet.no and aksel.nav.no. The token proposal, the mock and screenshots are in [`design/direcao/hvit/`](../design/direcao/hvit/) (`scandi-tokens.css`, `tokens-scandi.json`). `tools/check_contrast.py` reports 0 failures on it.
+
+- **Ground and greys.**
+  - The ground is pure white (#ffffff). Grey is only a hover wash (#f5f6f5), never a panel.
+  - There is a small grey scale with a faint green bias, not the blue-grey "slate" of generated UI:
+    - rule #e3e6e4 (hairlines)
+    - rule-mid #c9cecb (ticks, folds)
+    - rule-strong #7a827e (controls, 3.95:1)
+    - revogado #69716d
+    - ink-muted #525a56 (7.1:1)
+    - ink #1a1f1c (16.7:1)
+- **One accent.** Verde-garrafa #1d5c44 (7.9:1) stays, for links and "you are here". retsinformation.dk shows that green works for law. A Nordic ink-blue would clash with the blue of added text.
+  - Links are underlined: 1 px at 45 % with 0.2em offset, and 2 px on hover.
+  - The only solid button is "Ver" in the date popover.
+- **Change colours keep their hues.** Added: #00578a on #e1f0fa, plus underline. Removed: #9a3c06 on #fce8dc, plus strike-through. They are reserved for change.
+- **Warning.** The word "Atenção" in ochre #7a5000 with a 3 px #b07a00 rule. No tinted boxes.
+- **Focus.** An ink double ring (2 px ink, white inner ring), as in Designsystemet and Aksel. The focus ring is never blue, so it never reads as a change.
+- **Act colours, re-laddered for colour blindness.**
+  - Light: #1f5fa0 #cc6a1a #147a64 #73306f #d0607f #59661a #8a7fd6. The closest pair stays ΔE ≥ 8.8 under simulated colour blindness. The old set fell to 1.3.
+  - They appear only as 3 px bands beside the act's name.
+- **Type.**
+  - Law and facts: Source Serif 4. The epígrafe is 32/38 at 400 under the 40/44 title.
+  - Interface: **Schibsted Grotesk**, the Norwegian newsroom face from Google Fonts. It has a plain zero, a serifed capital I and underlined ordinals ("8.ª", "n.º"). It replaces Atkinson Hyperlegible Next, whose slashed zero made dates look like code.
+  - Atkinson Hyperlegible Mono stays for identifiers.
+- **Structure.**
+  - Grid: 96 px margin (hang and marks) · 650 px text (64ch) · 64 px gap · 300 px register. 40 px page gutters, 16 px on a phone.
+  - Rules: 1 px hairlines. A 1 px ink rule above the register. A 2 px ink rule above the sticky row and the phone bar.
+  - Radius: 2 px on controls, 4 px on floating layers, nothing else rounded.
+  - Shadows only on floating layers.
+- **Ten rules.**
+  1. White ground. Grey for hover only.
+  2. Hairlines and space separate. No box unless it floats.
+  3. One accent, verde, for links and "you are here" only.
+  4. Blue and orange for change only.
+  5. Facts in the serif with lining tabular figures. The sans only for things you click or type into.
+  6. Underlined links. Ink text buttons. At most one solid button per view.
+  7. Warnings: a 3 px ochre rule and the word "Atenção".
+  8. No uppercase labels, eyebrows, decorative icons or gradients.
+  9. Origin colour only as a band next to the act's name.
+  10. One sticky element: the 48 px row on desktop, the 56 px bar on a phone.
+
+## 9. Order of work
+
+1. **The white Nordic tokens (section 8) and the article page skeleton.**
    - Remove the boxes, pills, eyebrows and duplicate facts.
    - Status line, time ruler, one sticky row, Data popover, ruled Atenção, hanging números, the register, citation at the top.
    - The `replaceState` stepping.
 2. **Alterações view replaces compare.** Número alignment, two-way folds, ↑↓ navigation, "Comparar com", "Lado a lado", copying only the changes, redirects.
 3. **Home, diploma, act and initiative pages in the same language.** Search in the header.
-4. **Origem do texto with margin notes.** Then the change flash. Then the data fixes in section 7 (the CIRC start and the CRP "não alteraram" line can come with step 1).
+4. **Origem do texto with margin notes.** Then the "Passagem no Parlamento" layer from [PASSAGEM.md](PASSAGEM.md). Then the change flash. Then the data fixes in section 7 (the CIRC start and the CRP "não alteraram" line can come with step 1).

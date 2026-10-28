@@ -1,0 +1,457 @@
+{
+ "name": "Redação",
+ "version": 1,
+ "color": {
+  "themes": [
+   {
+    "id": "light",
+    "name": "Papel (claro)"
+   },
+   {
+    "id": "dark",
+    "name": "Noite (escuro)"
+   }
+  ],
+  "tokens": [
+   {
+    "name": "paper",
+    "value": {
+     "light": "#ffffff",
+     "dark": "#121413"
+    },
+    "usage": "Page ground behind everything. A cool paper white with a faint green bias toward `verde`; never cream."
+   },
+   {
+    "name": "paper-raised",
+    "value": {
+     "light": "#ffffff",
+     "dark": "#191c1a"
+    },
+    "usage": "The reading column, panels, sheets and popovers that sit on `paper`."
+   },
+   {
+    "name": "paper-sunken",
+    "value": {
+     "light": "#f5f6f5",
+     "dark": "#0c0e0d"
+    },
+    "usage": "Side rails (Índice, filters), table headers, the inactive track of controls."
+   },
+   {
+    "name": "rule",
+    "value": {
+     "light": "#e3e6e4",
+     "dark": "#2a2f2c"
+    },
+    "usage": "Hairline dividers between articles, panel borders, table rules. Decorative only: never the sole boundary of a control."
+   },
+   {
+    "name": "rule-mid",
+    "value": {
+     "light": "#c9cecb",
+     "dark": "#3d4440"
+    },
+    "usage": ""
+   },
+   {
+    "name": "rule-strong",
+    "value": {
+     "light": "#7a827e",
+     "dark": "#7f8883"
+    },
+    "usage": "Borders of inputs, buttons and the date lens: carries meaning, ≥3:1 on `paper` and `paper-raised` in both themes."
+   },
+   {
+    "name": "ink",
+    "value": {
+     "light": "#1a1f1c",
+     "dark": "#e6e9e7"
+    },
+    "usage": "Statute text and headings on `paper`, `paper-raised`, `paper-sunken`."
+   },
+   {
+    "name": "ink-muted",
+    "value": {
+     "light": "#525a56",
+     "dark": "#a8b0ab"
+    },
+    "usage": "Secondary text — dates, epígrafes in lists, captions — on `paper`, `paper-raised`, `paper-sunken`."
+   },
+   {
+    "name": "revogado",
+    "value": {
+     "light": "#69716d",
+     "dark": "#8f9893"
+    },
+    "usage": "Revoked or expired provisions (revogado, caducado): their heading and pill, always with the word. Text-safe on `paper` and `paper-raised`."
+   },
+   {
+    "name": "verde",
+    "value": {
+     "light": "#1d5c44",
+     "dark": "#7ccaa5"
+    },
+    "usage": "The one brand accent (verde-garrafa): links, the current-version marker, primary buttons, the 'Em vigor' state. Text-safe on `paper` and `paper-raised`."
+   },
+   {
+    "name": "verde-soft",
+    "value": {
+     "light": "#e6f1eb",
+     "dark": "#16291f"
+    },
+    "usage": "Quiet fill behind the selected version, the active tab and the 'Em vigor' pill. Pair with `verde` text."
+   },
+   {
+    "name": "on-verde",
+    "value": {
+     "light": "#ffffff",
+     "dark": "#0a1610"
+    },
+    "usage": "Text and icons on a solid `verde` fill (primary buttons)."
+   },
+   {
+    "name": "ins-ink",
+    "value": {
+     "light": "#00578a",
+     "dark": "#8fcdf3"
+    },
+    "usage": "Text that a change ADDED (aditado / nova redação), always with an underline. Reserved for changes; never UI chrome."
+   },
+   {
+    "name": "ins-bg",
+    "value": {
+     "light": "#e1f0fa",
+     "dark": "#0f2b3d"
+    },
+    "usage": "Tint behind added text. `ins-ink` and `ink` both stay ≥4.5:1 on it."
+   },
+   {
+    "name": "del-ink",
+    "value": {
+     "light": "#9a3c06",
+     "dark": "#f2a77a"
+    },
+    "usage": "Text that a change REMOVED (redação anterior / revogado), always struck through. Reserved for changes; never UI chrome or errors."
+   },
+   {
+    "name": "del-bg",
+    "value": {
+     "light": "#fce8dc",
+     "dark": "#3a1e0e"
+    },
+    "usage": "Tint behind removed text. `del-ink` and `ink` both stay ≥4.5:1 on it."
+   },
+   {
+    "name": "pendente",
+    "value": {
+     "light": "#7e3765",
+     "dark": "#e3a6d0"
+    },
+    "usage": "Law in the making: pending iniciativas, projected text, process steps not yet reached. Text-safe on `paper` and `paper-raised`. Always with a dashed outline or the word 'Pendente'."
+   },
+   {
+    "name": "pendente-bg",
+    "value": {
+     "light": "#f7e9f2",
+     "dark": "#311829"
+    },
+    "usage": "Fill behind pending/projected text and the 'Pendente' pill. Pair with `pendente`."
+   },
+   {
+    "name": "aviso",
+    "value": {
+     "light": "#7a5000",
+     "dark": "#eec46a"
+    },
+    "usage": "Trust warnings: 'Não verificado', default-date assumptions, retroactive effects ahead. Text-safe on `paper`, `paper-raised` and `aviso-bg`."
+   },
+   {
+    "name": "aviso-rule",
+    "value": {
+     "light": "#b07a00",
+     "dark": "#c99a35"
+    },
+    "usage": ""
+   },
+   {
+    "name": "aviso-bg",
+    "value": {
+     "light": "#fdf4dc",
+     "dark": "#30260c"
+    },
+    "usage": "Fill behind a warning note or the 'Não verificado' pill."
+   },
+   {
+    "name": "focus",
+    "value": {
+     "light": "#1a1f1c",
+     "dark": "#e6e9e7"
+    },
+    "usage": "Keyboard focus ring: a solid 2px outline at 2px offset. ≥3:1 on every surface in both themes."
+   },
+   {
+    "name": "act-0",
+    "value": {
+     "light": "#a7aeaa",
+     "dark": "#5a625e"
+    },
+    "usage": "Origem do texto: the original (versão originária) — a neutral band so later changes stand out."
+   },
+   {
+    "name": "act-1",
+    "value": {
+     "light": "#1f5fa0",
+     "dark": "#5a93db"
+    },
+    "usage": "Origem do texto: the first amending act in the legend. Margin bands and swatches only; text written by the act stays `ink`."
+   },
+   {
+    "name": "act-2",
+    "value": {
+     "light": "#cc6a1a",
+     "dark": "#f2b27a"
+    },
+    "usage": "Origem do texto: second act. Margin band and swatch."
+   },
+   {
+    "name": "act-3",
+    "value": {
+     "light": "#147a64",
+     "dark": "#2e9e80"
+    },
+    "usage": "Origem do texto: third act. Margin band and swatch."
+   },
+   {
+    "name": "act-4",
+    "value": {
+     "light": "#73306f",
+     "dark": "#a8689f"
+    },
+    "usage": "Origem do texto: fourth act. Margin band and swatch."
+   },
+   {
+    "name": "act-5",
+    "value": {
+     "light": "#d0607f",
+     "dark": "#f5a6c0"
+    },
+    "usage": "Origem do texto: fifth act. Margin band and swatch."
+   },
+   {
+    "name": "act-6",
+    "value": {
+     "light": "#59661a",
+     "dark": "#a4b04c"
+    },
+    "usage": "Origem do texto: sixth act. Margin band and swatch."
+   },
+   {
+    "name": "act-7",
+    "value": {
+     "light": "#8a7fd6",
+     "dark": "#b3abff"
+    },
+    "usage": "Origem do texto: seventh act. Margin band and swatch."
+   }
+  ]
+ },
+ "type": {
+  "fonts": [],
+  "families": {
+   "serif": "\"Source Serif 4\", \"Source Serif Pro\", Georgia, \"Times New Roman\", serif",
+   "sans": "\"Atkinson Hyperlegible Next\", \"Atkinson Hyperlegible\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+   "mono": "\"Atkinson Hyperlegible Mono\", ui-monospace, \"SFMono-Regular\", Menlo, Consolas, monospace"
+  },
+  "groups": [
+   {
+    "name": "Lei (serif)",
+    "family": "serif",
+    "styles": [
+     {
+      "name": "display",
+      "fontSize": "44px",
+      "lineHeight": "48px",
+      "fontWeight": 600,
+      "letterSpacing": "-0.01em",
+      "sample": "Código do Trabalho",
+      "usage": "Diploma title on its landing page. Once per page."
+     },
+     {
+      "name": "title",
+      "fontSize": "28px",
+      "lineHeight": "34px",
+      "fontWeight": 600,
+      "sample": "Artigo 1083.º — Fundamento da resolução",
+      "usage": "Article heading in the single-article view."
+     },
+     {
+      "name": "article",
+      "fontSize": "20px",
+      "lineHeight": "28px",
+      "fontWeight": 600,
+      "sample": "Artigo 351.º",
+      "usage": "Article heading inside a running diploma."
+     },
+     {
+      "name": "statute",
+      "fontSize": "19px",
+      "lineHeight": "31px",
+      "fontWeight": 400,
+      "sample": "1 — Constitui justa causa de despedimento o comportamento culposo do trabalhador…",
+      "usage": "The law itself. 19px desktop and phone, measure ≤ 68ch."
+     },
+     {
+      "name": "statute-small",
+      "fontSize": "16px",
+      "lineHeight": "26px",
+      "fontWeight": 400,
+      "sample": "a) Desobediência ilegítima às ordens dadas por responsáveis hierarquicamente superiores;",
+      "usage": "Quoted law inside panels, diffs side-by-side, tooltips."
+     }
+    ]
+   },
+   {
+    "name": "Interface (sans)",
+    "family": "sans",
+    "styles": [
+     {
+      "name": "heading",
+      "fontSize": "18px",
+      "lineHeight": "24px",
+      "fontWeight": 700,
+      "sample": "História deste artigo",
+      "usage": "Panel and section headings in the interface."
+     },
+     {
+      "name": "body",
+      "fontSize": "16px",
+      "lineHeight": "24px",
+      "fontWeight": 400,
+      "sample": "Este texto foi escrito pela Lei n.º 13/2023, de 3 de abril.",
+      "usage": "Interface copy, explanations, summaries."
+     },
+     {
+      "name": "small",
+      "fontSize": "14px",
+      "lineHeight": "20px",
+      "fontWeight": 400,
+      "sample": "Em vigor desde 1 de maio de 2023",
+      "usage": "Dates under headings, captions, legends."
+     },
+     {
+      "name": "label",
+      "fontSize": "12px",
+      "lineHeight": "16px",
+      "fontWeight": 700,
+      "letterSpacing": "0.06em",
+      "sample": "EM VIGOR",
+      "usage": "Pills and eyebrow labels, uppercase."
+     }
+    ]
+   },
+   {
+    "name": "Identificadores (mono)",
+    "family": "mono",
+    "styles": [
+     {
+      "name": "id",
+      "fontSize": "13px",
+      "lineHeight": "20px",
+      "fontWeight": 400,
+      "sample": "eli/lei/2023/04/03/13/p/dre/pt",
+      "usage": "ELI paths, content hashes, API fields. Professionals and API docs only — never in citizen flows."
+     }
+    ]
+   }
+  ]
+ },
+ "spacing": {
+  "tokens": [
+   {
+    "name": "space-1",
+    "value": "4px",
+    "usage": "Gap between a pill's icon and word; between swatch and label."
+   },
+   {
+    "name": "space-2",
+    "value": "8px",
+    "usage": "Inside pills and chips; between números of an article."
+   },
+   {
+    "name": "space-3",
+    "value": "12px",
+    "usage": "Between items in a version list; button horizontal padding at small size."
+   },
+   {
+    "name": "space-4",
+    "value": "16px",
+    "usage": "Panel padding on phone; side gutter minimum."
+   },
+   {
+    "name": "space-6",
+    "value": "24px",
+    "usage": "Panel padding on desktop; between articles."
+   },
+   {
+    "name": "space-8",
+    "value": "32px",
+    "usage": "Between sections of a page."
+   },
+   {
+    "name": "space-12",
+    "value": "48px",
+    "usage": "Page top margin; between the diploma header and its first article."
+   }
+  ]
+ },
+ "radius": {
+  "tokens": [
+   {
+    "name": "radius-xs",
+    "value": "2px",
+    "usage": "Act swatches, ins/del tints — keeps marked text looking like ink, not buttons."
+   },
+   {
+    "name": "radius-sm",
+    "value": "4px",
+    "usage": "Buttons, inputs, the date lens, pills."
+   },
+   {
+    "name": "radius-md",
+    "value": "8px",
+    "usage": "Panels, sheets, popovers."
+   }
+  ]
+ },
+ "shadow": {
+  "tokens": [
+   {
+    "name": "shadow-sheet",
+    "value": {
+     "light": "0 8px 24px rgba(23,32,27,0.14)",
+     "dark": "0 8px 24px rgba(0,0,0,0.5)"
+    },
+    "usage": "Only for floating layers: the Origem do texto sheet, popovers, the sticky date lens when scrolled. Panels on the page use `rule` borders, not shadows."
+   }
+  ]
+ },
+ "size": {
+  "tokens": [
+   {
+    "name": "measure",
+    "value": "68ch",
+    "usage": "Max width of the statute reading column."
+   },
+   {
+    "name": "band",
+    "value": "4px",
+    "usage": "Width of the Origem do texto margin band."
+   },
+   {
+    "name": "target",
+    "value": "44px",
+    "usage": "Minimum touch target on phone for every control."
+   }
+  ]
+ }
+}

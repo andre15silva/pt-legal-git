@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Artigo 87.º do Código do IRC</title>
+<link rel="stylesheet" href="scandi-tokens.css">
+<style>
+  /* ---------- Page grid: hang | text (64ch) | gap | register ---------- */
+  .wrap { box-sizing: border-box; max-width: calc(96px + 650px + 64px + var(--register) + 2 * 40px); margin: 0 auto; padding: 0 40px; }
+  .grid { display: grid; grid-template-columns: 96px minmax(0, 650px) 64px var(--register); }
+  .c2 { grid-column: 2; } .c23 { grid-column: 2 / 5; } .c4 { grid-column: 4; }
+
+  /* ---------- 1. Header, 48 px, one hairline ---------- */
+  .mast { border-bottom: 1px solid var(--rule); }
+  .mast .grid { height: 48px; align-items: center; }
+  .mast .in { grid-column: 2 / 5; display: flex; align-items: center; gap: 24px; }
+  .brand { font: 600 20px/24px var(--font-serif); color: var(--ink); text-decoration: none; letter-spacing: -.005em; }
+  .mast .field { width: 340px; margin-left: auto; height: 34px; box-sizing: border-box; }
+  .mast .meta { font: 400 15px/20px var(--font-sans); color: var(--ink); text-decoration: none; }
+  .mast .meta:hover { text-decoration: underline 1px var(--rule-strong); text-underline-offset: .25em; }
+
+  /* ---------- 2. Running head ---------- */
+  .run { display: flex; justify-content: space-between; padding: 12px 0 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+  .run a { color: var(--ink-muted); text-decoration: none; }
+  .run a:hover { color: var(--ink); text-decoration: underline 1px var(--rule-strong); }
+  .run .nx { display: flex; gap: 20px; font-family: var(--font-serif); font-size: 15px; font-variant-numeric: lining-nums; }
+
+  /* ---------- 3. Title ---------- */
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 22px; }
+  h1 { margin: 0; font: 600 40px/44px var(--font-serif); letter-spacing: -.012em; font-variant-numeric: lining-nums; }
+  h1 .ep { display: block; font-weight: 400; font-size: 32px; line-height: 38px; }
+  .acts { display: flex; gap: 24px; padding-bottom: 4px; white-space: nowrap; }
+  .acts a { font: 500 15px/20px var(--font-sans); padding: 6px 0; }
+
+  /* ---------- 4. Status line, the citation formula ---------- */
+  .status { margin: 14px 0 0; font: 400 17px/26px var(--font-serif); font-variant-numeric: lining-nums; }
+  .status i a { color: var(--ink); text-decoration-color: var(--rule-strong); }
+  .status i a:hover { text-decoration-color: currentColor; }
+  .status .vg { display: block; color: var(--ink-muted); }
+  .status .vg b { font-weight: 400; color: var(--ink); }
+
+  /* ---------- 5. Time ruler ---------- */
+  .ruler { position: relative; height: 36px; margin-top: 16px; }
+  .ruler .base { position: absolute; left: 0; right: 0; top: 14px; height: 1px; background: var(--rule-strong); }
+  .ruler .tk { position: absolute; top: 6px; width: 1px; height: 9px; background: var(--ink-muted); }
+  .ruler .tk.half { top: 10px; height: 5px; }
+  .ruler .yt { position: absolute; top: 15px; width: 1px; height: 4px; background: var(--rule-mid); }
+  .ruler .yr { position: absolute; top: 21px; font: 400 12px/16px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ink-muted); transform: translateX(-50%); }
+  .ruler .yr.end { transform: none; right: 0; left: auto !important; color: var(--ink); }
+  .ruler .sp { position: absolute; top: 4px; height: 20px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .ruler .sp::after { content: ""; position: absolute; left: 1px; right: 0; top: 10px; height: 1px; }
+  .ruler .sp:hover::after { height: 3px; top: 9px; background: var(--ink-muted); }
+  .ruler .sp[aria-checked="true"]::after { height: 5px; top: 8px; background: var(--ink); }
+  .ruler .hoje { position: absolute; right: 0; top: 2px; width: 1px; height: 17px; background: var(--ink); }
+
+  /* ---------- 6. The one sticky row ---------- */
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--paper); margin-top: 10px; }
+  .bar .in { height: var(--row); box-sizing: border-box; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 20px; }
+  .bar .step { display: flex; gap: 18px; }
+  .bar .now { font: 400 15px/20px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ink); padding-left: 20px; border-left: 1px solid var(--rule); }
+  .bar .now span { color: var(--ink-muted); }
+  .bar .views { margin-left: auto; display: flex; gap: 22px; height: 100%; }
+  .bar .views button { font: 500 15px/20px var(--font-sans); color: var(--ink-muted); background: none; border: 0; padding: 0; height: 100%; box-sizing: border-box; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
+  .bar .views button:hover { color: var(--ink); }
+  .bar .views button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--verde); }
+  .bar .date { padding-left: 20px; border-left: 1px solid var(--rule); }
+
+  /* ---------- 7. Atenção: one ruled line, no fill ---------- */
+  .atn { margin: 22px 0 0; padding: 2px 0 2px 16px; border-left: 3px solid var(--aviso-rule); font: 400 15px/22px var(--font-sans); }
+  .atn b { color: var(--aviso); font-weight: 600; }
+  .atn details { display: inline; }
+  .atn details[open] { display: block; margin-top: 8px; }
+  .atn .norma { font: 400 16px/26px var(--font-serif); margin: 8px 0 10px; max-width: 60ch; }
+  .atn .taxas { border-collapse: collapse; font: 400 15px/22px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+  .atn .taxas th { font: 400 14px/20px var(--font-sans); color: var(--ink-muted); text-align: left; padding: 0 28px 4px 0; border-bottom: 1px solid var(--rule); }
+  .atn .taxas td { padding: 4px 28px 4px 0; border-bottom: 1px solid var(--rule); }
+  .atn .taxas td + td { text-align: right; }
+  .os { font-size: .62em; position: relative; top: -.55em; line-height: 0; }
+  .atn summary { display: inline; list-style: none; cursor: pointer; color: var(--ink); font-weight: 500; text-decoration: underline 1px var(--rule-strong); text-underline-offset: .25em; }
+  .atn summary::-webkit-details-marker { display: none; }
+  .atn summary::after { content: " ▾"; font-size: 12px; color: var(--ink-muted); }
+
+  /* ---------- 8. The text ---------- */
+  .lei { margin-top: 24px; font: 400 19px/30px var(--font-serif); font-variant-numeric: lining-nums; hyphens: manual; }
+  .lei p { margin: 0 0 15px; position: relative; padding-left: 0; }
+  .lei .n { position: absolute; left: calc(-1 * var(--hang)); width: var(--hang); }
+  .lei .al { padding-left: var(--hang-al); margin-bottom: 6px; }
+  .lei .al .l { position: absolute; left: 0; }
+  .lei .al.last { margin-bottom: 15px; }
+  .lei .rv { font-size: 16px; line-height: 24px; color: var(--revogado); }
+  .lei .rv.al { margin-bottom: 4px; }
+  /* margin mark for números the transitional norm names */
+  .lei .tm::before { content: ""; position: absolute; left: calc(-1 * var(--hang) - 18px); top: 7px; width: 3px; height: 16px; background: var(--aviso-rule); }
+  .lei i { font-style: italic; }
+
+  /* ---------- 9. Below the text ---------- */
+  .after { margin-top: 48px; }
+  .after section { border-top: 1px solid var(--rule); padding: 18px 0 28px; }
+  .after h2 { margin: 0 0 10px; font: 600 22px/28px var(--font-serif); }
+  .after .note { margin: 0 0 8px; font: 400 16px/26px var(--font-serif); font-variant-numeric: lining-nums; max-width: 64ch; }
+  .after .src { font: 400 14px/20px var(--font-sans); color: var(--ink-muted); margin: 0 0 14px; }
+  .after .cite { font: 400 16px/26px var(--font-serif); margin: 0 0 12px; font-variant-numeric: lining-nums; }
+  .after .cite span { color: var(--ink-muted); }
+  .after .row { display: flex; gap: 24px; flex-wrap: wrap; }
+
+  /* ---------- 10. Right column: the register ---------- */
+  .reg { grid-column: 4; align-self: start; margin-top: 24px; }
+  .reg h2 { margin: 0 0 6px; font: 600 17px/24px var(--font-serif); }
+  .reg ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+  .reg li a { display: grid; grid-template-columns: 30px 3px 1fr auto; column-gap: 10px; align-items: baseline; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--rule); color: var(--ink); text-decoration: none; font: 400 15px/22px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; position: relative; }
+  .reg li a:hover { background: var(--paper-sunken); }
+  .reg .o { color: var(--ink-muted); text-align: right; }
+  .reg .b { align-self: stretch; background: var(--c); margin: 3px 0; }
+  .reg .d { color: var(--ink-muted); }
+  .reg li.on a { box-shadow: inset 3px 0 0 var(--verde); padding-left: 0; }
+  .reg li.on .o, .reg li.on .t { color: var(--ink); font-weight: 600; }
+  .reg li.on .d { color: var(--ink); }
+  .reg li.ret a { padding-top: 2px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+  .reg li.ret .t { font-style: italic; }
+  .reg .cap { margin: 10px 0 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+  .reg .more { margin: 18px 0 0; font: 400 15px/22px var(--font-sans); }
+
+  .foot { border-top: 1px solid var(--rule); margin-top: 48px; padding: 16px 0 40px; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+
+  /* ---------- Phone ---------- */
+  .pbar, .ptabs, .psearch { display: none; }
+  @media (max-width: 1100px) {
+    .wrap { padding: 0 16px; }
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .c2, .c23, .c4, .mast .in, .reg { grid-column: 1; }
+    .reg { display: none; }
+    .mast .field { display: none; }
+    .psearch { display: inline; margin-left: auto; }
+    .ruler, .bar { display: none; }
+    .acts { display: none; }
+    .run .long { display: none; }
+    .head { margin-top: 18px; }
+    h1 { font-size: 30px; line-height: 34px; }
+    h1 .ep { font-size: 26px; line-height: 32px; }
+    .status { font-size: 16px; line-height: 24px; margin-top: 10px; }
+    .ptabs { display: flex; gap: 22px; margin-top: 18px; border-bottom: 1px solid var(--rule); }
+    .ptabs button { font: 500 15px/20px var(--font-sans); color: var(--ink-muted); background: none; border: 0; padding: 12px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .ptabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--verde); }
+    .atn { margin-top: 18px; }
+    .lei { margin-top: 22px; font-size: 18px; line-height: 28px; }
+    .lei p { padding-left: 34px; }
+    .lei .n { left: 0; width: 34px; }
+    .lei .al { padding-left: calc(34px + 26px); }
+    .lei .al .l { left: 34px; }
+    .lei .tm::before { left: -12px; top: 6px; }
+    .after { margin-top: 32px; }
+    body { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+    .pbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--paper); border-top: 2px solid var(--ink); align-items: stretch; }
+    .pbar button { background: none; border: 0; color: var(--ink); font: 400 22px/1 var(--font-sans); width: 56px; }
+    .pbar button:disabled { color: var(--rule-mid); }
+    .pbar .mid { flex: 1; width: auto; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); font: 400 15px/20px var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+    .pbar .mid small { display: block; font: 400 13px/18px var(--font-serif); color: var(--ink-muted); }
+  }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap grid"><div class="in">
+    <a class="brand" href="#">Redação</a>
+    <input class="field" type="search" placeholder="art. 87.º CIRC, licença parental…" aria-label="Pesquisar">
+    <a class="meta" href="#">Sobre os dados</a>
+    <button class="tb psearch" type="button">Pesquisar</button>
+  </div></div>
+</header>
+
+<main class="wrap grid">
+  <div class="c23">
+    <div class="run">
+      <span><a href="#">Código do IRC</a><span class="long"> · Capítulo IV — Taxas</span></span>
+      <span class="nx"><a href="#">‹ 86.º-B</a><a href="#">87.º-A ›</a></span>
+    </div>
+    <div class="head">
+      <h1>Artigo 87.º<span class="ep">Taxas</span></h1>
+      <div class="acts">
+        <button class="tb" type="button">Copiar citação</button>
+        <a href="#">Diário da República ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="c2">
+    <p class="status"><i>Redação dada pela <a href="#">Lei n.º 64/2025, de 7 de novembro</a></i>
+      <span class="vg"><b>Em vigor desde 12 de novembro de 2025</b> · 8.ª&nbsp;de&nbsp;8</span></p>
+    <div class="ptabs" role="tablist"><button role="tab" aria-selected="true">Texto</button><button role="tab">Alterações</button><button role="tab">Origem</button></div>
+  </div>
+
+  <div class="c23">
+    <div class="ruler" role="radiogroup" aria-label="Redações de 2014 a hoje">
+      <div class="base"></div>
+      <!-- year ticks and labels -->
+      <i class="yt" style="left:0%"></i><i class="yt" style="left:7.4%"></i><i class="yt" style="left:15.2%"></i><i class="yt" style="left:23.1%"></i><i class="yt" style="left:30.9%"></i><i class="yt" style="left:38.7%"></i><i class="yt" style="left:46.6%"></i><i class="yt" style="left:54.4%"></i><i class="yt" style="left:62.3%"></i><i class="yt" style="left:70.1%"></i><i class="yt" style="left:77.9%"></i><i class="yt" style="left:85.8%"></i><i class="yt" style="left:93.6%"></i>
+      <span class="yr" style="left:1.2%">2014</span><span class="yr" style="left:15.2%">2016</span><span class="yr" style="left:30.9%">2018</span><span class="yr" style="left:46.6%">2020</span><span class="yr" style="left:62.3%">2022</span><span class="yr" style="left:77.9%">2024</span><span class="yr" style="left:93.6%">2026</span><span class="yr end">hoje</span>
+      <!-- redação starts -->
+      <i class="tk" style="left:0%"></i><i class="tk half" style="left:1.1%"></i><i class="tk" style="left:17.2%"></i><i class="tk" style="left:48.5%"></i><i class="tk" style="left:70.1%"></i><i class="tk" style="left:77.9%"></i><i class="tk" style="left:85.7%"></i><i class="tk" style="left:92.5%"></i>
+      <!-- spans (one tab stop, arrow keys) -->
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="1.ª redação, texto original" style="left:0%;width:17.2%"></button>
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="3.ª redação, Lei n.º 7-A/2016" style="left:17.2%;width:31.3%"></button>
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="4.ª redação, Lei n.º 2/2020" style="left:48.5%;width:21.6%"></button>
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="5.ª redação, Lei n.º 24-D/2022" style="left:70.1%;width:7.8%"></button>
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="6.ª redação, Lei n.º 82/2023" style="left:77.9%;width:7.8%"></button>
+      <button class="sp" role="radio" aria-checked="false" tabindex="-1" aria-label="7.ª redação, Lei n.º 45-A/2024" style="left:85.7%;width:6.8%"></button>
+      <button class="sp" role="radio" aria-checked="true" tabindex="0" aria-label="8.ª redação, Lei n.º 64/2025, em vigor" style="left:92.5%;width:7.5%"></button>
+      <i class="hoje"></i>
+    </div>
+  </div>
+
+  <div class="c23 bar">
+    <div class="in">
+      <div class="step"><button class="tb" type="button">‹ Anterior</button><button class="tb" type="button" disabled>Seguinte ›</button></div>
+      <div class="now">8.ª de 8 <span>· Lei n.º 64/2025</span></div>
+      <div class="views" role="tablist" aria-label="Vista">
+        <button role="tab" aria-selected="true">Texto</button>
+        <button role="tab" aria-selected="false">Alterações</button>
+        <button role="tab" aria-selected="false">Origem do texto</button>
+      </div>
+      <div class="date"><button class="tb" type="button" aria-haspopup="dialog">Data ▾</button></div>
+    </div>
+  </div>
+
+  <div class="c23">
+    <div class="atn"><b>Atenção:</b> a Lei n.º 64/2025, artigo 3.º, fixa outras taxas para os períodos de 2026 e 2027.
+      <details><summary>Ler a norma</summary>
+        <p class="norma">«A taxa prevista nos n.<span class="os">os</span> 1 e 5 do artigo 87.º do Código do IRC, na redação conferida pela Lei n.º 64/2025, de 7 de novembro, aplica-se aos períodos de tributação que se iniciem em ou após 1 de janeiro de 2028. […]»</p>
+        <table class="taxas"><tr><th>Período que começa em</th><th>N.<span class="os">os</span> 1 e 5</th><th>N.º 2</th></tr>
+          <tr><td>2026</td><td>19&nbsp;%</td><td>15&nbsp;%</td></tr><tr><td>2027</td><td>18&nbsp;%</td><td>15&nbsp;%</td></tr><tr><td>2028 e seguintes</td><td>17&nbsp;%</td><td>15&nbsp;%</td></tr></table>
+      </details>
+    </div>
+  </div>
+
+  <article class="c2">
+
+    <div class="lei">
+      <p class="tm"><span class="n">1 —</span>A taxa do IRC é de 17&nbsp;%, exceto nos casos previstos nos números seguintes.</p>
+      <p class="tm"><span class="n">2 —</span>No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (<i>Small Mid Cap</i>), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50&#8239;000&nbsp;€ de matéria coletável é de 15&nbsp;%, aplicando-se a taxa prevista no número anterior ao excedente.</p>
+      <p><span class="n">3 —</span>A aplicação das taxas previstas nos n.<span class="os">os</span> 2 e 8 está sujeita às regras europeias aplicáveis em matéria de auxílios de <i>minimis</i>.</p>
+      <p style="margin-bottom:8px"><span class="n">4 —</span>Tratando-se de rendimentos de entidades que não tenham sede nem direção efetiva em território português e aí não possuam estabelecimento estável ao qual os mesmos sejam imputáveis, a taxa do IRC é de 25&nbsp;%, exceto relativamente aos seguintes rendimentos:</p>
+      <p class="al rv"><span class="l">a)</span>(Revogada.)</p>
+      <p class="al rv"><span class="l">b)</span>(Revogada.)</p>
+      <p class="al rv"><span class="l">c)</span>(Revogada.)</p>
+      <p class="al"><span class="l">d)</span>Prémios de rifas, totoloto, jogo de loto, bem como importâncias ou prémios atribuídos em quaisquer sorteios ou concursos, em que a taxa é de 35&nbsp;%;</p>
+      <p class="al rv"><span class="l">e)</span>(Revogada.)</p>
+      <p class="al rv"><span class="l">f)</span>(Revogada.)</p>
+      <p class="al rv"><span class="l">g)</span>(Revogada.)</p>
+      <p class="al"><span class="l">h)</span>Rendimentos de capitais sempre que sejam pagos ou colocados à disposição em contas abertas em nome de um ou mais titulares mas por conta de terceiros não identificados, em que a taxa é de 35&nbsp;%, exceto quando seja identificado o beneficiário efetivo, termos em que se aplicam as regras gerais;</p>
+      <p class="al last"><span class="l">i)</span>Rendimentos de capitais, tal como definidos no artigo 5.º do Código do IRS, obtidos por entidades não residentes em território português, que sejam domiciliadas em país, território ou região sujeitas a um regime fiscal claramente mais favorável, constante de lista aprovada por portaria do membro do Governo responsável pela área das finanças, em que a taxa é de 35&nbsp;%.</p>
+      <p class="tm"><span class="n">5 —</span>Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 17&nbsp;%.</p>
+      <p class="rv"><span class="n">6 —</span>(Revogado.)</p>
+      <p class="rv"><span class="n">7 —</span>(Revogado.)</p>
+      <p><span class="n">8 —</span>Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como <i>startup</i>, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea <i>f</i>) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5&nbsp;%.</p>
+    </div>
+
+    <div class="after">
+      <section>
+        <h2>Notas</h2>
+        <p class="note">A Lei n.º 2/2014 aplica-se aos períodos de tributação que começam, ou aos factos tributários que ocorrem, a partir de 1 de janeiro de 2014.</p>
+        <p class="src">Lei n.º 2/2014, artigo 14.º</p>
+        <button class="tb" type="button">Outras notas (1)</button>
+      </section>
+      <section>
+        <h2>Fonte</h2>
+        <p class="note">Copiámos este texto do consolidado do Diário da República. Só o Diário da República faz fé.</p>
+      </section>
+      <section>
+        <h2>Citar</h2>
+        <p class="cite">Artigo 87.º do Código do IRC, na redação dada pela Lei n.º 64/2025, de 7 de novembro.</p>
+        <p class="cite"><span>Forma curta:</span> art. 87.º do CIRC, na redação da Lei n.º 64/2025</p>
+        <div class="row"><button class="tb" type="button">Copiar citação</button><button class="tb" type="button">Copiar forma curta</button><button class="tb" type="button">Copiar ligação</button></div>
+      </section>
+    </div>
+  </article>
+
+  <aside class="reg" style="grid-row: 6;" aria-label="Redações deste artigo">
+    <h2>Redações</h2>
+    <ol>
+      <li><a href="#"><span class="o">1.ª</span><span class="b" style="--c:var(--act-0)"></span><span class="t">Lei n.º 2/2014 <span style="color:var(--ink-muted)">(republicação)</span></span><span class="d">21/01/2014</span></a></li>
+      <li class="ret"><a href="#"><span class="o"></span><span></span><span class="t">retificada, Decl. Ret. 18/2014</span><span class="d">13/03/2014</span></a></li>
+      <li><a href="#"><span class="o">3.ª</span><span class="b" style="--c:var(--act-1)"></span><span class="t">Lei n.º 7-A/2016</span><span class="d">31/03/2016</span></a></li>
+      <li><a href="#"><span class="o">4.ª</span><span class="b" style="--c:var(--act-2)"></span><span class="t">Lei n.º 2/2020</span><span class="d">01/04/2020</span></a></li>
+      <li><a href="#"><span class="o">5.ª</span><span class="b" style="--c:var(--act-3)"></span><span class="t">Lei n.º 24-D/2022</span><span class="d">01/01/2023</span></a></li>
+      <li><a href="#"><span class="o">6.ª</span><span class="b" style="--c:var(--act-4)"></span><span class="t">Lei n.º 82/2023</span><span class="d">01/01/2024</span></a></li>
+      <li><a href="#"><span class="o">7.ª</span><span class="b" style="--c:var(--act-5)"></span><span class="t">Lei n.º 45-A/2024</span><span class="d">01/01/2025</span></a></li>
+      <li class="on"><a href="#" aria-current="true"><span class="o">8.ª</span><span class="b" style="--c:var(--act-6)"></span><span class="t">Lei n.º 64/2025</span><span class="d">12/11/2025</span></a></li>
+    </ol>
+    <p class="cap">Data de entrada em vigor de cada redação.</p>
+    <p class="more"><a href="#">Proposta de Lei n.º 16/XVII</a> <span style="color:var(--pendente)">· pendente</span></p>
+  </aside>
+</main>
+
+<div class="wrap grid"><footer class="c23 foot">Texto não oficial. Só a publicação no Diário da República faz fé. Não é aconselhamento jurídico.</footer></div>
+
+<nav class="pbar" aria-label="Redação">
+  <button type="button" aria-label="Redação anterior">‹</button>
+  <button type="button" class="mid">8.ª de 8 · desde 12/11/2025 ▾<small>Lei n.º 64/2025</small></button>
+  <button type="button" aria-label="Redação seguinte" disabled>›</button>
+</nav>
+</body>
+</html>
