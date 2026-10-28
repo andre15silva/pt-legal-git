@@ -180,7 +180,8 @@
         var f = spans[0];
         if (f.text.length <= cut) { cut -= f.text.length; spans.shift(); } else { spans[0] = { text: f.text.slice(cut), act: f.act }; cut = 0; }
       }
-      return { number: p.nr || null, kind: revogada(p.resto) ? 'rev' : p.kind || null, spans: spans };
+      // A revoked alínea keeps its alínea hang: kind "al rd-p-rev" gives both classes.
+      return { number: p.nr || null, kind: revogada(p.resto) ? (p.kind ? p.kind + ' rd-p-rev' : 'rev') : p.kind || null, spans: spans };
     });
     return { acts: acts, paragraphs: paragraphs };
   }
@@ -284,12 +285,57 @@
   }
 
   // ---- Shared pieces ---------------------------------------------------------------------
+  // Search in the header, on every page but the home page (which has its own, larger field).
+  // A combobox: ↑ and ↓ choose a result, Enter opens it, Esc closes the list. "/" focuses it.
+  function Pesquisa() {
+    var r = useData(['index.json']);
+    var qs = useState(''), ab = useState(false), at = useState(0);
+    var ref = React.useRef(null);
+    useEffect(function () {
+      function tecla(e) {
+        if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+        var t = e.target.tagName;
+        if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || e.target.isContentEditable) return;
+        e.preventDefault(); if (ref.current) ref.current.focus();
+      }
+      document.addEventListener('keydown', tecla);
+      return function () { document.removeEventListener('keydown', tecla); };
+    }, []);
+    var index = r.data ? r.data[0] : null;
+    var res = index && qs[0] ? search(index, qs[0]).slice(0, 8) : [];
+    var nomes = {};
+    if (index) index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
+    var aberto = ab[0] && qs[0].length > 0;
+    var cur = Math.min(at[0], Math.max(0, res.length - 1));
+    function ir(x) { ab[1](false); qs[1](''); location.hash = link(['d', x[0], x[1]]); }
+    return h('div', { className: 'pesq', role: 'search' },
+      h('label', { htmlFor: 'pesq', className: 'rd-sr' }, 'Pesquisar um artigo'),
+      h('input', { id: 'pesq', ref: ref, type: 'search', className: 'pesq-campo', placeholder: 'Pesquisar: art 87 circ, licença parental…', autoComplete: 'off', value: qs[0],
+        role: 'combobox', 'aria-expanded': aberto, 'aria-controls': 'pesq-lista', 'aria-autocomplete': 'list', 'aria-activedescendant': aberto && res.length ? 'pesq-' + cur : undefined,
+        onChange: function (e) { qs[1](e.target.value); ab[1](true); at[1](0); },
+        onFocus: function () { ab[1](true); },
+        onBlur: function () { setTimeout(function () { ab[1](false); }, 150); },
+        onKeyDown: function (e) {
+          if (e.key === 'ArrowDown') { e.preventDefault(); at[1](Math.min(cur + 1, res.length - 1)); }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); at[1](Math.max(cur - 1, 0)); }
+          else if (e.key === 'Enter' && res[cur]) { e.preventDefault(); ir(res[cur]); e.target.blur(); }
+          else if (e.key === 'Escape') { if (qs[0]) qs[1](''); else e.target.blur(); }
+        } }),
+      aberto ? h('div', { className: 'pesq-caixa' },
+        res.length ? h('ul', { id: 'pesq-lista', role: 'listbox', 'aria-label': 'Artigos encontrados', className: 'pesq-lista' }, res.map(function (x, k) {
+          return h('li', { key: x[0] + x[1], id: 'pesq-' + k, role: 'option', 'aria-selected': k === cur, className: k === cur ? 'is-on' : '',
+            onMouseDown: function (e) { e.preventDefault(); ir(x); }, onMouseEnter: function () { at[1](k); } },
+            h('span', { className: 'pesq-art' }, x[2]), x[3] ? h('span', { className: 'pesq-ep' }, ' ' + x[3]) : null,
+            h('span', { className: 'pesq-dip' }, nomes[x[0]] ? nomes[x[0]].sigla : x[0]));
+        })) : h('p', { id: 'pesq-lista', className: 'pesq-vazio' }, index ? 'Nenhum artigo. Escreva o número e a sigla: «87 circ», «crp 1».' : 'A carregar…')) : null);
+  }
   function Shell(props) {
     return h('div', { className: 'shell' },
       h('a', { className: 'skip', href: '#conteudo' }, 'Saltar para o conteúdo'),
       h('header', { className: 'top' },
         h('div', { className: 'top-in' },
           h('a', { className: 'brand', href: '#/' }, 'Redação'),
+          props.casa ? null : h(Pesquisa),
           h('nav', { 'aria-label': 'Principal', className: 'top-nav' },
             h('a', { href: '#/' }, 'Diplomas'),
             h('a', { href: '#/sobre' }, 'Sobre os dados')))),
@@ -368,16 +414,16 @@
           h('ul', { className: 'cards' }, index.diplomas.map(function (d) {
             return h('li', { key: d.slug, className: 'card' },
               h('a', { className: 'card-title', href: link(['d', d.slug]) }, d.titulo),
-              h('p', { className: 'muted' }, d.designacao + ' · publicação: ' + extenso(d.publicacao)),
-              h('p', null, d.n_artigos + ' artigos · ' + d.n_atos + ' atos alteraram este diploma'));
+              h('p', null, d.designacao + ' · ' + d.n_artigos + ' artigos · ' + d.n_atos + (d.n_atos === 1 ? ' alteração' : ' alterações')));
           }))),
         h('section', { 'aria-labelledby': 'rec' },
           h('h2', { id: 'rec', className: 'h2' }, 'Alterações mais recentes'),
           h('ol', { className: 'list' }, recent.map(function (a) {
             var ds = {};
             a.alteracoes.forEach(function (c) { ds[c.diploma] = (ds[c.diploma] || 0) + 1; });
-            return h('li', { key: a.id }, h('a', { href: link(['ato', a.id]) }, a.designacao),
-              h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + Object.keys(ds).map(function (k) { return nomes[k].sigla + ' (' + ds[k] + ')'; }).join(', ')));
+            return h('li', { key: a.id, className: 'recente' }, h('a', { href: link(['ato', a.id]) }, a.designacao),
+              h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + Object.keys(ds).map(function (k) { return nomes[k].sigla + ' (' + ds[k] + ')'; }).join(', ')),
+              a.sumario ? h('span', { className: 'recente-sum' }, a.sumario) : null);
           })))));
   }
 
@@ -406,14 +452,27 @@
       h('div', { className: 'duas duas-largo' },
         h('nav', { className: 'toc', 'aria-label': 'Índice' },
           h('h2', { className: 'h2' }, 'Índice'),
-          h('ul', { className: 'toc-list' }, d.arvore.map(function (n, i) {
-            var pad = { paddingLeft: Math.max(0, n.nivel - 1) * 16 + 'px' };
-            if (n.tipo !== 'artigo') return h('li', { key: i, className: 'toc-div', style: pad }, n.rotulo, n.epigrafe ? ' — ' + n.epigrafe : '');
-            return h('li', { key: i, style: pad, className: n.estado === 'revogado' ? 'toc-rev' : '' },
-              h('a', { href: link(['d', d.slug, n.artigo], { em: em, base: base }) }, n.rotulo, n.epigrafe ? ' ' + n.epigrafe : ''),
-              n.n > 1 ? h('span', { className: 'muted' }, ' · ' + n.n + ' redações') : null,
-              n.estado === 'revogado' ? ' ' : null, n.estado === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
-          }))),
+          // A contents table: the article number in a right-aligned column, the epígrafe, and how
+          // many redações it had. The whole row is the link.
+          (function () {
+            var linha = function (n, i) {
+            if (n.tipo !== 'artigo') return h('li', { key: i, className: 'toc-div toc-nivel-' + Math.min(4, n.nivel) }, n.rotulo, n.epigrafe ? h('span', { className: 'toc-div-ep' }, n.epigrafe) : null);
+            var rev = n.estado === 'revogado';
+            return h('li', { key: i, className: rev ? 'toc-rev' : '' },
+              h('a', { className: 'toc-row', href: link(['d', d.slug, n.artigo], { em: em, base: base }) },
+                h('span', { className: 'toc-n' }, n.rotulo.replace(/^Artigo\s*/, '')),
+                h('span', { className: 'toc-ep' }, n.epigrafe || (rev ? '' : '—')),
+                h('span', { className: 'toc-meta' }, rev ? 'Revogado' : n.n > 1 ? n.n + ' redações' : '')));
+            };
+            // When the code sits in an annex (the CIRC), the approving law's own articles fold away.
+            var anexo = d.arvore.map(function (n) { return /^Anexo/i.test(n.rotulo || ''); }).indexOf(true);
+            if (anexo <= 0) return h('ul', { className: 'toc-list' }, d.arvore.map(linha));
+            var lei = d.arvore.slice(0, anexo).filter(function (n) { return n.tipo === 'artigo'; }).length;
+            return h(React.Fragment, null,
+              h('details', { className: 'dobra toc-lei' }, h('summary', null, 'Os ' + lei + ' artigos ' + (pela(d.designacao) === 'pelo' ? 'do ' : 'da ') + d.designacao + ' que aprovam o código'),
+                h('ul', { className: 'toc-list' }, d.arvore.slice(0, anexo).map(linha))),
+              h('ul', { className: 'toc-list' }, d.arvore.slice(anexo).map(function (n, i) { return linha(n, anexo + i); })));
+          })()),
         h('section', { 'aria-labelledby': 'alt' },
           h('h2', { id: 'alt', className: 'h2' }, 'Atos que o alteraram'),
           h('ol', { className: 'list' }, acts.map(function (a) {
@@ -504,22 +563,45 @@
         return h('del', { key: k, className: 'rd-del' }, h('span', { className: 'rd-sr' }, '[início de texto eliminado] '), nbsp(s.text), h('span', { className: 'rd-sr' }, ' [fim de texto eliminado]'));
       }));
   }
-  // Changes against the previous redação, with unchanged runs folded into a disclosure.
-  function alteracoes(antes, depois) {
-    var lines = diffLines(antes, depois), out = [], run = [];
-    var n = lines.reduce(function (c, l) { return c + l.filter(function (s, k) { return s.op !== 'eq' && !(s.op === 'ins' && k && l[k - 1].op === 'del'); }).length; }, 0);
+  // "n.º 3", "alínea b) do n.º 4": where a paragraph sits, to name folds and copied changes.
+  function ondeLinha(t, numero) {
+    var m = /^(\d+(?:\.\d+)*(?:-[A-Z])?) — /.exec(t);
+    if (m) return { numero: m[1], de: 'do n.º ' + m[1], a: 'ao n.º ' + m[1], nome: 'N.º ' + m[1] };
+    m = /^([a-z]+(?:-[a-z])?)\) /.exec(t);
+    var al = 'alínea ' + (m ? m[1] + ')' : '') + (numero ? ' do n.º ' + numero : '');
+    if (m) return { numero: numero, de: 'da ' + al, a: 'à ' + al, nome: 'Alínea ' + al.slice(7) };
+    return { numero: numero, de: 'do parágrafo', a: 'ao parágrafo', nome: 'Parágrafo' };
+  }
+  // Changes between two redações. Each changed paragraph can take focus ("Alteração 2 de 3").
+  // Unchanged runs fold into one line that names where they start and end.
+  // lado: the old and the new paragraph side by side.
+  function alteracoes(antes, depois, lado, foco) {
+    var lines = diffLines(antes, depois), out = [], run = [], numero = '', mudadas = [];
+    function linha(l, k) {
+      if (!lado) return segsLei(l, k);
+      return h('div', { key: k, className: 'lado-row' },
+        segsLei(l.filter(function (x) { return x.op !== 'ins'; }), 'a'), segsLei(l.filter(function (x) { return x.op !== 'del'; }), 'b'));
+    }
     function fechar(k) {
-      if (run.length < 2) run.forEach(function (x) { out.push(x); });
-      else out.push(h('details', { key: 'd' + k, className: 'dobra' }, h('summary', null, run.length + ' parágrafos sem alterações'), run));
+      if (run.length < 2) run.forEach(function (x) { out.push(x.el); });
+      else out.push(h('details', { key: 'd' + k, className: 'dobra' },
+        h('summary', null, run.length + ' parágrafos sem alterações, ' + run[0].w.de + ' ' + run[run.length - 1].w.a + '.'), run.map(function (x) { return x.el; })));
       run = [];
     }
     lines.forEach(function (l, k) {
-      var el = segsLei(l, k);
-      if (l.some(function (s) { return s.op !== 'eq'; })) { fechar(k); out.push(el); } else run.push(el);
+      var w = ondeLinha(l.filter(function (x) { return x.op !== 'ins'; }).map(function (x) { return x.text; }).join('') || l.map(function (x) { return x.text; }).join(''), numero);
+      numero = w.numero;
+      if (l.some(function (x) { return x.op !== 'eq'; })) {
+        fechar(k);
+        var i = mudadas.length;
+        mudadas.push({ onde: w.nome, antes: l.filter(function (x) { return x.op !== 'ins'; }).map(function (x) { return x.text; }).join(''), depois: l.filter(function (x) { return x.op !== 'del'; }).map(function (x) { return x.text; }).join('') });
+        out.push(h('div', { key: 'c' + k, id: 'dif-' + i, tabIndex: -1, className: 'dif' + (i === foco ? ' is-foco' : '') }, linha(l, k)));
+      } else run.push({ el: linha(l, k), w: w });
     });
     fechar('fim');
-    return { n: n, nodes: out };
+    return { n: mudadas.length, mudadas: mudadas, nodes: out };
   }
+  function semMovimento() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function copiar(t, done) {
     try { navigator.clipboard.writeText(t).then(done, function () { }); } catch (e) { /* no clipboard */ }
   }
@@ -557,6 +639,7 @@
   function Artigo(props) {
     var r = useData(['d/' + props.slug + '.json', 'atos.json', 'passagem.json']);
     var cp = useState(0);
+    var df = useState(0);   // the change in focus in Alterações
     if (!r.data) return h(Loading, { error: r.error });
     var d = r.data[0], atos = r.data[1], ps = r.data[2], q = props.q;
     var art = d.artigos[props.id];
@@ -578,9 +661,8 @@
     else if (sel && vista.i != null && vista.i !== sel.i) { vista.dir = sel.i > vista.i ? 'seguinte' : 'anterior'; vista.desde = sel.i > vista.i ? vista.i : null; }
     vista.art = chaveArt; vista.i = sel ? sel.i : null;
     function versionHref(i, extra) {
-      return link(['d', d.slug, art.id], Object.assign({ redacao: versionKey(art, i), ver: q.ver }, extra || {}));
+      return link(['d', d.slug, art.id], Object.assign({ redacao: versionKey(art, i), ver: q.ver, lado: q.lado }, extra || {}));
     }
-    function compareHref(a, b) { return link(['d', d.slug, art.id, 'comparar'], { de: versionKey(art, a), ate: versionKey(art, b) }); }
     var go = function (o) { location.hash = link(['d', d.slug, art.id], { em: o.date, base: o.basis !== 'vigor' ? o.basis : null, ver: q.ver }); };
     var cur = sel ? art.versoes[sel.i] : null;
     var curAto = cur ? atos[cur.ato] : null;
@@ -613,6 +695,19 @@
       ? (naoAlteraram.length === 1 ? 'A revisão constitucional de ' : 'As revisões constitucionais de ') + naoAlteraram.map(function (a) { return a.publicacao.slice(0, 4); }).join(', ').replace(/, (\d{4})$/, ' e $1') + (naoAlteraram.length === 1 ? ' não alterou este artigo.' : ' não alteraram este artigo.')
       : 'Estes atos alteraram o diploma, mas não este artigo: ' + naoAlteraram.map(function (a) { return a.designacao; }).join(', ') + '.') : '';
 
+    // Arriving from an act's page: walk through the articles that act changed in this diploma.
+    var porAto = null;
+    if (q.ato && atos[q.ato]) {
+      var ordemArt = {};
+      d.arvore.forEach(function (x, j) { if (x.tipo === 'artigo') ordemArt[x.artigo] = j; });
+      var lista = atos[q.ato].alteracoes.filter(function (c) { return c.diploma === d.slug; })
+        .sort(function (x, y) { return (ordemArt[x.artigo] || 0) - (ordemArt[y.artigo] || 0); });
+      var kk = lista.map(function (c) { return c.artigo; }).indexOf(art.id);
+      if (kk >= 0) porAto = { ato: atos[q.ato], lista: lista, k: kk, ir: function (j, txt) {
+        var c = lista[j];
+        return c ? h('a', { href: link(['d', d.slug, c.artigo], { redacao: q.ato, ver: c.tipo === 'alterado' ? 'mudou' : null, ato: q.ato }) }, txt) : null;
+      } };
+    }
     var corpo, resumo = null;
     if (cur && ver === 'origem') {
       var model = originModel(art, sel.i, atos, function (o) { return versionHref(o); }, nomeOriginal);
@@ -622,14 +717,45 @@
         var v = o != null ? art.versoes[o] : null;
         if (v && v.tipo !== 'original') a.nota = ps[v.ato] ? 'No Parlamento: ' + resumoParlamento(ps[v.ato]) : /^Decreto-Lei/.test((atos[v.ato] || {}).designacao || '') ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.' : null;
       });
-      corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts }));
-    } else if (cur && ver === 'mudou' && anterior) {
-      var alt = alteracoes(texto(anterior), texto(cur));
-      resumo = h('p', { className: 'resumo' }, (alt.n === 1 ? '1 alteração' : alt.n + ' alterações') + ' em relação à ' + ordinal(sel.i - 1) + ' redação (' + nomeAto(anterior, atos, d) + '). ',
-        h('a', { href: compareHref(sel.i - 1, sel.i) }, 'Comparar com outra redação'));
-      corpo = h('div', { className: 'lei' }, alt.nodes);
+      corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts, margem: true }));
+    } else if (cur && ver === 'mudou' && (sel.i > 0 || q.com)) {
+      // Compare with the redação before, or with the one the reader chose ("Comparar com").
+      var com = q.com ? resolve(art, q.com, base) : -1;
+      if (com < 0 || com === sel.i) com = sel.i - 1;
+      if (com < 0) com = sel.i + 1 < n ? sel.i + 1 : sel.i;
+      var a0 = Math.min(com, sel.i), a1 = Math.max(com, sel.i), lado = q.lado === '1';
+      var alt = alteracoes(texto(art.versoes[a0]), texto(art.versoes[a1]), lado, df[0]);
+      var foco = Math.min(df[0], Math.max(0, alt.n - 1));
+      var irDif = function (k) {
+        df[1](k);
+        setTimeout(function () { var e = document.getElementById('dif-' + k); if (e) { e.focus({ preventScroll: true }); e.scrollIntoView({ block: 'center', behavior: semMovimento() ? 'auto' : 'smooth' }); } }, 0);
+      };
+      var nomeR = function (i) { return ordinal(i) + ' redação (' + nomeAto(art.versoes[i], atos, d) + ')'; };
+      var copiarAlt = function () {
+        var t = art.rotulo + ' ' + (d.genitivo || 'de ' + d.titulo) + ': alterações da ' + nomeR(a0) + ' para a ' + nomeR(a1) + '.\n\n' +
+          alt.mudadas.map(function (m) { return m.onde + '\nAntes: ' + (m.antes || '(não existia)') + '\nDepois: ' + (m.depois || '(eliminado)'); }).join('\n\n') +
+          '\n\nFonte: Diário da República (legislação consolidada). ' + permalink;
+        copiar(t, function () { copiado.chave = 'alt' + a0 + '-' + a1; cp[1](cp[0] + 1); });
+      };
+      var feito = copiado.chave === 'alt' + a0 + '-' + a1;
+      resumo = h('div', { className: 'alt-cabeca' },
+        h('p', { className: 'resumo', 'aria-live': 'polite' }, alt.n ? (alt.n === 1 ? '1 alteração' : alt.n + ' alterações') : 'Sem alterações no texto', a0 === sel.i - 1 && a1 === sel.i ? ' em relação à ' + nomeR(a0) + '.' : ' entre a ' + nomeR(a0) + ' e a ' + nomeR(a1) + '.'),
+        h('div', { className: 'alt-ferr' },
+          h('label', { className: 'alt-com' }, h('span', null, 'Comparar com'),
+            h('select', { className: 'rd-input', value: com, onChange: function (e) { var k = +e.target.value; df[1](0); substituir(versionHref(sel.i, { ver: 'mudou', com: k === sel.i - 1 ? null : versionKey(art, k) })); } },
+              art.versoes.map(function (v, i) { return i === sel.i ? null : h('option', { key: i, value: i }, ordinal(i) + ' · ' + nomeAto(v, atos, d) + (i === sel.i - 1 ? ' (anterior)' : '')); }))),
+          h('button', { type: 'button', className: 'rd-btn alt-lado', 'aria-pressed': lado, onClick: function () { substituir(versionHref(sel.i, { ver: 'mudou', com: q.com, lado: lado ? null : '1' })); } }, lado ? 'No texto' : 'Lado a lado'),
+          alt.n > 1 ? h('span', { className: 'alt-nav' },
+            h('button', { type: 'button', className: 'rd-btn', 'aria-disabled': foco === 0, onClick: function () { if (foco > 0) irDif(foco - 1); } }, h('span', { 'aria-hidden': 'true' }, '↑ '), 'Anterior'),
+            h('span', { className: 'alt-pos', role: 'status' }, 'Alteração ' + (foco + 1) + ' de ' + alt.n),
+            h('button', { type: 'button', className: 'rd-btn', 'aria-disabled': foco === alt.n - 1, onClick: function () { if (foco < alt.n - 1) irDif(foco + 1); } }, 'Seguinte', h('span', { 'aria-hidden': 'true' }, ' ↓'))) : null,
+          alt.n ? h('button', { type: 'button', className: 'rd-btn', onClick: copiarAlt }, h('span', { key: feito ? 'c' : 'n', className: 'troca' }, feito ? 'Alterações copiadas' : 'Copiar antes e depois')) : null),
+        lado ? h('div', { className: 'lado-head', 'aria-hidden': 'true' }, h('span', null, 'Antes · ' + nomeAto(art.versoes[a0], atos, d)), h('span', null, 'Depois · ' + nomeAto(art.versoes[a1], atos, d))) : null);
+      corpo = h('div', { className: 'lei' + (lado ? ' lei-lado' : '') }, alt.nodes,
+        h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))));
     } else if (cur) {
-      if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior para comparar.');
+      if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior. ',
+        n > 1 ? h('a', { href: versionHref(0, { ver: 'mudou', com: versionKey(art, 1) }) }, 'Comparar com a redação seguinte') : null);
       corpo = h('div', { className: 'lei' }, vista.desde != null
         ? cur.linhas.map(function (l, k) { return linhaMarcada(l, k, marcas, vista.desde); })
         : texto(cur).split('\n').map(function (t, k) { return linhaLei(t, k, marcas); }));
@@ -665,13 +791,17 @@
         onStatus: function () { var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } } },
         h('div', { className: 'so-largo tools' }, tabs, dataPop)),
       h('div', { className: 'so-estreito tools' }, tabs, dataPop),
-      h('div', { className: 'art-corpo' },
+      // Side by side and the margin notes of Origem do texto need the full width: the register moves under the text.
+      h('div', { className: 'art-corpo' + ((ver === 'mudou' && q.lado === '1') || ver === 'origem' ? ' corpo-largo' : '') },
         h('div', { className: 'art-texto' },
           transitorias.length ? h('aside', { className: 'regra regra-aviso', 'aria-labelledby': 'transit' },
             h('p', { id: 'transit' }, h('strong', null, 'Atenção: '), 'uma norma ', pela(curAto ? curAto.designacao : '') === 'pelo' ? 'do ' : 'da ', h(ActLink, { id: cur.ato, atos: atos }),
               transitorias[0].artigo_do_ato ? ' (' + transitorias[0].artigo_do_ato.toLowerCase() + ')' : '', ' muda a aplicação deste artigo no tempo. Leia a norma antes de aplicar o texto.'),
             h('details', null, h('summary', null, 'Ler a norma'),
               transitorias.map(function (x, k) { return h('blockquote', { key: k, 'data-citacao': '' }, x.texto); }))) : null,
+          porAto ? h('nav', { className: 'regra regra-ato', 'aria-label': 'Artigos alterados por este ato' },
+            h('p', null, 'Está a percorrer os artigos que a ', h(ActLink, { id: porAto.ato.id, atos: atos }), ' mudou no ' + d.sigla + ': artigo ' + (porAto.k + 1) + ' de ' + porAto.lista.length + '.'),
+            h('p', { className: 'regra-links' }, porAto.ir(porAto.k - 1, '‹ Artigo anterior'), porAto.ir(porAto.k + 1, 'Artigo seguinte ›'), h('a', { href: link(['ato', porAto.ato.id]) }, 'Voltar ao ato'))) : null,
           diferente ? h('aside', { className: 'regra' }, h('p', null, h('strong', null, 'Nota: '), 'esta redação tem um texto muito diferente da redação anterior. O artigo pode ter mudado de número numa revisão. Por isso, a comparação pode juntar dois artigos diferentes.')) : null,
           up.length ? h('aside', { className: 'regra regra-pendente' }, h('p', null, h('strong', null, 'Nota: '), 'nesta data já está publicada uma alteração que ainda não está em vigor. ',
             up.map(function (v, i) { return h('span', { key: i }, h(ActLink, { id: v.ato, atos: atos }), ' entra em vigor a ' + extenso(v.vigor) + '. '); }))) : null,
@@ -707,150 +837,6 @@
           }) }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
           naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)));
-  }
-
-  // ---- Compare --------------------------------------------------------------------------------
-  // de and ate take an act id, a date, "hoje" or an index (old links). modo and vista stay in the URL.
-  var MODOS = [['marcadas', 'inline', 'Alterações marcadas'], ['nova', 'final', 'Só a redação nova'], ['anterior', 'previous', 'Só a redação anterior']];
-  var VISTAS = [['texto', 'No texto'], ['lado', 'Lado a lado']];
-  // "n.º 3", "alínea b) do n.º 4": where an unchanged run starts and ends.
-  function ondeLinha(t, numero) {
-    var m = /^(\d+(?:\.\d+)*(?:-[A-Z])?) — /.exec(t);
-    if (m) return { numero: m[1], de: 'do n.º ' + m[1], a: 'ao n.º ' + m[1] };
-    m = /^([a-z]+)\) /.exec(t);
-    var al = 'alínea ' + (m ? m[1] + ')' : '') + (numero ? ' do n.º ' + numero : '');
-    if (m) return { numero: numero, de: 'da ' + al, a: 'à ' + al };
-    return { numero: numero, de: 'do parágrafo', a: 'ao parágrafo' };
-  }
-  function Comparar(props) {
-    var r = useData(['d/' + props.slug + '.json', 'atos.json']);
-    var ab = useState({});      // unchanged runs the reader opened
-    var df = useState(0);       // the difference in focus
-    var cp = useState(false);   // copied
-    if (!r.data) return h(Loading, { error: r.error });
-    var d = r.data[0], atos = r.data[1], art = d.artigos[props.id], q = props.q;
-    if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo.'));
-    var n = art.versoes.length;
-    var ate = resolve(art, q.ate), de = resolve(art, q.de);
-    if (ate < 0) ate = n - 1;
-    if (de < 0) de = Math.max(0, ate - 1);
-    var ato = q.ato && atos[q.ato] ? atos[q.ato] : null;
-    if (ato && !q.de && !q.ate) {  // "ver a alteração" from an act: the redação it made against the one before
-      var vi = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(q.ato);
-      if (vi >= 0) { ate = vi; de = Math.max(0, vi - 1); }
-    }
-    var modo = MODOS.filter(function (m) { return m[0] === q.modo; })[0] || MODOS[0];
-    var vista = q.vista === 'lado' ? 'lado' : 'texto';
-    function href(o) {
-      return link(['d', d.slug, art.id, 'comparar'], Object.assign({ de: versionKey(art, de), ate: versionKey(art, ate), modo: q.modo, vista: q.vista, ato: q.ato }, o));
-    }
-    function nome(i) { return 'a ' + ordinal(i) + ' redação (' + nomeAto(art.versoes[i], atos, d) + ')'; }
-    var label = function (v, i) {
-      var p = periodo(art, i, 'vigor');
-      return (i + 1) + ' · ' + nomeAto(v, atos, d) + ' · ' + curta(p.inicio) + (p.fim === null ? ' até hoje' : p.fim === 'mesma' ? '' : ' a ' + curta(p.fim));
-    };
-    var antes = texto(art.versoes[de]), depois = texto(art.versoes[ate]);
-    var lines = diffLines(antes, depois);
-    // Unchanged runs of two or more paragraphs fold into one line the reader can open.
-    var blocos = [], corrida = null, numero = '', nd = 0;
-    function fechar() {
-      if (!corrida) return;
-      var id = corrida.id;
-      if (corrida.linhas.length < 2 || ab[0][id]) corrida.linhas.forEach(function (b) { blocos.push(b); });
-      else blocos.push({ dobra: true, id: id, texto: corrida.linhas.length + ' parágrafos sem alterações, ' + corrida.de + ' ' + corrida.a + '.' });
-      corrida = null;
-    }
-    lines.forEach(function (l, j) {
-      var t = l.map(function (s) { return s.text; }).join('');
-      var w = ondeLinha(t, numero);
-      numero = w.numero;
-      if (l.some(function (s) { return s.op !== 'eq'; })) {
-        fechar();
-        blocos.push({ linha: l, dif: nd++, id: 'l' + j });
-      } else {
-        if (!corrida) corrida = { id: 'd' + j + '-' + de + '-' + ate, linhas: [], de: w.de, a: w.a };
-        corrida.linhas.push({ linha: l, id: 'l' + j });
-        corrida.a = w.a;
-      }
-    });
-    fechar();
-    var foco = Math.min(df[0], Math.max(0, nd - 1));
-    function irDif(k) {
-      df[1](k);
-      setTimeout(function () { var e = document.getElementById('dif-' + k); if (e) { e.focus(); e.scrollIntoView({ block: 'center' }); } }, 0);
-    }
-    var diferente = de !== ate && semelhanca(d.slug + '/' + art.id + '/' + de + '-' + ate, antes, depois) < DIFERENTE;
-    var lo = Math.min(de, ate), hi = Math.max(de, ate);
-    var seg = function (items, on, key) {
-      return items.map(function (m) {
-        var o = {}; o[key] = m[0];
-        return h('a', { key: m[0], className: 'seg-btn' + (on === m[0] ? ' is-on' : ''), 'aria-current': on === m[0] ? 'true' : undefined, href: href(o) }, m[m.length - 1]);
-      });
-    };
-    var segs = function (l, op) { return l.filter(function (s) { return s.op !== op; }); };
-    // Position of this article among the articles the act changed, for "artigo seguinte deste ato".
-    var noAto = ato ? ato.alteracoes.filter(function (c) { return c.diploma === d.slug; }) : [];
-    var k = noAto.map(function (c) { return c.artigo; }).indexOf(art.id);
-    var doAto = function (j, txt) { var c = noAto[j]; return c ? h('a', { href: link(['d', d.slug, c.artigo, 'comparar'], { ato: ato.id }) }, txt) : null; };
-    return h('div', { className: 'stack' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [d.sigla, link(['d', d.slug])], [art.rotulo, link(['d', d.slug, art.id])], ['Comparar redações']] }),
-      ato && k >= 0 ? h('nav', { className: 'note note-ato', 'aria-label': 'Artigos alterados por este ato' },
-        h('p', null, 'Alteração feita ' + pela(ato.designacao) + ' ', h(ActLink, { id: ato.id, atos: atos }), ' · artigo ' + (k + 1) + ' de ' + noAto.length + ' deste ato no ' + d.sigla + '.'),
-        h('p', { className: 'links' }, doAto(k - 1, '‹ Artigo anterior deste ato'), doAto(k + 1, 'Artigo seguinte deste ato ›'), h('a', { href: link(['ato', ato.id]) }, 'Voltar ao ato'))) : null,
-      h('div', { className: 'title-block' },
-        h('p', { className: 'eyebrow' }, 'Comparar redações · ' + d.titulo),
-        h('h1', { className: 'title' }, art.rotulo + (art.epigrafe ? ' ' + art.epigrafe : ''))),
-      h('form', { className: 'compare-form', onSubmit: function (e) { e.preventDefault(); }, 'aria-label': 'Escolher as redações' },
-        h('div', { className: 'compare-pair' },
-          h('div', { className: 'field' }, h('label', { htmlFor: 'de' }, 'Antes'),
-            h('select', { id: 'de', className: 'rd-input', value: de, onChange: function (e) { location.hash = href({ de: versionKey(art, +e.target.value), ato: null }); } },
-              art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); }))),
-          h('button', { type: 'button', className: 'btn', 'aria-label': 'Trocar as duas redações', onClick: function () { location.hash = href({ de: versionKey(art, ate), ate: versionKey(art, de), ato: null }); } }, '⇄ Trocar'),
-          h('div', { className: 'field' }, h('label', { htmlFor: 'ate' }, 'Depois'),
-            h('select', { id: 'ate', className: 'rd-input', value: ate, onChange: function (e) { location.hash = href({ ate: versionKey(art, +e.target.value), ato: null }); } },
-              art.versoes.map(function (v, i) { return h('option', { key: i, value: i }, label(v, i)); })))),
-        de > ate ? h('p', { className: 'aviso-txt' }, h('strong', null, 'Nota: '), 'a redação «Antes» é mais recente do que a redação «Depois».') : null,
-        h('div', { className: 'compare-tools' },
-          h('div', { className: 'actions' },
-            ate >= 2 ? h('a', { className: 'btn', href: href({ de: versionKey(art, ate - 2), ate: versionKey(art, ate - 1), ato: null }) }, '‹ Alteração anterior') : null,
-            ate < n - 1 ? h('a', { className: 'btn', href: href({ de: versionKey(art, ate), ate: versionKey(art, ate + 1), ato: null }) }, 'Alteração seguinte ›') : null),
-          h('nav', { 'aria-label': 'Disposição', className: 'seg' }, seg(VISTAS, vista, 'vista')),
-          h('nav', { 'aria-label': 'Modo de leitura', className: 'seg' }, seg(MODOS, modo[0], 'modo')))),
-      diferente ? h('aside', { className: 'note note-aviso' }, h('p', null, h('strong', null, 'Nota: '), 'as duas redações têm textos muito diferentes. O artigo pode ter mudado de número numa revisão. Por isso, a comparação pode juntar dois artigos diferentes.')) : null,
-      h('div', { className: 'cols' },
-        h('div', { className: 'col-main stack-s' },
-          h('div', { className: 'compare-status' },
-            h('p', { 'aria-live': 'polite' }, nd ? h('strong', null, nd === 1 ? '1 diferença' : nd + ' diferenças') : 'As duas redações têm o mesmo texto', ' entre ', nome(de), ' e ', nome(ate), '.'),
-            nd > 1 ? h('div', { className: 'actions' },
-              h('button', { type: 'button', className: 'btn', 'aria-disabled': foco === 0, onClick: function () { if (foco > 0) irDif(foco - 1); } }, '‹ Diferença anterior'),
-              h('span', { className: 'small', role: 'status' }, 'Diferença ' + (foco + 1) + ' de ' + nd),
-              h('button', { type: 'button', className: 'btn', 'aria-disabled': foco === nd - 1, onClick: function () { if (foco < nd - 1) irDif(foco + 1); } }, 'Diferença seguinte ›')) : null,
-            h('button', { type: 'button', className: 'btn', onClick: function () {
-              var t = 'Antes: ' + nome(de) + '\n' + antes + '\n\nDepois: ' + nome(ate) + '\n' + depois + '\n\n' + art.rotulo + ' ' + (d.genitivo || 'de ' + d.titulo) + '. Fonte: Diário da República (legislação consolidada).';
-              try { navigator.clipboard.writeText(t).then(function () { cp[1](true); }, function () { cp[1](false); }); } catch (e) { /* no clipboard */ }
-            } }, cp[0] ? 'Copiado' : 'Copiar antes e depois')),
-          h('div', { className: 'statute-box stack-s' + (vista === 'lado' ? ' lado' : '') },
-            vista === 'lado' ? h('div', { className: 'lado-head', 'aria-hidden': 'true' }, h('span', null, 'Antes · ' + nomeAto(art.versoes[de], atos, d)), h('span', null, 'Depois · ' + nomeAto(art.versoes[ate], atos, d))) : null,
-            blocos.map(function (b) {
-              if (b.dobra) return h('button', { key: b.id, type: 'button', className: 'dobra', 'aria-expanded': false, onClick: function () { var o = Object.assign({}, ab[0]); o[b.id] = true; ab[1](o); } },
-                h('span', { 'aria-hidden': 'true' }, '⋯ '), b.texto, ' ', h('span', { className: 'dobra-ver' }, 'Mostrar'));
-              var attrs = b.dif != null ? { key: b.id, id: 'dif-' + b.dif, tabIndex: -1, className: 'dif' + (b.dif === foco ? ' is-foco' : '') } : { key: b.id };
-              if (vista === 'lado') return h('div', Object.assign({}, attrs, { className: (attrs.className || '') + ' lado-row' }),
-                h(R.Redline, { segments: segs(b.linha, 'ins'), mode: 'inline', legend: false }),
-                h(R.Redline, { segments: segs(b.linha, 'del'), mode: 'inline', legend: false }));
-              return h('div', attrs, h(R.Redline, { segments: b.linha, mode: modo[1], legend: false }));
-            }),
-            modo[1] === 'inline' || vista === 'lado' ? h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))) : null)),
-        h('aside', { className: 'col-side stack-s', 'aria-labelledby': 'passos' },
-          h('h2', { id: 'passos', className: 'h3' }, 'Redações entre as duas'),
-          h('p', { className: 'muted small' }, 'Cada redação aplica-se no seu período. Abra uma redação para ler o texto completo.'),
-          h('ol', { className: 'list' }, art.versoes.slice(lo, hi + 1).map(function (v, j) {
-            var i = lo + j;
-            return h('li', { key: i }, h('strong', null, (i + 1) + '. '),
-              h('a', { href: link(['d', d.slug, art.id], { em: startOf(v, 'vigor'), redacao: versionKey(art, i) }) }, nomeAto(v, atos, d)),
-              h('span', { className: 'muted' }, ' · ' + (v.vigor ? 'em vigor desde ' + extenso(v.vigor) : 'publicação ' + extenso(v.publicacao))),
-              i > lo ? h('span', null, ' · ', h('a', { href: href({ de: versionKey(art, i - 1), ate: versionKey(art, i), ato: null }) }, 'ver esta alteração')) : null);
-          })))));
   }
 
   // ---- Votação na generalidade -------------------------------------------------------------------
@@ -1057,7 +1043,7 @@
                 return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
                   cs.map(function (c, i) {
                     return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
-                      h('a', { href: link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null }) }, c.rotulo.replace(/^Artigo\s*/, '')));
+                      h('a', { href: link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null, ato: a.id }) }, c.rotulo.replace(/^Artigo\s*/, '')));
                   }), '.');
               }));
           })),
@@ -1135,15 +1121,20 @@
   function App() {
     var route = useRoute();
     var s = route.segs, view;
-    if (s[0] === 'd' && s[1] && s[2] && s[3] === 'comparar') view = h(Comparar, { slug: s[1], id: s[2], q: route.q });
-    else if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });
+    if (s[0] === 'd' && s[1] && s[2] && s[3] === 'comparar') {
+      // The compare page became the Alterações view of the article. Old links still work.
+      var q = route.q, novo = link(['d', s[1], s[2]], { redacao: q.ate || q.ato || null, com: q.de || null, ver: 'mudou', lado: q.vista === 'lado' ? '1' : null, ato: q.ato || null });
+      setTimeout(function () { substituir(novo); }, 0);
+      return h(Shell, null, h(Loading, {}));
+    }
+    if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });
     else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else view = h(Home);
     // A new page fades in. Another redação of the same article does not: only its text moves.
-    return h(Shell, null, h('div', { key: s.join('/'), className: 'vista' }, view));
+    return h(Shell, { casa: !s.length }, h('div', { key: s.join('/'), className: 'vista' }, view));
   }
 
   // Follow the reader's light or dark setting, unless the host page already chose a theme.

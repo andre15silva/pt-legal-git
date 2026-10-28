@@ -193,7 +193,11 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
 
 ## 9. Order of work
 
-*Status on 2026-10-28:* step 1 is built. Step 3 is built except search in the header: home, diploma, act and initiative pages use the same grid (section 11). The change flash from step 4 is built (section 10).
+*Status on 2026-10-28:*
+- Step 1 is built.
+- Step 2 is built. The compare page is gone: the Alterações view has "Comparar com", "Lado a lado", "↑ Anterior · Alteração 1 de 3 · Seguinte ↓" and "Copiar antes e depois", which copies only the changed paragraphs. Old `/comparar` links redirect. Coming from an act, a ruled note walks through the articles the act changed.
+- Step 3 is built. Search is in the header ("/" focuses it). The diploma índice is a contents table, and in the CIRC the approving law's articles fold away. Home lists the recent acts with their sumário. Every page uses the grid in section 11.
+- Step 4 is built: margin notes in Origem do texto (the register moves under the text there, as in "Lado a lado"), the Passagem layer limited to the generalidade vote, and the change flash (section 10). Not built: the tick strips per article and the diploma's act ruler.
 
 1. **The white Nordic tokens (section 8) and the article page skeleton.**
    - Remove the boxes, pills, eyebrows and duplicate facts.

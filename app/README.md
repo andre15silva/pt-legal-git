@@ -34,12 +34,13 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 | An article at a date | `#/d/codigo-irc/artigo-87?em=2026-03-01&base=vigor` |
 | One redação, named by the act that made it | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025` |
 | What the text box shows | `&ver=texto`, `&ver=mudou` or `&ver=origem` |
-| Compare two redações (`de` and `ate` take an act id, a date or `hoje`) | `#/d/codigo-irc/artigo-87/comparar?de=lei-82-2023&ate=hoje&vista=lado&modo=marcadas` |
-| What one act changed in one article | `#/d/nrau/artigo-15-a/comparar?ato=lei-56-2023` |
+| What changed in a redação, against the one before | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025&ver=mudou` |
+| Against any other redação, side by side | `&com=lei-82-2023&lado=1` |
+| Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
 | One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
 | One parliamentary initiative | `#/iniciativa/315386` |
 
-Old links with a redação index (`redacao=3`, `de=1`) still work.
+Old links still work: a redação index (`redacao=3`) and the old compare page (`/comparar?de=…&ate=…&vista=lado`), which redirects to the Alterações view.
 
 ## How the data is made
 
@@ -48,7 +49,7 @@ Old links with a redação index (`redacao=3`, `de=1`) still work.
    - Each version has the act that made it, its publication date, its entry-into-force date (when the DR gives one), and its text.
    - Revocations become "(Revogado.)".
    - It diffs consecutive versions word by word. Each word keeps the index of the version that wrote it; this is the *origem do texto*.
-   - A rewritten phrase is one change. A short unchanged run between two replacements joins them when it is not longer than either replacement (the diff-match-patch semantic rule). The compare view uses the same rule, in `app.js`. `node app/test_diff.js` checks it and, when `app/data` exists, checks that every compare view rebuilds both texts exactly.
+   - A rewritten phrase is one change. A short unchanged run between two replacements joins them when it is not longer than either replacement (the diff-match-patch semantic rule). The Alterações view uses the same rule, in `app.js`. `node app/test_diff.js` checks it and, when `app/data` exists, checks that every compare view rebuilds both texts exactly.
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
 4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md). For now the app shows only the votação na generalidade: each initiative's own vote, and the vote on the committee's texto de substituição when there is one.
 5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.

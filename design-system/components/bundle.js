@@ -87,6 +87,7 @@
   // ---- TextOrigin -----------------------------------------------------------
   // paragraphs: [{number?, kind?: 'n'|'al'|'rev', spans: [{text, act}]}]
   // acts: [{index, label, date, href?, hrefLabel?, diffHref?, beforeHref?, nota?}] (nota: a short line under "Escrito por")
+  // margem: put a note beside each paragraph with the acts that wrote it (needs about 360 px on the right).
   // The chips mark words. They do not change the text. Choosing a phrase opens a popover under
   // its paragraph with links to the change that wrote it (diffHref), to the text before that
   // change (beforeHref) and to the redação it made (href).
@@ -113,7 +114,23 @@
     return h('div', { className: 'rd-origin' },
       h('div', { className: 'rd-origin-text' },
         (props.paragraphs || []).map(function (p, pi) {
-          return h(React.Fragment, { key: pi },
+          // margem: a note beside each paragraph names the acts that wrote words in it, newest first.
+          var nos = [];
+          p.spans.forEach(function (s) { if (s.act !== 0 && /[\p{L}\p{N}]/u.test(s.text) && nos.indexOf(s.act) < 0) nos.push(s.act); });
+          nos.sort(function (a, b) { return a - b; });
+          var linha = function (pEl, popEl) {
+            if (!props.margem) return h(React.Fragment, { key: pi }, pEl, popEl);
+            return h('div', { key: pi, className: 'rd-origin-row' },
+              h('div', { className: 'rd-origin-main' }, pEl, popEl),
+              h('div', { className: 'rd-origin-margem' }, nos.map(function (ai) {
+                var a = byIndex[ai] || { label: '' };
+                return h('button', { key: ai, type: 'button', className: cx('rd-origin-marg', focus === ai && 'is-on'), 'aria-pressed': focus === ai,
+                  'aria-label': 'Marcar as palavras deste parágrafo escritas por ' + a.label,
+                  onClick: function () { var off = focus === ai && para === pi; setFocus(off ? null : ai); setPara(off ? null : pi); } },
+                  h('span', { className: 'rd-origin-band rd-c-act-' + ai, 'aria-hidden': 'true' }), a.label);
+              })));
+          };
+          return linha(
             h('p', { className: cx('rd-statute', p.kind && 'rd-p-' + p.kind) },
               p.number ? h('span', { className: 'rd-num' }, p.number + ' ') : null,
               p.spans.map(function (s, si) {

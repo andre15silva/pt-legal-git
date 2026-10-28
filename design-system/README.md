@@ -112,7 +112,7 @@ There is no icon set. Status is a word, sometimes with a Unicode glyph next to i
 | `StatusPill` | State of a provision, version or datum, as glyph + word |
 | `ActChip` | Naming an act, with its origin colour |
 | `Redline` | Comparing two redações ("comparar redações") |
-| `TextOrigin` | Which act wrote each phrase ("origem do texto") |
+| `TextOrigin` | Which act wrote each phrase ("origem do texto"). With `margem`, a note beside each paragraph names the acts that wrote it |
 | `DateLens` | Setting the page's point in time and date basis |
 | `TimeRuler` | The redações of an article on a line of years, to pick one by date |
 | `VersionBar` | The one sticky row: "‹ Anterior", "Seguinte ›", the status and the tools |
