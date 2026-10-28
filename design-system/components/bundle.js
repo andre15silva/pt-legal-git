@@ -83,7 +83,9 @@
   }
 
   // ---- TextOrigin -----------------------------------------------------------
-  // paragraphs: [{number?, spans: [{text, act}]}], acts: [{index, label, date}]
+  // paragraphs: [{number?, spans: [{text, act}]}], acts: [{index, label, date, href?, hrefLabel?}]
+  // The chips mark words; they do not change the text. An act with href gets a link to the
+  // version it made, so the reader can open that text.
   function TextOrigin(props) {
     var acts = props.acts || [];
     var byIndex = {};
@@ -91,6 +93,7 @@
     var st = React.useState(props.focus == null ? null : props.focus);
     var focus = st[0], setFocus = st[1];
     var sel = focus == null ? null : byIndex[focus];
+    var legendId = React.useId ? React.useId() : 'rd-origin-key';
     return h('div', { className: 'rd-origin' },
       h('div', { className: 'rd-origin-text' },
         (props.paragraphs || []).map(function (p, pi) {
@@ -109,12 +112,16 @@
               }, s.text);
             }));
         })),
-      h('div', { className: 'rd-origin-legend', role: 'list', 'aria-label': 'Origem do texto' },
-        acts.map(function (a) {
-          return h('div', { key: a.index, role: 'listitem' }, h(ActChip, { act: a, selected: focus === a.index, onClick: function () { setFocus(focus === a.index ? null : a.index); } }));
-        })),
+      h('div', { className: 'rd-origin-key' },
+        h('p', { className: 'rd-origin-key-label', id: legendId }, props.legendLabel || 'Marcar as palavras escritas por:'),
+        h('div', { className: 'rd-origin-legend', role: 'list', 'aria-labelledby': legendId },
+          acts.map(function (a) {
+            return h('div', { key: a.index, role: 'listitem' }, h(ActChip, { act: a, selected: focus === a.index, onClick: function () { setFocus(focus === a.index ? null : a.index); } }));
+          }))),
       h('p', { className: 'rd-origin-note', 'aria-live': 'polite' },
-        sel ? ['Origem do texto: ', h('strong', { key: 's' }, sel.label), sel.date ? '. Publicação: ' + dataPorExtenso(sel.date) + '.' : '.'] : 'Escolha uma frase para ver o diploma que a escreveu.'));
+        sel ? ['Palavras escritas por: ', h('strong', { key: 's' }, sel.label), sel.date ? ', publicação a ' + dataPorExtenso(sel.date) + '.' : '.',
+          sel.href ? [' ', h('a', { key: 'l', href: sel.href }, sel.hrefLabel || 'Ver esta redação')] : null]
+          : 'Escolha uma frase ou um diploma para marcar as palavras que ele escreveu.'));
   }
 
   // ---- DateLens ---------------------------------------------------------------

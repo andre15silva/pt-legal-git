@@ -4,14 +4,14 @@ export declare function Button(props: ButtonProps): React.ReactElement;
 export type Status = 'vigor' | 'futuro' | 'revogado' | 'aditado' | 'pendente' | 'verificado' | 'nao-verificado' | 'inconstitucional';
 export interface StatusPillProps { status: Status; title?: string; children?: React.ReactNode }
 export declare function StatusPill(props: StatusPillProps): React.ReactElement;
-export interface Act { index: number; label: string; date?: string }
+export interface Act { index: number; label: string; date?: string; href?: string; hrefLabel?: string }
 export interface ActChipProps { act: Act; onClick?: () => void; selected?: boolean }
 export declare function ActChip(props: ActChipProps): React.ReactElement;
 export interface Segment { op: 'eq' | 'ins' | 'del'; text: string }
 export interface RedlineProps { segments: Segment[]; mode?: 'inline' | 'final' | 'previous'; number?: string; caption?: string; legend?: boolean }
 export declare function Redline(props: RedlineProps): React.ReactElement;
 export interface OriginParagraph { number?: string; spans: { text: string; act: number }[] }
-export interface TextOriginProps { paragraphs: OriginParagraph[]; acts: Act[]; focus?: number }
+export interface TextOriginProps { paragraphs: OriginParagraph[]; acts: Act[]; focus?: number; legendLabel?: string }
 export declare function TextOrigin(props: TextOriginProps): React.ReactElement;
 export interface DateLensProps { date?: string; basis?: 'vigor' | 'efeitos' | 'publicacao'; onChange?: (v: { date: string; basis: string }) => void; id?: string; today?: string }
 export declare function DateLens(props: DateLensProps): React.ReactElement;

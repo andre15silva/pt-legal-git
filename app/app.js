@@ -88,7 +88,8 @@
 
   // Origin legend: the acts that wrote the words of one version, oldest first.
   // Colour 0 is the original text, 1–7 the amending acts. More than 7: the oldest share colour 7.
-  function originModel(art, vi, atos) {
+  // hrefOf(o): link to version o, or null. The note under the chips links to it.
+  function originModel(art, vi, atos, hrefOf) {
     var v = art.versoes[vi];
     var used = {};
     v.linhas.forEach(function (l) { l.forEach(function (s) { used[s[0]] = true; }); });
@@ -99,7 +100,7 @@
       var ver = art.versoes[o], ato = atos[ver.ato] || { designacao: ver.ato };
       if (ver.tipo === 'original') {
         color[o] = 0;
-        acts.push({ index: 0, label: 'Texto original', date: ver.publicacao });
+        acts.push({ index: 0, label: 'Texto original', date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver o texto original' });
         return;
       }
       var k = amending.indexOf(o);
@@ -109,7 +110,7 @@
         return;
       }
       color[o] = extra > 0 ? k - extra : k + 1;
-      acts.push({ index: color[o], label: ato.designacao, date: ver.publicacao });
+      acts.push({ index: color[o], label: ato.designacao, date: ver.publicacao, href: o !== vi && hrefOf ? hrefOf(o) : null, hrefLabel: 'Ver a redação dada por esta alteração' });
     });
     acts.sort(function (a, b) { return a.index === 0 ? -1 : b.index === 0 ? 1 : (a.date || '') < (b.date || '') ? -1 : 1; });
     var paragraphs = v.linhas.map(function (l) {
@@ -360,12 +361,20 @@
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo. Volte ao índice do diploma.'), h('a', { href: link(['d', d.slug]) }, d.titulo));
     var date = validDate(props.q.em) || hoje();
     var base = { vigor: 1, efeitos: 1, publicacao: 1 }[props.q.base] ? props.q.base : 'vigor';
-    var sel = pick(art.versoes, date, base);
+    // redacao=n opens version n even when the next version starts on the same date
+    var porData = pick(art.versoes, date, base);
+    var n = /^\d+$/.test(props.q.redacao || '') ? +props.q.redacao : -1;
+    var sel = n >= 0 && n < art.versoes.length ? { i: n, incerta: base !== 'publicacao' && !art.versoes[n].vigor } : porData;
+    var sobreposta = sel && porData && sel.i !== porData.i;
+    function versionHref(i) {
+      var v = art.versoes[i];
+      return link(['d', d.slug, art.id], { em: v.vigor || v.publicacao, base: v.vigor ? 'vigor' : 'publicacao', redacao: i });
+    }
     var go = function (o) { location.hash = link(['d', d.slug, art.id], { em: o.date, base: o.basis }); };
     var up = pending(art.versoes, date);
     var cur = sel ? art.versoes[sel.i] : null;
     var curAto = cur ? atos[cur.ato] : null;
-    var model = cur ? originModel(art, sel.i, atos) : null;
+    var model = cur ? originModel(art, sel.i, atos, versionHref) : null;
     var titulo = art.rotulo + (art.epigrafe ? (/^\(/.test(art.epigrafe) ? ' ' : ' — ') + art.epigrafe : '');
     var notas = art.notas || [];
     var estado = cur && cur.tipo === 'revogado' ? 'revogado' : 'vigor';
@@ -394,12 +403,15 @@
             h('p', null, h('strong', null, 'Atenção: '), 'o Diário da República não indica a data de entrada em vigor desta redação. Mostramos a redação a partir da data de publicação (' + extenso(cur.publicacao) + ').' + (cur.vigor_regra === 'condicional' ? ' A entrada em vigor depende de outra legislação (' + cur.vigor_fonte + ').' : ''))) : null,
           base === 'efeitos' ? h('aside', { className: 'note note-aviso' },
             h('p', null, h('strong', null, 'Atenção: '), 'o consolidado do Diário da República não tem as datas de produção de efeitos em formato estruturado. Mostramos a redação em vigor nesta data. Leia as notas e o ato que alterou o artigo.')) : null,
+          sobreposta ? h('aside', { className: 'note note-aviso' },
+            h('p', null, 'A redação seguinte começou na mesma data. Por isso, esta redação não aparece quando escolhe só a data. ',
+              h('a', { href: link(['d', d.slug, art.id], { em: date, base: base }) }, 'Ver a redação desta data'))) : null,
           !cur ? h('div', { className: 'state' }, h('p', null, 'Nesta data o artigo ainda não existia ou ainda não estava em vigor.'),
             h('p', null, 'A primeira redação é de ' + extenso(art.versoes[0].publicacao) + '. ', h('a', { href: link(['d', d.slug, art.id], { em: startOf(art.versoes[0], base), base: base }) }, 'Ver a primeira redação'))) :
             h('article', { className: 'statute-box', 'aria-label': titulo },
               h('div', { className: 'statute-head' },
                 h('h2', { className: 'article-h' }, art.rotulo, h('span', { className: 'muted' }, art.epigrafe ? ' ' + art.epigrafe.replace(/^\((.*)\)$/, '$1') : '')),
-                h('p', { className: 'muted small' }, 'Escolha uma frase ou um diploma para ver a origem do texto.')),
+                h('p', { className: 'muted small' }, 'Cada cor mostra o diploma que escreveu as palavras.')),
               h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts })),
           notas.length ? h('section', { className: 'notes', 'aria-labelledby': 'notas' },
             h('h2', { id: 'notas', className: 'h3' }, 'Notas sobre este artigo'),
@@ -408,14 +420,14 @@
             }))) : null,
           cur ? h(R.SourceNote, { source: curAto && curAto.link ? { href: curAto.link, label: 'Ver ' + curAto.designacao + ' no Diário da República' } : (d.link ? { href: d.link, label: 'Ver o diploma no Diário da República' } : null), verification: 'nao-verificado' },
             'Texto do consolidado do Diário da República. Ainda não verificamos este texto com uma reprodução própria.') : null,
-          cur ? h(R.Citation, { key: citacao, text: citacao, permalink: location.href.split('#')[0] + link(['d', d.slug, art.id], { em: date, base: base }) }) : null),
+          cur ? h(R.Citation, { key: citacao, text: citacao, permalink: location.href.split('#')[0] + link(['d', d.slug, art.id], { em: date, base: base, redacao: sobreposta ? sel.i : null }) }) : null),
         h('aside', { className: 'col-side stack', 'aria-label': 'História deste artigo' },
           h('h2', { className: 'h3' }, 'História deste artigo'),
           h(R.VersionTimeline, { current: sel ? 'v' + sel.i : null, label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'),
             versions: art.versoes.map(function (v, i) {
               var a = atos[v.ato] || { designacao: v.ato };
               return { id: 'v' + i, title: v.tipo === 'original' ? 'Texto original' : TIPO[v.tipo] + ' por ' + a.designacao,
-                href: link(['d', d.slug, art.id], { em: v.vigor || v.publicacao, base: v.vigor ? 'vigor' : 'publicacao' }),
+                href: versionHref(i),
                 act: [v.artigo_do_ato, v.vigor ? null : 'Entrada em vigor não indicada'].filter(Boolean).join(' · '),
                 published: v.publicacao, inForce: v.vigor, technical: v.tipo === 'retificado' };
             }) }))));
