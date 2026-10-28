@@ -1,0 +1,12 @@
+<!-- @dsCard group="Origem" height=88 -->
+<!doctype html>
+<html lang="pt-PT">
+<head><meta charset="utf-8"><title>ActChip</title></head>
+<body>
+<div id="root" class="rd-stage"></div>
+<script>
+  var R = window.Redacao, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', {className:'rd-row'}, h(R.ActChip, {act:{index:0, label:'Texto originário', date:'1976-04-10'}}), h(R.ActChip, {act:{index:1, label:'Lei Constitucional n.º 1/82', date:'1982-09-30'}}), h(R.ActChip, {act:{index:2, label:'Lei Constitucional n.º 1/89', date:'1989-07-08'}, onClick:function(){}, selected:true})));
+</script>
+</body>
+</html>

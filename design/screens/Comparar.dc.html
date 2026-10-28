@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Comparar redações do artigo 87.º do Código do IRC — Redação</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/redacao/tokens.css">
+<link rel="stylesheet" href="ds/redacao/components/bundle.css">
+<script src="ds/redacao/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:var(--paper)}
+a{color:var(--verde)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div style="min-height: 1240px; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px;">
+  <header style="background: var(--paper-raised); border-bottom: 1px solid var(--rule);">
+    <div style="max-width: 1360px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+      <a href="Main.dc.html" style="font-family: var(--font-serif); font-size: 26px; line-height: 32px; font-weight: 600; color: var(--ink); text-decoration: none;">Redação</a>
+      <a href="Main.dc.html" style="font-size: 15px;">← Voltar ao artigo 87.º do Código do IRC</a>
+    </div>
+  </header>
+
+  <div style="max-width: 1360px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Comparar redações · Código do IRC</p>
+      <h1 style="margin: 0; font-family: var(--font-serif); font-size: 36px; line-height: 42px; font-weight: 600; text-wrap: balance;">Artigo 87.º, de 31 de dezembro de 2019 a hoje</h1>
+      <p style="margin: 0; max-width: 72ch; color: var(--ink-muted);">Entre estas datas o artigo mudou 5 vezes. Quatro mudanças vieram de Orçamentos do Estado, que nunca são republicados (Lei n.º 74/98, art. 6.º, n.º 5).</p>
+    </div>
+
+    <form aria-label="Escolher as redações a comparar" style="display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; padding: 16px; background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: 4px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label for="de" style="font-weight: 700; font-size: 14px;">Redação em vigor a</label>
+        <input id="de" type="date" value="2019-12-31" style="font: inherit; min-height: 40px; padding: 0 8px; border: 1px solid var(--rule-strong); border-radius: 4px; background: var(--paper); color: var(--ink);">
+        <span style="font-size: 13px; color: var(--ink-muted);">Lei n.º 7-A/2016</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label for="ate" style="font-weight: 700; font-size: 14px;">comparada com a redação em vigor a</label>
+        <input id="ate" type="date" value="2026-10-28" style="font: inherit; min-height: 40px; padding: 0 8px; border: 1px solid var(--rule-strong); border-radius: 4px; background: var(--paper); color: var(--ink);">
+        <span style="font-size: 13px; color: var(--ink-muted);">Lei n.º 64/2025</span>
+      </div>
+      <div role="group" aria-label="Modo de leitura" style="display: flex; flex-wrap: wrap; margin-left: auto;">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+          <button type="button" onClick="{{m.pick}}" aria-pressed="{{m.on}}" style="{{m.style}}">{{m.label}}</button>
+        </sc-for>
+      </div>
+    </form>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <main style="flex: 999 1 640px; min-width: 0; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px;">
+        <h2 style="margin: 0; font-family: var(--font-serif); font-size: 20px; line-height: 28px; font-weight: 600;">Artigo 87.º <span style="font-weight: 400; color: var(--ink-muted);">Taxas</span></h2>
+        <x-import component-from-global-scope="Redacao.Redline" number="1 —" mode="{{mode}}" segments="{{n1}}"></x-import>
+        <x-import component-from-global-scope="Redacao.Redline" number="2 —" mode="{{mode}}" segments="{{n2}}"></x-import>
+        <x-import component-from-global-scope="Redacao.Redline" number="3 —" mode="{{mode}}" segments="{{n3}}"></x-import>
+        <p style="margin: 0; padding: 10px 14px; background: var(--paper-sunken); border-radius: 4px; font-size: 14px; color: var(--ink-muted);">N.º 4 e alíneas a) a i): sem alterações neste período. <a href="#">Mostrar</a></p>
+        <x-import component-from-global-scope="Redacao.Redline" number="5 —" mode="{{mode}}" segments="{{n5}}"></x-import>
+        <p style="margin: 0; padding: 10px 14px; background: var(--paper-sunken); border-radius: 4px; font-size: 14px; color: var(--ink-muted);">N.os 6 e 7: revogados antes deste período, sem alterações. <a href="#">Mostrar</a></p>
+        <x-import component-from-global-scope="Redacao.Redline" number="8 —" mode="{{mode}}" segments="{{n8}}"></x-import>
+        <div role="group" aria-label="Navegar pelas alterações" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-top: 1px solid var(--rule); padding-top: 16px;">
+          <button type="button" style="font: inherit; font-size: 15px; min-height: 40px; padding: 0 16px; border-radius: 4px; border: 1px solid var(--rule-strong); background: var(--paper-raised); color: var(--ink);">← Alteração anterior</button>
+          <button type="button" style="font: inherit; font-size: 15px; min-height: 40px; padding: 0 16px; border-radius: 4px; border: 1px solid var(--rule-strong); background: var(--paper-raised); color: var(--ink);">Alteração seguinte →</button>
+          <span aria-live="polite" style="font-size: 14px; color: var(--ink-muted);">Alteração 1 de 8 · n.º 1</span>
+        </div>
+      </main>
+
+      <aside aria-label="As redações intermédias" style="flex: 1 1 340px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <h2 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">Passo a passo</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Para aplicar a lei mais favorável é preciso ver todas as redações entre as duas datas, não só as duas pontas.</p>
+        <div style="overflow-x: auto;">
+          <table style="border-collapse: collapse; width: 100%; font-size: 14px; line-height: 20px; font-variant-numeric: tabular-nums;">
+            <caption style="text-align: left; padding-bottom: 8px; font-weight: 700;">N.º 1 e n.º 2 em cada redação</caption>
+            <thead>
+              <tr style="background: var(--paper-sunken);">
+                <th scope="col" style="text-align: left; padding: 6px 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Em vigor</th>
+                <th scope="col" style="text-align: left; padding: 6px 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Ato</th>
+                <th scope="col" style="text-align: right; padding: 6px 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Taxa geral</th>
+                <th scope="col" style="text-align: right; padding: 6px 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">PME</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{steps}}" as="s" hint-placeholder-count="6">
+                <tr style="border-bottom: 1px solid var(--rule);">
+                  <td style="padding: 8px; white-space: nowrap;">{{s.date}}</td>
+                  <td style="padding: 8px;">{{s.act}}</td>
+                  <td style="padding: 8px; text-align: right; font-weight: 700;">{{s.rate}}</td>
+                  <td style="padding: 8px; text-align: right;">{{s.sme}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <x-import component-from-global-scope="Redacao.SourceNote" tone="aviso" verification="nao-verificado">Taxas do texto em vigor. Para 2026 e 2027 aplicam-se 19 % e 18 % por norma transitória (Lei n.º 64/2025, art. 3.º).</x-import>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var mode = (this.state && this.state.mode) || 'inline';
+    var self = this;
+    var base = 'font: inherit; font-size: 14px; min-height: 40px; padding: 0 14px; margin-left: -1px; border: 1px solid var(--rule-strong); cursor: pointer;';
+    var modes = [
+      { id: 'inline', label: 'Alterações marcadas' },
+      { id: 'final', label: 'Só a redação nova' },
+      { id: 'previous', label: 'Só a redação anterior' }
+    ].map(function (m) {
+      var on = m.id === mode;
+      return { label: m.label, on: on, pick: function () { self.setState({ mode: m.id }); },
+        style: base + (on ? ' background: var(--verde-soft); color: var(--verde); font-weight: 700; border-color: var(--verde); position: relative;' : ' background: var(--paper); color: var(--ink);') };
+    });
+    var s = function (list) { return list.map(function (x) { return { op: x[0], text: x[1] }; }); };
+    return {
+      mode: mode, modes: modes,
+      n1: s([['eq', 'A taxa do IRC é de '], ['del', '21'], ['ins', '17'], ['eq', ' %, exceto nos casos previstos nos números seguintes.']]),
+      n2: s([['eq', 'No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial'], ['ins', ','], ['eq', ' que sejam qualificados como pequena ou média empresa'], ['ins', ' ou empresa de pequena-média capitalização (Small Mid Cap)'], ['eq', ', nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros '], ['del', '(euro) 15 000'], ['ins', '50 000 €'], ['eq', ' de matéria coletável é de '], ['del', '17'], ['ins', '15'], ['eq', ' %, aplicando-se a taxa prevista no número anterior ao excedente.']]),
+      n3: s([['eq', 'A aplicação '], ['del', 'da taxa prevista no número anterior'], ['ins', 'das taxas previstas nos n.os 2 e 8'], ['eq', ' está sujeita às regras europeias aplicáveis em matéria de auxílios de minimis.']]),
+      n5: s([['eq', 'Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de '], ['del', '21'], ['ins', '17'], ['eq', ' %.']]),
+      n8: s([['ins', 'Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como startup, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea f) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5 %.']]),
+      steps: [
+        { date: '31/03/2016', act: 'Lei n.º 7-A/2016', rate: '21 %', sme: '17 % até 15 000 €' },
+        { date: '01/04/2020', act: 'Lei n.º 2/2020', rate: '21 %', sme: '17 % até 25 000 €' },
+        { date: '01/01/2023', act: 'Lei n.º 24-D/2022', rate: '21 %', sme: '17 % até 50 000 €' },
+        { date: '01/01/2024', act: 'Lei n.º 82/2023', rate: '21 %', sme: '17 % · startups 12,5 %' },
+        { date: '01/01/2025', act: 'Lei n.º 45-A/2024', rate: '20 %', sme: '16 %' },
+        { date: '12/11/2025', act: 'Lei n.º 64/2025', rate: '17 %', sme: '15 %' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

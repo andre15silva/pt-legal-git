@@ -1,0 +1,12 @@
+<!-- @dsCard group="Confiança" height=150 -->
+<!doctype html>
+<html lang="pt-PT">
+<head><meta charset="utf-8"><title>SourceNote</title></head>
+<body>
+<div id="root" class="rd-stage"></div>
+<script>
+  var R = window.Redacao, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', {style:{display:'flex',flexDirection:'column',gap:'16px',width:'100%'}}, h(R.SourceNote, {source:{href:'#', label:'Ver o ato no Diário da República'}, updated:'há 2 horas', verification:'verificado'}), h(R.SourceNote, {tone:'aviso', verification:'nao-verificado'}, 'A data de entrada em vigor foi calculada pela regra supletiva de 5 dias (Lei n.º 74/98, art. 2.º).')));
+</script>
+</body>
+</html>

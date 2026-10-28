@@ -1,0 +1,14 @@
+<!-- @dsCard group="Processo legislativo" height=400 subtitle="Grupos anónimos: dados de exemplo" -->
+<!doctype html>
+<html lang="pt-PT">
+<head><meta charset="utf-8"><title>VoteBar</title></head>
+<body>
+<div id="root" class="rd-stage"></div>
+<script>
+  var R = window.Redacao, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(R.VoteBar, {title:'Votação na generalidade (dados de exemplo)', result:'Aprovado', votes:[
+  {group:'Grupo A', seats:91, vote:'favor'}, {group:'Grupo B', seats:58, vote:'contra'}, {group:'Grupo C', seats:60, vote:'abstencao'},
+  {group:'Grupo D', seats:9, vote:'favor'}, {group:'Grupo E', seats:4, vote:'contra'}, {group:'Grupo F', seats:5, vote:'favor'}, {group:'Grupo G', seats:3, vote:'abstencao'}]}));
+</script>
+</body>
+</html>

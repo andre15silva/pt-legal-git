@@ -1,0 +1,25 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-28T11:05:00Z" },
+  "title": "Redação — ecrãs principais",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1640, "title": "Artigo — CIRC art. 87.º em 1 de março de 2026", "expand": "fill", "is_interactive": true },
+    "Comparar.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 1240, "title": "Comparar redações — art. 87.º, 2019 → hoje", "expand": "fill", "is_interactive": true },
+    "Ato.dc.html": { "x": 0, "y": 2040, "w": 1440, "h": 1320, "title": "Ato — Lei n.º 64/2025 (o «commit»)", "expand": "fill" },
+    "Iniciativa.dc.html": { "x": 1520, "y": 2040, "w": 1440, "h": 1280, "title": "Iniciativa — Proposta de Lei n.º 16/XVII (o «pull request»)", "expand": "fill" },
+    "Telemovel.dc.html": { "x": 0, "y": 3760, "w": 390, "h": 1180, "title": "Telemóvel — Código Civil, art. 1577.º", "is_interactive": true },
+    "Programadores.dc.html": { "x": 470, "y": 3760, "w": 1280, "h": 1040, "title": "Para programadores — git e API", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "Comparar.dc.html", "Ato.dc.html", "Iniciativa.dc.html", "Telemovel.dc.html", "Programadores.dc.html"],
+  "notes": {
+    "row1": { "x": 0, "y": -300, "text": "Ler a lei: a data, as redações e a origem do texto", "kind": "title1", "maxW": 2960 },
+    "row2": { "x": 0, "y": 1740, "text": "Atos e iniciativas: como cada alteração chegou ao Diário da República", "kind": "title1", "maxW": 2960 },
+    "row3": { "x": 0, "y": 3460, "text": "Cidadãos no telemóvel e programadores", "kind": "title1", "maxW": 1750 },
+    "dados": { "x": 1830, "y": 3760, "w": 420, "text": "Todos os textos legais, datas e votações nestes ecrãs são reais: Diário da República (legislação consolidada, consultada a 28/10/2026) e dados abertos da Assembleia da República (Iniciativas XVII). As marcas de verificação são ilustrativas do produto.", "size": "m", "fill": "green" }
+  },
+  "designSystems": [
+    { "title": "Redação", "namespace": "redacao", "artifact": "https://claude.ai/artifact/9VHviXgVubUSFgprQGgAyB", "version": "1793182486-7595", "copiedAt": "2026-10-28T11:05:00Z" }
+  ]
+}

@@ -1,0 +1,62 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Redação</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .verde { fill:var(--verde); }
+  .deep { fill:var(--ink); }
+  .page { fill:var(--paper-raised); stroke:var(--rule); stroke-width:1; }
+  .line { fill:var(--rule-strong); }
+  .insbg { fill:var(--ins-bg); }
+  .insink { fill:var(--ins-ink); }
+  .delbg { fill:var(--del-bg); }
+  .delink { fill:var(--del-ink); }
+  .blk { rx:var(--radius-sm); }
+  .rx { rx:var(--radius-xs); }
+  .words { position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }
+  .name { margin:0; font-family:var(--font-serif); font-size:112px; line-height:.92; font-weight:600; letter-spacing:-.015em; color:var(--ink); }
+  .tag { margin:var(--space-3) 0 0 4px; font-size:14px; line-height:20px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      verde 128x232 bleeding off the top (the one brand hue, largest) · paper-raised page 184x200 with a rule hairline (the reading column) · ink 152 tall bleeding off the right edge — about 30% of 960x288
+  arrangement one tall verde slab, the page beside it, the ink block stepping down and out to the right; bottoms aligned space-6 above the edge
+  pattern     literal motif — lines of statute as bars at a space-4 pitch, one struck through in del-ink on del-bg and the next underlined in ins-ink on ins-bg: "redação anterior / nova redação", the product in one glance
+  scales      bar height space-2, pitch space-4, gutters space-4, corners radius-sm on blocks and radius-xs on bars
+-->
+<rect class="verde blk" x="0" y="-8" width="128" height="272"/>
+<rect class="page blk" x="144" y="40" width="184" height="224"/>
+<rect class="line rx" x="160" y="64" width="136" height="8"/>
+<rect class="line rx" x="160" y="80" width="152" height="8"/>
+<rect class="line rx" x="160" y="96" width="120" height="8"/>
+<rect class="line rx" x="160" y="112" width="148" height="8"/>
+<rect class="delbg rx" x="160" y="128" width="152" height="8"/>
+<rect class="delink" x="156" y="131" width="160" height="2"/>
+<rect class="insbg rx" x="160" y="144" width="152" height="8"/>
+<rect class="insink" x="160" y="154" width="152" height="2"/>
+<rect class="line rx" x="160" y="160" width="104" height="8"/>
+<rect class="line rx" x="160" y="176" width="144" height="8"/>
+<rect class="line rx" x="160" y="192" width="152" height="8"/>
+<rect class="line rx" x="160" y="208" width="128" height="8"/>
+<rect class="line rx" x="160" y="224" width="88" height="8"/>
+<rect class="deep blk" x="344" y="112" width="152" height="152"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Redação</h1>
+<p class="tag">A história de cada artigo da lei portuguesa.</p>
+</div>
+</div>
+</body>
+</html>

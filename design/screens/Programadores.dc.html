@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Para programadores — Redação</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/redacao/tokens.css">
+<link rel="stylesheet" href="ds/redacao/components/bundle.css">
+<script src="ds/redacao/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:var(--paper)}
+a{color:var(--verde)}a:hover{color:var(--ink)}
+pre{margin:0;white-space:pre;overflow-x:auto}
+</style>
+</helmet>
+<div style="min-height: 1040px; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px;">
+  <header style="background: var(--paper-raised); border-bottom: 1px solid var(--rule);">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+      <a href="Main.dc.html" style="font-family: var(--font-serif); font-size: 26px; line-height: 32px; font-weight: 600; color: var(--ink); text-decoration: none;">Redação</a>
+      <span style="font-size: 15px; font-weight: 700;">Para programadores</span>
+    </div>
+  </header>
+  <div style="max-width: 1240px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 8px; max-width: 760px;">
+      <h1 style="margin: 0; font-family: var(--font-serif); font-size: 36px; line-height: 42px; font-weight: 600;">A lei portuguesa como repositório git</h1>
+      <p style="margin: 0; font-size: 17px; line-height: 26px;">Um ficheiro por artigo, uma alteração por ato e por data de entrada em vigor. A data de autor é a entrada em vigor e a de commit é a publicação. Os efeitos, a iniciativa e as votações vão nos trailers. Os dados são CC0.</p>
+      <pre style="font-family: var(--font-mono); font-size: 14px; line-height: 22px; background: var(--paper-sunken); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 14px;">git clone https://codeberg.org/[organização]/lei-pt</pre>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <section aria-labelledby="git" style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+        <h2 id="git" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">História do artigo 87.º do Código do IRC</h2>
+        <pre aria-label="Saída de git log" style="font-family: var(--font-mono); font-size: 13px; line-height: 21px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">$ git log --date=short --format='%ad  %s' \
+    -- codigo-irc/dl-442-B-1988/artigos/0087.md
+
+2025-11-12  Lei n.º 64/2025 — altera o artigo 87.º
+2025-01-01  Lei n.º 45-A/2024 (OE 2025) — artigo 90.º
+2024-01-01  Lei n.º 82/2023 (OE 2024) — artigo 237.º
+2023-01-01  Lei n.º 24-D/2022 (OE 2023) — artigo 227.º
+2020-04-01  Lei n.º 2/2020 (OE 2020) — artigo 335.º
+2016-03-31  Lei n.º 7-A/2016 (OE 2016) — artigo 133.º
+2014-01-21  Declaração de Retificação n.º 18/2014</pre>
+        <h2 style="margin: 8px 0 0; font-size: 18px; line-height: 24px; font-weight: 700;">Uma alteração, com as três datas</h2>
+        <pre aria-label="Mensagem de commit" style="font-family: var(--font-mono); font-size: 13px; line-height: 21px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">Lei n.º 64/2025, de 7 de novembro — altera o artigo 87.º
+
+AuthorDate: 2025-11-12   <span style="color: var(--ink-muted);"># entrada em vigor</span>
+CommitDate: 2025-11-07   <span style="color: var(--ink-muted);"># publicação</span>
+
+Diploma: lei/64/2025
+ELI: https://data.dre.pt/eli/lei/64/2025/11/07/p/dre/pt/html
+Vigencia: 2025-11-12
+Regra-data: supletiva_5_dias (Lei 74/98, art. 2.º, n.º 2)
+Eficacia: n.os 1 e 5 = 19 % (períodos de 2026); 18 % (2027);
+          texto (períodos a partir de 2028)
+Eficacia: n.º 2 = texto (períodos a partir de 2026)
+Iniciativa: PPL 16/XVII
+Votacao-final-global: 2025-10-17 aprovado
+  favor: PSD CH IL CDS-PP PAN JPP
+  contra: PS L PCP BE
+Verificacao: consolidado-DR exata (3/3 números)</pre>
+      </section>
+
+      <section aria-labelledby="api" style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+        <h2 id="api" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">API: a data é sempre obrigatória</h2>
+        <pre aria-label="Pedido à API" style="font-family: var(--font-mono); font-size: 13px; line-height: 21px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">GET /v1/texto/codigo-irc/art_87__para_1
+    ?em=2026-03-01&amp;base=efeitos</pre>
+        <pre aria-label="Resposta da API" style="font-family: var(--font-mono); font-size: 13px; line-height: 21px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">{
+  "fragmento": "art_87__para_1",
+  "texto": "A taxa do IRC é de 17 %, exceto nos casos …",
+  "versao": { "vigencia": ["2025-11-12", null],
+              "ato": "lei/64/2025", "regra_data": "supletiva_5_dias" },
+  "transitorias": [{
+    "fonte": "lei/64/2025#art_3__para_2",
+    "condicao": "períodos de tributação iniciados em 2026",
+    "efeito": { "substitui": "17 %", "por": "19 %" }
+  }],
+  "verificacao": "consolidado_dr_exata",
+  "avisos": ["Norma transitória aplicável nesta data: a taxa
+              aplicável é 19 %, não a do texto."],
+  "fonte_url": "https://diariodarepublica.pt/dr/detalhe/lei/64-2025-944874408",
+  "sha256": "[hash do conteúdo]"
+}</pre>
+        <h2 style="margin: 8px 0 0; font-size: 18px; line-height: 24px; font-weight: 700;">Servidor MCP para agentes de IA</h2>
+        <pre aria-label="Ferramenta MCP" style="font-family: var(--font-mono); font-size: 13px; line-height: 21px; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">obter_norma(ref="CIRC art. 87.º n.º 1",
+            data="2026-03-01", base="efeitos")
+pesquisar(consulta, data)   comparar(ref, de, ate)
+origem(ref, data)           alteracoes(desde, refs)</pre>
+      </section>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Datas e atos reais (legislação consolidada do Diário da República). O repositório, a API e os hashes são o formato proposto.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
