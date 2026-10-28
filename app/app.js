@@ -459,6 +459,15 @@
           // A contents table: the article number in a right-aligned column, the epígrafe, and how
           // many redações it had. The whole row is the link.
           (function () {
+            // One time axis for the whole page: the acts ruler and each article's strip.
+            var ini = d.publicacao, fimEixo = hoje();
+            var tot = Math.max(1, (new Date(fimEixo) - new Date(ini)) / 864e5);
+            var pos = function (dt) { return Math.max(0, Math.min(100, (new Date(dt) - new Date(ini)) / 864e5 / tot * 100)); };
+            var faixa = function (n) {
+              return h('span', { className: 'toc-faixa', 'aria-hidden': 'true' }, (n.datas || []).map(function (dt, k) {
+                return h('span', { key: k, className: k ? 'tf-t' : 'tf-t tf-0', style: { left: pos(dt) + '%' } });
+              }));
+            };
             var linha = function (n, i) {
             if (n.tipo !== 'artigo') return h('li', { key: i, className: 'toc-div toc-nivel-' + Math.min(4, n.nivel) }, n.rotulo, n.epigrafe ? h('span', { className: 'toc-div-ep' }, n.epigrafe) : null);
             var rev = n.estado === 'revogado';
@@ -466,13 +475,18 @@
               h('a', { className: 'toc-row', href: link(['d', d.slug, n.artigo], { em: em, base: base }) },
                 h('span', { className: 'toc-n' }, n.rotulo.replace(/^Artigo\s*/, '')),
                 h('span', { className: 'toc-ep' }, n.epigrafe || (rev ? '' : '—')),
-                h('span', { className: 'toc-meta' }, rev ? 'Revogado' : n.n > 1 ? n.n + ' redações' : '')));
+                h('span', { className: 'toc-meta' }, faixa(n), h('span', { className: n.n > 1 || rev ? '' : 'rd-sr' }, rev ? 'Revogado' : n.n > 1 ? n.n + ' redações' : '1 redação'))));
             };
             // When the code sits in an annex (the CIRC), the approving law's own articles fold away.
             var anexo = d.arvore.map(function (n) { return /^Anexo/i.test(n.rotulo || ''); }).indexOf(true);
-            if (anexo <= 0) return h('ul', { className: 'toc-list' }, d.arvore.map(linha));
+            var regua = h('div', { className: 'regua-atos', 'aria-hidden': 'true' },
+              h('div', { className: 'ra-linha' }, acts.map(function (a, k) { return h('span', { key: k, className: 'ra-t' + (/Retifica/.test(a.designacao) ? ' ra-ret' : ''), style: { left: pos(a.publicacao) + '%' }, title: a.designacao }); })),
+              h('div', { className: 'ra-anos' }, h('span', { className: 'ra-ini', style: { left: '0%' } }, ini.slice(0, 4)),
+                h('span', { className: 'ra-hoje', style: { left: '100%' } }, 'hoje')));
+            var cab = h('p', { className: 'toc-eixo' }, 'Em cima, os atos que alteraram o diploma. Em cada artigo, um traço por redação.');
+            if (anexo <= 0) return h(React.Fragment, null, regua, cab, h('ul', { className: 'toc-list' }, d.arvore.map(linha)));
             var lei = d.arvore.slice(0, anexo).filter(function (n) { return n.tipo === 'artigo'; }).length;
-            return h(React.Fragment, null,
+            return h(React.Fragment, null, regua, cab,
               h('details', { className: 'dobra toc-lei' }, h('summary', null, 'Os ' + lei + ' artigos ' + (pela(d.designacao) === 'pelo' ? 'do ' : 'da ') + d.designacao + ' que aprovam o código'),
                 h('ul', { className: 'toc-list' }, d.arvore.slice(0, anexo).map(linha))),
               h('ul', { className: 'toc-list' }, d.arvore.slice(anexo).map(function (n, i) { return linha(n, anexo + i); })));
@@ -662,6 +676,24 @@
         return x[0] > desde ? h('span', { key: k, className: 'acabado' }, txt) : txt;
       }));
   }
+  // A sheet from the bottom of the screen, on a phone. The native dialog keeps focus inside and
+  // closes with Esc; closing returns focus to the button that opened it.
+  function Folha(props) {
+    var ref = React.useRef(null);
+    useEffect(function () {
+      var d = ref.current;
+      if (!d) return;
+      if (props.aberta && !d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+      if (!props.aberta && d.open) d.close();
+    });
+    return h('dialog', { ref: ref, className: 'folha', 'aria-labelledby': props.id + '-t', onClose: props.onFechar,
+      onClick: function (e) { if (e.target === ref.current) props.onFechar(); } },
+      h('div', { className: 'folha-in' },
+        h('div', { className: 'folha-cab' }, h('h2', { id: props.id + '-t' }, props.titulo),
+          h('button', { type: 'button', className: 'rd-btn', onClick: props.onFechar }, 'Fechar')),
+        props.children));
+  }
+  function estreito() { return !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches); }
   // Tabs with one underline that slides to the chosen tab.
   function Abas(props) {
     var ref = React.useRef(null), linha = React.useRef(null);
@@ -682,6 +714,7 @@
     var r = useData(['d/' + props.slug + '.json', 'atos.json', 'passagem.json']);
     var cp = useState(0);
     var df = useState(0);   // the change in focus in Alterações
+    var fl = useState(false);  // the phone sheet
     if (!r.data) return h(Loading, { error: r.error });
     var d = r.data[0], atos = r.data[1], ps = r.data[2], q = props.q;
     var art = d.artigos[props.id];
@@ -808,7 +841,20 @@
     var f = cur ? formula(art, sel.i, atos, d) : null;
     var status = cur ? h(React.Fragment, null, h('strong', null, ordinal(sel.i) + ' de ' + n), ' · ' + nomeAto(cur, atos, d) + ' · ', h('span', { className: 'muted' }, intervaloCurto(art, sel.i, base, hojeIdx))) : 'Sem texto nesta data';
 
-    return h('div', { className: 'artigo', 'data-dir': vista.dir },
+    // The register's rows, in the right column and in the phone sheet.
+    var itensRegisto = art.versoes.map(function (v, i) {
+            var a = atos[v.ato], p = periodo(art, i, 'vigor'), atual = sel && i === sel.i;
+            return { ordinal: ordinal(i), label: nomeAto(v, atos, d), date: curta(startOf(v, 'vigor')), band: corDe(art, i), href: versionHref(i),
+              current: atual, technical: v.tipo === 'retificado',
+              details: atual ? [
+                h('p', { key: 'd' }, 'Publicação: ' + curta(v.publicacao) + (v.vigor ? ' · Em vigor: ' + curta(v.vigor) + (p.fim && p.fim !== 'mesma' ? ' a ' + curta(p.fim) : '') : ' · Entrada em vigor não indicada')),
+                v.artigo_do_ato && a ? h('p', { key: 'n' }, TIPO[v.tipo] + ' pelo ' + v.artigo_do_ato.toLowerCase() + ' ' + (pela(a.designacao) === 'pelo' ? 'do ' : 'da ') + a.designacao + '.') : null,
+                ps[v.ato] ? h('p', { key: 'p', className: 'reg-parl' }, resumoParlamento(ps[v.ato])) : a && /^Decreto-Lei/.test(a.designacao) ? h('p', { key: 'p' }, 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.') : null,
+                h('p', { key: 'l' }, i > 0 ? h('a', { href: versionHref(i, { ver: 'mudou' }) }, 'Ver as alterações') : null, i > 0 && a ? ' · ' : null,
+                  a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a votação no Parlamento' : 'Ver o ato') : null)
+              ] : null };
+          });
+    return h('div', { className: 'artigo', 'data-dir': vista.dir, 'data-passada': passada ? '' : undefined },
       h('div', { className: 'corrida' },
         h('p', null, h('a', { href: link(['d', d.slug]) }, d.sigla), art.caminho.length ? ' · ' + art.caminho[art.caminho.length - 1] : ''),
         h('nav', { className: 'vizinhos', 'aria-label': 'Artigos vizinhos' }, vizinho(-1), vizinho(1))),
@@ -831,7 +877,7 @@
         }) }) : null,
       h(R.VersionBar, { id: 'barra', current: sel ? sel.i : -1, count: n, status: status,
         onGo: function (k) { substituir(versionHref(k)); },
-        onStatus: function () { var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } } },
+        onStatus: function () { if (estreito()) { fl[1](true); return; } var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } } },
         h('div', { className: 'so-largo tools' }, tabs, dataPop)),
       h('div', { className: 'so-estreito tools' }, tabs, dataPop),
       // Side by side and the margin notes of Origem do texto need the full width: the register moves under the text.
@@ -869,22 +915,23 @@
                 : 'Ainda não o comparámos com o ato publicado. ', 'Só o Diário da República faz fé.')) : null),
         h('aside', { className: 'art-registo', 'aria-labelledby': 'historia' },
           h('h2', { id: 'historia', tabIndex: -1 }, 'Redações'),
-          h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: art.versoes.map(function (v, i) {
-            var a = atos[v.ato], p = periodo(art, i, 'vigor'), atual = sel && i === sel.i;
-            return { ordinal: ordinal(i), label: nomeAto(v, atos, d), date: curta(startOf(v, 'vigor')), band: corDe(art, i), href: versionHref(i),
-              current: atual, technical: v.tipo === 'retificado',
-              details: atual ? [
-                h('p', { key: 'd' }, 'Publicação: ' + curta(v.publicacao) + (v.vigor ? ' · Em vigor: ' + curta(v.vigor) + (p.fim && p.fim !== 'mesma' ? ' a ' + curta(p.fim) : '') : ' · Entrada em vigor não indicada')),
-                v.artigo_do_ato && a ? h('p', { key: 'n' }, TIPO[v.tipo] + ' pelo ' + v.artigo_do_ato.toLowerCase() + ' ' + (pela(a.designacao) === 'pelo' ? 'do ' : 'da ') + a.designacao + '.') : null,
-                ps[v.ato] ? h('p', { key: 'p', className: 'reg-parl' }, resumoParlamento(ps[v.ato])) : a && /^Decreto-Lei/.test(a.designacao) ? h('p', { key: 'p' }, 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.') : null,
-                h('p', { key: 'l' }, i > 0 ? h('a', { href: versionHref(i, { ver: 'mudou' }) }, 'Ver as alterações') : null, i > 0 && a ? ' · ' : null,
-                  a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a votação no Parlamento' : 'Ver o ato') : null)
-              ] : null };
-          }) }),
+          h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: itensRegisto }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
-          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)));
+          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)),
+      cur ? h(Folha, { id: 'folha', aberta: fl[0], onFechar: function () { fl[1](false); }, titulo: ordinal(sel.i) + ' redação de ' + n },
+        h('p', { className: 'folha-estado' }, h('em', null, f[0], f[1]), h('br'), intervalo(art, sel.i, base, hojeIdx)),
+        h('section', { className: 'folha-sec', 'aria-labelledby': 'folha-data' }, h('h3', { id: 'folha-data' }, 'Ver noutra data'),
+          h(R.DateLens, { date: date, basis: base, today: hoje(), id: 'lente-folha', onChange: function (o) { fl[1](false); go(o); }, bases: ['vigor', 'publicacao'] })),
+        h('section', { className: 'folha-sec', 'aria-labelledby': 'folha-red' }, h('h3', { id: 'folha-red' }, 'Redações'),
+          h('ol', { className: 'folha-lista' }, art.versoes.map(function (v, i) {
+            return h('li', { key: i, className: i === sel.i ? 'is-on' : '' },
+              h('a', { href: versionHref(i), 'aria-current': i === sel.i ? 'true' : undefined, onClick: function () { fl[1](false); } },
+                h('span', { className: 'folha-ord' }, ordinal(i)), h('span', { className: 'rd-reg-band rd-c-act-' + corDe(art, i), 'aria-hidden': 'true' }),
+                h('span', { className: 'folha-ato' }, nomeAto(v, atos, d)), h('span', { className: 'folha-dt' }, curta(startOf(v, 'vigor')))));
+          }))),
+        h('p', { className: 'folha-acoes' }, h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } },
+          h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')))) : null);
   }
-
   // ---- Votação na generalidade -------------------------------------------------------------------
   function lista(xs) { return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' e ' + xs[xs.length - 1]; }
   function quemPropos(ini) {
