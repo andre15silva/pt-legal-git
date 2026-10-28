@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Origem do texto: da palavra à alteração</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/redacao/tokens.css">
+<link rel="stylesheet" href="ds/redacao/components/bundle.css">
+<script src="ds/redacao/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--verde);text-underline-offset:3px}
+</style>
+</helmet>
+<div style="width: 960px; height: 680px; box-sizing: border-box; padding: 32px 40px; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; display: flex; flex-direction: column; gap: 16px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Constituição da República Portuguesa</p>
+      <h1 style="margin: 0; font-family: var(--font-serif); font-size: 28px; line-height: 34px; font-weight: 600;">Artigo 1.º (República Portuguesa)</h1>
+    </div>
+    <div style="display: flex; gap: 16px;">
+      <label style="display: inline-flex; gap: 8px; align-items: center; min-height: 44px;"><input type="checkbox" checked style="width: 20px; height: 20px; accent-color: var(--verde);"> Mostrar a origem das palavras</label>
+      <label style="display: inline-flex; gap: 8px; align-items: center; min-height: 44px;"><input type="checkbox" style="width: 20px; height: 20px; accent-color: var(--verde);"> Mostrar o que mudou</label>
+    </div>
+  </div>
+
+  <article aria-label="Texto do artigo 1.º" style="background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+    <p class="rd-statute" style="max-width: none;"><span class="rd-origin-span rd-u-act-0 is-dim">Portugal é uma República soberana, baseada na dignidade da pessoa humana e na vontade popular e empenhada na</span> <span class="rd-origin-span rd-u-act-1 is-focus" style="outline: 2px solid var(--focus); outline-offset: 2px;">construção de uma sociedade livre, justa e solidária</span><span class="rd-origin-span rd-u-act-0 is-dim">.</span></p>
+
+    <div role="dialog" aria-labelledby="pop-h" style="align-self: flex-start; margin-left: 300px; position: relative; background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sheet); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; max-width: 460px;">
+      <span aria-hidden="true" style="position: absolute; top: -7px; left: 40px; width: 12px; height: 12px; background: var(--paper-raised); border-left: 1px solid var(--rule-strong); border-top: 1px solid var(--rule-strong); transform: rotate(45deg);"></span>
+      <p id="pop-h" style="margin: 0;"><span class="rd-act-swatch rd-c-act-1" style="display: inline-block; vertical-align: -1px; margin-right: 6px;" aria-hidden="true"></span>Escrito pela <strong>Lei Constitucional n.º 1/89</strong>, de 8 de julho.</p>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Segunda revisão constitucional. Em vigor desde 7 de agosto de 1989.</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="#resultado" class="rd-btn rd-btn-primary" style="display: inline-flex; align-items: center; text-decoration: none;">Ver a alteração</a>
+        <a href="#antes" class="rd-btn rd-btn-quiet" style="display: inline-flex; align-items: center; text-decoration: none; color: var(--ink);">Ver como estava antes</a>
+        <a href="Ato.dc.html" class="rd-btn rd-btn-ghost" style="display: inline-flex; align-items: center;">Ver o ato e a votação</a>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 12px;">
+      <p style="margin: 0; font-size: 14px; line-height: 20px; font-weight: 700;">Marcar as palavras escritas por:</p>
+      <div role="list" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div role="listitem"><x-import component-from-global-scope="Redacao.ActChip" act="{{original}}" on-click="{{nada}}"></x-import></div>
+        <div role="listitem"><x-import component-from-global-scope="Redacao.ActChip" act="{{lc189}}" selected="{{sim}}" on-click="{{nada}}"></x-import></div>
+      </div>
+    </div>
+  </article>
+
+  <section id="resultado" aria-labelledby="res-h" style="background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-md); padding: 16px 24px; display: flex; flex-direction: column; gap: 8px;">
+    <h2 id="res-h" style="margin: 0; font-size: 16px; line-height: 22px; font-weight: 700;">Depois de escolher «Ver a alteração»: a mesma página mostra o que a Lei Constitucional n.º 1/89 mudou</h2>
+    <x-import component-from-global-scope="Redacao.Redline" segments="{{segs}}" mode="inline" caption="Redação 2 de 2 · em vigor desde 7 de agosto de 1989 · comparada com o texto original de 1976"></x-import>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":680}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      sim: true,
+      nada: function () { },
+      original: { index: 0, label: 'Texto original', date: '1976-04-10' },
+      lc189: { index: 1, label: 'Lei Constitucional n.º 1/89', date: '1989-07-08' },
+      segs: [
+        { op: 'eq', text: 'Portugal é uma República soberana, baseada na dignidade da pessoa humana e na vontade popular e empenhada na ' },
+        { op: 'del', text: 'sua transformação numa sociedade sem classes' },
+        { op: 'ins', text: 'construção de uma sociedade livre, justa e solidária' },
+        { op: 'eq', text: '.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

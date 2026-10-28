@@ -1,0 +1,26 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-28T14:55:00Z" },
+  "title": "Redação — navegar entre redações",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1760, "title": "Artigo · barra de redações (CIRC 87.º)", "expand": "fill", "is_interactive": true },
+    "Telemovel.dc.html": { "x": 1520, "y": 0, "w": 390, "h": 844, "title": "Telemóvel · barra fixa e lista", "is_interactive": true },
+    "Estados.dc.html": { "x": 1990, "y": 0, "w": 1200, "h": 1180, "title": "Barra de redações · estados" },
+    "Comparar.dc.html": { "x": 0, "y": 2140, "w": 1440, "h": 1320, "title": "Comparar redações", "expand": "fill", "is_interactive": true },
+    "Origem.dc.html": { "x": 1520, "y": 2140, "w": 960, "h": 680, "title": "Origem do texto · da palavra à alteração" },
+    "Ato.dc.html": { "x": 0, "y": 3840, "w": 1440, "h": 1900, "title": "Ato · tudo o que a lei mudou", "expand": "fill", "is_interactive": true },
+    "Diploma.dc.html": { "x": 1520, "y": 3840, "w": 1440, "h": 1640, "title": "Diploma numa data", "expand": "fill" },
+    "Mapa.dc.html": { "x": 3040, "y": 3840, "w": 1440, "h": 1000, "title": "Mapa de alterações", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "Telemovel.dc.html", "Estados.dc.html", "Comparar.dc.html", "Origem.dc.html", "Ato.dc.html", "Diploma.dc.html", "Mapa.dc.html"],
+  "notes": {
+    "row1": { "x": 0, "y": -300, "text": "1 · Artigo: ver uma redação e passar à seguinte", "kind": "title1", "maxW": 3190 },
+    "row2": { "x": 0, "y": 1840, "text": "2 · Comparar e seguir uma palavra até à alteração", "kind": "title1", "maxW": 2480 },
+    "row3": { "x": 0, "y": 3540, "text": "3 · Ato e diploma no tempo", "kind": "title1", "maxW": 4480 }
+  },
+  "designSystems": [
+    { "title": "Redação", "namespace": "redacao", "artifact": "https://claude.ai/artifact/9VHviXgVubUSFgprQGgAyB", "version": "1793189293-0dc3", "copiedAt": "2026-10-28T14:55:00Z" }
+  ]
+}

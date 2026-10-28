@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Barra de redações: estados</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/redacao/tokens.css">
+<link rel="stylesheet" href="ds/redacao/components/bundle.css">
+<script src="ds/redacao/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--verde);text-underline-offset:3px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 40px 48px; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; display: flex; flex-direction: column; gap: 20px;">
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Componente novo · BarraRedacoes</p>
+    <h1 style="margin: 0; font-family: var(--font-serif); font-size: 28px; line-height: 34px; font-weight: 600;">Barra de redações: estados</h1>
+  </div>
+
+  <sc-for list="{{estados}}" as="e" hint-placeholder-count="5">
+    <section style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px;">
+        <h2 style="margin: 0; font-size: 16px; line-height: 22px; font-weight: 700;">{{e.nome}}</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">{{e.quando}}</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button type="button" class="rd-btn rd-btn-quiet" aria-disabled="{{e.primeira}}" style="opacity: {{e.opAnt}};">‹ Redação anterior</button>
+            <p style="margin: 0; flex: 1 1 auto; text-align: center;"><strong>{{e.pos}}</strong> · {{e.ato}} · <span style="color: {{e.corData}};">{{e.datas}}</span></p>
+            <button type="button" class="rd-btn rd-btn-quiet" aria-disabled="{{e.ultima}}" style="opacity: {{e.opSeg}}; outline: {{e.foco}}; outline-offset: 2px;">Redação seguinte ›</button>
+          </div>
+          <div style="display: flex; gap: 3px; height: 24px;">
+            <sc-for list="{{e.fita}}" as="s" hint-placeholder-count="8">
+              <span style="flex: {{s.g}} 1 0px; min-width: {{s.w}}; border: 1px {{s.estilo}} {{s.borda}}; background: {{s.fundo}}; border-radius: 2px;"></span>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{e.aviso}}" hint-placeholder-val="{{ true }}">
+          <p style="margin: 0; background: {{e.avisoFundo}}; border: 1px solid {{e.avisoBorda}}; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 15px; line-height: 22px;"><strong>{{e.avisoNivel}}</strong> {{e.aviso}}</p>
+        </sc-if>
+        <sc-if value="{{e.anuncio}}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 20px; color: var(--ink-muted);">{{e.anuncio}}</p>
+        </sc-if>
+      </div>
+    </section>
+  </sc-for>
+
+  <section style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px;">
+      <h2 style="margin: 0; font-size: 16px; line-height: 22px; font-weight: 700;">Telemóvel</h2>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Fixa no fundo do ecrã. Alvos de 48 px.</p>
+    </div>
+    <div style="width: 390px; height: 64px; box-sizing: border-box; background: var(--paper-raised); border: 1px solid var(--rule-strong); box-shadow: var(--shadow-sheet); display: flex; align-items: center; gap: 4px; padding: 0 8px;">
+      <button type="button" class="rd-btn rd-btn-quiet" aria-label="Redação anterior" style="width: 48px; height: 48px; padding: 0; font-size: 22px;">‹</button>
+      <span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; line-height: 18px;">
+        <strong style="font-size: 15px;">Redação 4 de 8 · Lei n.º 2/2020</strong>
+        <span style="font-size: 13px; color: var(--ink-muted);">2020 a 2022 · Ver todas ▴</span>
+      </span>
+      <button type="button" class="rd-btn rd-btn-quiet" aria-label="Redação seguinte" style="width: 48px; height: 48px; padding: 0; font-size: 22px;">›</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+var G = [0, 799, 1461, 1004, 365, 366, 315, 414];
+function fita(sel, extra) {
+  var f = G.map(function (g, k) {
+    var on = sel.indexOf(k) >= 0;
+    return { g: g, w: g < 30 ? '10px' : '0px', estilo: 'solid', borda: on ? 'var(--verde)' : 'var(--rule-strong)', fundo: on ? 'var(--verde)' : (k === 1 ? 'var(--paper-raised)' : 'var(--verde-soft)') };
+  });
+  if (extra) f.push({ g: 60, w: '18px', estilo: 'dashed', borda: 'var(--pendente)', fundo: 'var(--pendente-bg)' });
+  return f;
+}
+var NOTA = { avisoNivel: 'Nota:', avisoFundo: 'var(--aviso-bg)', avisoBorda: 'var(--aviso)' };
+var ATENCAO = { avisoNivel: 'Atenção:', avisoFundo: 'var(--aviso-bg)', avisoBorda: 'var(--aviso)' };
+function estado(o) {
+  return Object.assign({ primeira: 'false', ultima: 'false', opAnt: 1, opSeg: 1, foco: 'none', corData: 'var(--ink-muted)', aviso: '', anuncio: '' }, o);
+}
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      estados: [
+        estado(Object.assign({ nome: 'Em vigor hoje', quando: 'A última redação. É o estado de partida.', pos: 'Redação 8 de 8', ato: 'Lei n.º 64/2025', datas: 'em vigor desde 12 de novembro de 2025', ultima: 'true', opSeg: 0.45, fita: fita([7]), aviso: 'uma norma transitória muda a taxa dos n.os 1 e 5 em 2026 e 2027.' }, ATENCAO)),
+        estado(Object.assign({ nome: 'Redação anterior', quando: 'Qualquer redação que já não está em vigor.', pos: 'Redação 4 de 8', ato: 'Lei n.º 2/2020', datas: 'em vigor de 1 de abril de 2020 a 31 de dezembro de 2022', fita: fita([3]), aviso: 'esta não é a redação em vigor hoje. Ver a redação em vigor hoje.' }, NOTA)),
+        estado(Object.assign({ nome: 'Publicada, ainda não em vigor', quando: 'Dados de exemplo. A redação nunca é a escolhida por omissão.', pos: 'Redação 9 de 9', ato: 'Lei n.º [NÚMERO]/2026', datas: 'entra em vigor a 1 de janeiro de 2027', corData: 'var(--pendente)', ultima: 'true', opSeg: 0.45, fita: fita([], true), aviso: 'esta redação ainda não está em vigor. Hoje aplica-se a redação 8.' }, NOTA)),
+        estado(Object.assign({ nome: 'Duas redações na mesma data', quando: 'Uma retificação produz efeitos na data do texto que corrige.', pos: 'Redação 1 de 8', ato: 'Texto original', datas: 'começou a 21 de janeiro de 2014, a mesma data da redação 2', primeira: 'true', opAnt: 0.45, fita: fita([0]), aviso: 'a redação seguinte começou na mesma data. Por isso, esta redação não aparece quando escolhe só a data.' }, NOTA)),
+        estado(Object.assign({ nome: 'Antes da primeira redação', quando: 'A data escolhida é anterior ao artigo.', pos: 'Sem redação', ato: '1 de janeiro de 2010', datas: 'o artigo ainda não existia', primeira: 'true', opAnt: 0.45, fita: fita([]), aviso: 'a primeira redação é de 21 de janeiro de 2014. Ver a primeira redação.' }, NOTA)),
+        estado({ nome: 'Teclado e leitor de ecrã', quando: 'O foco fica no botão. A frase de estado é anunciada.', pos: 'Redação 5 de 8', ato: 'Lei n.º 24-D/2022', datas: 'em vigor de 1 de janeiro de 2023 a 31 de dezembro de 2023', foco: '2px solid var(--focus)', fita: fita([4]), anuncio: 'Anúncio (role=status): «Redação 5 de 8, Lei n.º 24-D/2022, em vigor de 1 de janeiro de 2023 a 31 de dezembro de 2023.» Título da página: «Art. 87.º CIRC, redação de 1 jan. 2023 · Redação».' })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

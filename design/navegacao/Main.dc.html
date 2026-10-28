@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<title>Artigo 87.º do CIRC: barra de redações</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/redacao/tokens.css">
+<link rel="stylesheet" href="ds/redacao/components/bundle.css">
+<script src="ds/redacao/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:var(--paper)}
+a{color:var(--verde);text-underline-offset:3px}a:hover{text-decoration-thickness:2px}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 100%; background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px;">
+  <header style="border-bottom: 1px solid var(--rule); background: var(--paper-raised);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+      <span style="font-family: var(--font-serif); font-size: 24px; font-weight: 600;">Redação</span>
+      <nav aria-label="Principal" style="display: flex; gap: 16px;"><a href="Diploma.dc.html">Diplomas</a><a href="#sobre">Sobre os dados</a></nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 16px;">
+    <nav aria-label="Localização" style="font-size: 14px; color: var(--ink-muted); display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="Diploma.dc.html">Diplomas</a><span aria-hidden="true">›</span><a href="Diploma.dc.html">CIRC</a><span aria-hidden="true">›</span><span>Capítulo IV</span><span aria-hidden="true">›</span><span aria-current="page">Artigo 87.º</span>
+    </nav>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);">Código do Imposto sobre o Rendimento das Pessoas Coletivas</p>
+        <h1 style="margin: 0; font-family: var(--font-serif); font-size: 28px; line-height: 34px; font-weight: 600;">Artigo 87.º — Taxas</h1>
+      </div>
+      <nav aria-label="Artigos vizinhos" style="display: flex; gap: 16px; font-size: 14px;">
+        <a href="#texto">‹ Artigo 86.º-B</a><a href="#texto">Artigo 87.º-A ›</a>
+      </nav>
+    </div>
+
+    <section aria-labelledby="barra-h" style="position: sticky; top: 0; z-index: 2; background: var(--paper-raised); border: 1px solid var(--rule-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sheet); padding: 12px 16px; display: flex; flex-direction: column; gap: 12px;">
+      <h2 id="barra-h" class="rd-sr">Redação mostrada</h2>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button type="button" class="rd-btn rd-btn-quiet" onClick="{{anterior}}" aria-disabled="{{primeira}}" aria-describedby="estado">‹ Redação anterior</button>
+        <p id="estado" role="status" style="margin: 0; flex: 1 1 360px; min-width: 0; text-align: center;">
+          <strong>Redação {{pos}} de {{n}}</strong> · {{atoNome}} · <span style="color: var(--ink-muted);">{{intervalo}}</span>
+        </p>
+        <button type="button" class="rd-btn rd-btn-quiet" onClick="{{seguinte}}" aria-disabled="{{ultima}}" aria-describedby="estado">Redação seguinte ›</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div role="group" aria-label="Linha do tempo das redações" style="display: flex; gap: 3px; align-items: stretch; height: 28px;">
+          <sc-for list="{{fita}}" as="s" hint-placeholder-count="8">
+            <button type="button" onClick="{{s.pick}}" aria-label="{{s.rotulo}}" aria-pressed="{{s.atual}}" title="{{s.rotulo}}" style="flex: {{s.grow}} 1 0px; min-width: {{s.minw}}; padding: 0; border: 1px solid {{s.borda}}; border-radius: 2px; background: {{s.fundo}}; cursor: pointer;"></button>
+          </sc-for>
+        </div>
+        <div aria-hidden="true" style="display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: tabular-nums;">
+          <span>2014</span><span>2016</span><span>2018</span><span>2020</span><span>2022</span><span>2024</span><span>hoje</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px 24px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 12px;">
+        <form style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;" aria-label="Ir para uma data">
+          <label for="data" style="font-weight: 700;">Ver o artigo como estava em</label>
+          <input id="data" type="date" class="rd-input" value="{{data}}" onChange="{{mudarData}}">
+          <button type="button" class="rd-btn rd-btn-primary" onClick="{{verData}}">Ver</button>
+        </form>
+        <label style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer;">
+          <input type="checkbox" checked="{{mudou}}" onChange="{{alternarMudou}}" style="width: 20px; height: 20px; accent-color: var(--verde);">
+          Mostrar o que mudou
+        </label>
+        <a href="Comparar.dc.html" style="margin-left: auto;">Comparar com outra redação</a>
+        <span style="font-size: 14px; color: var(--ink-muted);">Teclas: Alt+← e Alt+→</span>
+      </div>
+      <sc-if value="{{erro}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; color: var(--aviso); font-weight: 700;">{{erro}}</p>
+      </sc-if>
+    </section>
+
+    <sc-if value="{{passada}}" hint-placeholder-val="{{ true }}">
+      <aside style="background: var(--aviso-bg); border: 1px solid var(--aviso); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <p style="margin: 0; flex: 1 1 400px;"><strong>Nota:</strong> esta não é a redação em vigor hoje. {{fimTexto}}</p>
+        <button type="button" class="rd-btn rd-btn-quiet" onClick="{{irHoje}}">Ver a redação em vigor hoje</button>
+      </aside>
+    </sc-if>
+    <sc-if value="{{transitoria}}" hint-placeholder-val="{{ false }}">
+      <aside style="background: var(--aviso-bg); border: 2px solid var(--aviso); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <p style="margin: 0;"><strong>Atenção:</strong> uma norma transitória muda a taxa dos n.os 1 e 5.</p>
+        <p style="margin: 0;">Nos períodos de tributação que começam em 2026, a taxa é de 19 %. Em 2027, a taxa é de 18 %. A taxa de 17 % aplica-se a partir de 2028.</p>
+        <p style="margin: 0; font-size: 14px; color: var(--ink-muted);">Fonte: Lei n.º 64/2025, artigo 3.º · <a href="#notas">Ler a norma</a></p>
+      </aside>
+    </sc-if>
+
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+      <article id="texto" aria-labelledby="art-h" style="flex: 999 1 620px; min-width: 0; background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <h2 id="art-h" style="margin: 0; font-family: var(--font-serif); font-size: 20px; line-height: 28px; font-weight: 600;">Artigo 87.º <span style="color: var(--ink-muted); font-weight: 400;">Taxas</span></h2>
+          <sc-if value="{{ultima}}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="Redacao.StatusPill" status="vigor">Em vigor hoje</x-import>
+          </sc-if>
+          <sc-if value="{{passada}}" hint-placeholder-val="{{ true }}">
+            <span class="rd-pill" style="color: var(--ink-muted); background: var(--paper-sunken);"><span class="rd-pill-glyph" aria-hidden="true">○</span>Já não está em vigor</span>
+          </sc-if>
+        </div>
+        <sc-if value="{{mudou}}" hint-placeholder-val="{{ true }}">
+          <p style="margin: 0; font-size: 14px; color: var(--ink-muted);">{{resumoMudou}} <ins class="rd-ins" style="font-size: 14px;">acrescentado</ins> <del class="rd-del" style="font-size: 14px;">eliminado</del></p>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{linhas}}" as="ln" hint-placeholder-count="16">
+            <x-import component-from-global-scope="Redacao.Redline" segments="{{ln.segs}}" mode="{{modo}}" legend="{{nao}}"></x-import>
+          </sc-for>
+        </div>
+        <x-import component-from-global-scope="Redacao.Citation" text="{{citacao}}" permalink="{{permalink}}"></x-import>
+      </article>
+
+      <aside aria-labelledby="hist-h" style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <h2 id="hist-h" style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 700;">História deste artigo <span style="font-weight: 400; color: var(--ink-muted);">({{n}} redações)</span></h2>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{historia}}" as="h" hint-placeholder-count="8">
+            <li aria-current="{{h.ariaAtual}}" style="border: 1px solid {{h.borda}}; background: {{h.fundo}}; border-radius: var(--radius-sm); padding: 8px 12px; display: flex; flex-direction: column; gap: 2px;">
+              <button type="button" onClick="{{h.pick}}" style="all: unset; cursor: pointer; font-family: var(--font-serif); font-size: {{h.tam}}; line-height: 24px; font-weight: 600; color: var(--verde); text-decoration: underline; text-underline-offset: 3px;">{{h.titulo}}</button>
+              <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted); font-variant-numeric: tabular-nums;">{{h.datas}}</span>
+              <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">{{h.norma}}</span>
+              <span style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px;">
+                <sc-if value="{{h.atual}}" hint-placeholder-val="{{ false }}"><span class="rd-pill" style="color: var(--ink); background: var(--paper-raised);"><span class="rd-pill-glyph" aria-hidden="true">▶</span>A ver esta redação</span></sc-if>
+                <sc-if value="{{h.hoje}}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="Redacao.StatusPill" status="vigor">Em vigor hoje</x-import></sc-if>
+              </span>
+            </li>
+          </sc-for>
+        </ol>
+        <label style="display: inline-flex; gap: 8px; align-items: center; font-size: 14px; min-height: 44px;"><input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--verde);"> Ocultar retificações</label>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+var L = ["1 — A taxa do IRC é de 23 %, exceto nos casos previstos nos números seguintes.", "2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial que sejam qualificados como pequena ou média empresa, nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros (euro) 15 000 de matéria coletável é de 17 %, aplicando-se a taxa prevista no número anterior ao excedente.", "3 — A aplicação da taxa prevista no número anterior está sujeita às regras comunitárias para os auxílios de minimis, definidas no Regulamento (CE) n.º 1998/2006, da Comissão, de 15 de dezembro.", "4 — Tratando-se de rendimentos de entidades que não tenham sede nem direção efetiva em território português e aí não possuam estabelecimento estável ao qual os mesmos sejam imputáveis, a taxa do IRC é de 25 %, exceto relativamente aos seguintes rendimentos:", "a) (Revogada.)", "b) (Revogada.)", "c) (Revogada.)", "d) Prémios de rifas, totoloto, jogo de loto, bem como importâncias ou prémios atribuídos em quaisquer sorteios ou concursos, em que a taxa é de 35 %;", "e) (Revogada.)", "f) (Revogada.)", "g) (Revogada.)", "h) Rendimentos de capitais sempre que sejam pagos ou colocados à disposição em contas abertas em nome de um ou mais titulares mas por conta de terceiros não identificados, em que a taxa é de 35 %, exceto quando seja identificado o beneficiário efetivo, termos em que se aplicam as regras gerais;", "i) Rendimentos de capitais, tal como definidos no artigo 5.º do Código do IRS, obtidos por entidades não residentes em território português, que sejam domiciliadas em país, território ou região sujeitas a um regime fiscal claramente mais favorável, constante de lista aprovada por portaria do membro do Governo responsável pela área das finanças, em que a taxa é de 35 %.", "5 — Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 21,5 %.", "6 — (Revogado.)", "7 — (Revogado.)", "1 — A taxa do IRC é de 21 %, exceto nos casos previstos nos números seguintes.", "3 — A aplicação da taxa prevista no número anterior está sujeita às regras europeias aplicáveis em matéria de auxílios de minimis.", "5 — Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 21 %.", "2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa, nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 25 000 (euro) de matéria coletável é de 17 %, aplicando-se a taxa prevista no número anterior ao excedente.", "2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (Small Mid Cap), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50 000 (euro) de matéria coletável é de 17 %, aplicando-se a taxa prevista no número anterior ao excedente.", "3 — A aplicação das taxas previstas nos n.os 2 e 8 está sujeita às regras europeias aplicáveis em matéria de auxílios de minimis.", "8 — Quando o disposto no n.º 2 seja aplicado a entidades qualificadas como startup, nos termos previstos na Lei n.º 21/2023, de 25 de maio, e que reúnam cumulativamente as condições previstas na alínea f) do n.º 1 do artigo 2.º daquele diploma, a taxa de IRC prevista no n.º 2 é reduzida para 12,5 %.", "1 — A taxa do IRC é de 20 %, exceto nos casos previstos nos números seguintes.", "2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (Small Mid Cap), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50 000 € de matéria coletável é de 16 %, aplicando-se a taxa prevista no número anterior ao excedente.", "5 — Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 20 %.", "1 — A taxa do IRC é de 17 %, exceto nos casos previstos nos números seguintes.", "2 — No caso de sujeitos passivos que exerçam, diretamente e a título principal, uma atividade económica de natureza agrícola, comercial ou industrial, que sejam qualificados como pequena ou média empresa ou empresa de pequena-média capitalização (Small Mid Cap), nos termos previstos no anexo ao Decreto-Lei n.º 372/2007, de 6 de novembro, a taxa de IRC aplicável aos primeiros 50 000 € de matéria coletável é de 15 %, aplicando-se a taxa prevista no número anterior ao excedente.", "5 — Relativamente ao rendimento global de entidades com sede ou direção efetiva em território português que não exerçam, a título principal, atividades de natureza comercial, industrial ou agrícola, a taxa é de 17 %."];
+var V = [
+  {"ato": "Texto original", "tipo": "original", "pub": "2014-01-16", "vig": "2014-01-21", "ate": "mesmo", "art": null, "lei": "Lei n.º 2/2014", "l": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]},
+  {"ato": "Declaração de Retificação n.º 18/2014", "tipo": "retificado", "pub": "2014-03-13", "vig": "2014-01-21", "ate": "2016-03-30", "art": null, "l": [16, 1, 17, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]},
+  {"ato": "Lei n.º 7-A/2016", "tipo": "alterado", "pub": "2016-03-30", "vig": "2016-03-31", "ate": "2020-03-31", "art": "artigo 133.º", "l": [16, 1, 17, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 14, 15]},
+  {"ato": "Lei n.º 2/2020", "tipo": "alterado", "pub": "2020-03-31", "vig": "2020-04-01", "ate": "2022-12-31", "art": "artigo 335.º", "l": [16, 19, 17, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 14, 15]},
+  {"ato": "Lei n.º 24-D/2022", "tipo": "alterado", "pub": "2022-12-30", "vig": "2023-01-01", "ate": "2023-12-31", "art": "artigo 227.º", "l": [16, 20, 17, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 14, 15]},
+  {"ato": "Lei n.º 82/2023", "tipo": "alterado", "pub": "2023-12-29", "vig": "2024-01-01", "ate": "2024-12-31", "art": "artigo 237.º", "l": [16, 20, 21, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 14, 15, 22]},
+  {"ato": "Lei n.º 45-A/2024", "tipo": "alterado", "pub": "2024-12-31", "vig": "2025-01-01", "ate": "2025-11-11", "art": "artigo 90.º", "l": [23, 24, 21, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 14, 15, 22]},
+  {"ato": "Lei n.º 64/2025", "tipo": "alterado", "pub": "2025-11-07", "vig": "2025-11-12", "ate": null, "art": "artigo 2.º", "l": [26, 27, 21, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 28, 14, 15, 22]}
+];
+var HOJE = '2026-10-28', FIM = '2026-12-31';
+var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+var CURTO = ['jan.', 'fev.', 'mar.', 'abr.', 'maio', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
+function extenso(s) { var p = s.split('-'); return Number(p[2]) + ' de ' + MESES[Number(p[1]) - 1] + ' de ' + p[0]; }
+function curta(s) { var p = s.split('-'); return Number(p[2]) + ' ' + CURTO[Number(p[1]) - 1] + ' ' + p[0]; }
+function dias(a, b) { return Math.max(0, (Date.parse(b) - Date.parse(a)) / 86400000); }
+function texto(i) { return V[i].l.map(function (k) { return L[k]; }).join('\n'); }
+function pickDate(d) { for (var i = V.length - 1; i >= 0; i--) if (V[i].vig <= d) return i; return -1; }
+
+// Word diff: the same engine as app/app.js (Myers on tokens, then one change per rewritten phrase).
+var TOK = /\n|\s+|[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu;
+function diff(a, b) {
+  var A = a.match(TOK) || [], B = b.match(TOK) || [];
+  var n = A.length, m = B.length, max = n + m, off = max + 1, v = new Int32Array(2 * max + 3), trace = [];
+  for (var d = 0; d <= max; d++) {
+    trace.push(v.slice());
+    for (var k = -d; k <= d; k += 2) {
+      var x = (k === -d || (k !== d && v[off + k - 1] < v[off + k + 1])) ? v[off + k + 1] : v[off + k - 1] + 1;
+      var y = x - k;
+      while (x < n && y < m && A[x] === B[y]) { x++; y++; }
+      v[off + k] = x;
+      if (x >= n && y >= m) return backtrack(trace, A, B, off, d);
+    }
+  }
+  return [];
+}
+function backtrack(trace, A, B, off, D) {
+  var x = A.length, y = B.length, ops = [];
+  for (var d = D; d > 0; d--) {
+    var v = trace[d], k = x - y;
+    var pk = (k === -d || (k !== d && v[off + k - 1] < v[off + k + 1])) ? k + 1 : k - 1;
+    var px = v[off + pk], py = px - pk;
+    while (x > px && y > py) { ops.push(['eq', A[--x]]); y--; }
+    if (x === px) ops.push(['ins', B[--y]]); else ops.push(['del', A[--x]]);
+  }
+  while (x > 0 && y > 0) { ops.push(['eq', A[--x]]); y--; }
+  ops.reverse();
+  return group(ops);
+}
+function common(a, b) { return a.length < b.length ? a : b; }
+function group(ops) {
+  var segs = [];
+  ops.forEach(function (o) {
+    var last = segs[segs.length - 1];
+    if (o[0] === 'eq') { if (last && last.eq != null) last.eq += o[1]; else segs.push({ eq: o[1] }); return; }
+    if (!last || last.eq != null) { last = { del: '', ins: '' }; segs.push(last); }
+    last[o[0]] += o[1];
+  });
+  function join(semantic) {
+    var joined = false;
+    for (var i = 1; i < segs.length - 1; i++) {
+      var e = segs[i], p = segs[i - 1], n = segs[i + 1];
+      if (e.eq == null || p.eq != null || n.eq != null || e.eq.indexOf('\n') >= 0) continue;
+      var size = e.eq.trim().length;
+      var short = semantic && p.del && p.ins && n.del && n.ins &&
+        size <= Math.max(p.del.length, p.ins.length) && size <= Math.max(n.del.length, n.ins.length);
+      if ((size === 0 || short) && (p.del || n.del) && (p.ins || n.ins)) {
+        segs.splice(i - 1, 3, { del: p.del + e.eq + n.del, ins: p.ins + e.eq + n.ins });
+        joined = true;
+        i--;
+      }
+    }
+    return joined;
+  }
+  join(false);
+  while (join(true)) { }
+  var out = [];
+  function push(op, t) {
+    if (!t) return;
+    var last = out[out.length - 1];
+    if (last && last.op === op) last.text += t; else out.push({ op: op, text: t });
+  }
+  segs.forEach(function (sg) {
+    if (sg.eq != null) { push('eq', sg.eq); return; }
+    var l = '', t = '';
+    if (sg.del && sg.ins) {
+      l = common(sg.del.match(/^[ \t]*/)[0], sg.ins.match(/^[ \t]*/)[0]);
+      t = common(sg.del.match(/[ \t]*$/)[0], sg.ins.match(/[ \t]*$/)[0]);
+    }
+    push('eq', l);
+    push('del', sg.del.slice(l.length, sg.del.length - t.length));
+    push('ins', sg.ins.slice(l.length, sg.ins.length - t.length));
+    push('eq', t);
+  });
+  return out;
+}
+function diffLines(a, b) {
+  var lines = [[]];
+  diff(a, b).forEach(function (s) {
+    s.text.split('\n').forEach(function (part, i) {
+      if (i) lines.push([]);
+      if (part) lines[lines.length - 1].push({ op: s.op, text: part });
+    });
+  });
+  return lines.filter(function (l) { return l.length; });
+}
+function intervalo(i) {
+  var v = V[i];
+  if (v.ate === null) return 'em vigor desde ' + extenso(v.vig);
+  if (v.ate === 'mesmo') return 'começou a ' + extenso(v.vig) + ', a mesma data da redação seguinte';
+  return 'em vigor de ' + extenso(v.vig) + ' a ' + extenso(v.ate);
+}
+function titulo(v) {
+  if (v.tipo === 'original') return 'Texto original';
+  if (v.tipo === 'retificado') return 'Retificado pela ' + v.ato;
+  return 'Alterado pela ' + v.ato;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { i: 3, mudou: true, data: '2021-06-30', erro: '' };
+  }
+  ir(i) { if (i >= 0 && i < V.length) this.setState({ i: i, erro: '' }); }
+  renderVals() {
+    var self = this, i = this.state.i, v = V[i], last = V.length - 1, mudou = this.state.mudou && i > 0;
+    var linhas = mudou
+      ? diffLines(texto(i - 1), texto(i)).map(function (segs) { return { segs: segs }; })
+      : texto(i).split('\n').map(function (t) { return { segs: [{ op: 'eq', text: t }] }; });
+    var n = 0;
+    linhas.forEach(function (ln) { ln.segs.forEach(function (s, k) { if (s.op !== 'eq' && !(s.op === 'ins' && k && ln.segs[k - 1].op === 'del')) n++; }); });
+    var fita = V.map(function (w, k) {
+      var fim = k < last ? V[k + 1].vig : FIM, d = dias(w.vig, fim), atual = k === i;
+      return {
+        grow: Math.round(d), minw: d < 30 ? '10px' : '0px', atual: atual,
+        fundo: atual ? 'var(--verde)' : (w.tipo === 'retificado' ? 'var(--paper-raised)' : 'var(--verde-soft)'),
+        borda: atual ? 'var(--verde)' : 'var(--rule-strong)',
+        rotulo: 'Redação ' + (k + 1) + ' de ' + V.length + ': ' + (w.tipo === 'original' ? 'texto original' : w.ato) + ', em vigor desde ' + curta(w.vig),
+        pick: function () { self.ir(k); }
+      };
+    });
+    var historia = V.map(function (w, k) {
+      var atual = k === i;
+      var datas = (w.ate === null ? 'Em vigor desde ' + curta(w.vig) : w.ate === 'mesmo' ? 'Começou a ' + curta(w.vig) + ' (mesma data da seguinte)' : 'Em vigor de ' + curta(w.vig) + ' a ' + curta(w.ate)) + ' · Publicação: ' + curta(w.pub);
+      return {
+        titulo: titulo(w), datas: datas,
+        norma: w.art ? 'Norma: ' + w.art + ' da ' + w.ato : (w.tipo === 'original' ? 'Aprovado pela ' + w.lei : 'Correção do texto publicado'),
+        atual: atual, hoje: k === last, ariaAtual: atual ? 'true' : undefined,
+        borda: atual ? 'var(--verde)' : 'var(--rule)', fundo: atual ? 'var(--verde-soft)' : 'var(--paper-raised)',
+        tam: w.tipo === 'retificado' ? '16px' : '18px',
+        pick: function () { self.ir(k); }
+      };
+    });
+    var citacao = 'Artigo 87.º do Código do IRC, ' + (v.tipo === 'original' ? 'na redação originária da ' + v.lei + ', de 16 de janeiro.' : v.tipo === 'retificado' ? 'na redação retificada pela ' + v.ato + '.' : 'na redação dada pela ' + v.ato + ', de ' + extenso(v.pub).replace(/ de \d{4}$/, '') + '.');
+    return {
+      n: V.length, pos: i + 1, atoNome: v.tipo === 'original' ? 'Texto original' : v.ato, intervalo: intervalo(i),
+      primeira: i === 0 ? 'true' : 'false', ultima: i === last,
+      passada: i < last, transitoria: i === last,
+      fimTexto: v.ate === 'mesmo' ? 'A redação seguinte começou na mesma data.' : 'Esteve em vigor até ' + extenso(v.ate) + '.',
+      fita: fita, historia: historia, linhas: linhas, modo: mudou ? 'inline' : 'final', nao: false,
+      mudou: this.state.mudou,
+      resumoMudou: i === 0 ? 'Esta é a primeira redação.' : n + (n === 1 ? ' alteração' : ' alterações') + ' em relação à redação ' + i + ' (' + (V[i - 1].tipo === 'original' ? 'texto original' : V[i - 1].ato) + ').',
+      citacao: citacao, permalink: 'redacao.pt/d/codigo-irc/artigo-87?redacao=' + (i + 1),
+      data: this.state.data, erro: this.state.erro,
+      anterior: function () { self.ir(i - 1); },
+      seguinte: function () { self.ir(i + 1); },
+      irHoje: function () { self.ir(last); },
+      alternarMudou: function () { self.setState({ mudou: !self.state.mudou }); },
+      mudarData: function (e) { self.setState({ data: e.target.value }); },
+      verData: function () {
+        var k = pickDate(self.state.data || HOJE);
+        if (k < 0) self.setState({ erro: 'Nesta data o artigo ainda não existia. A primeira redação é de 21 de janeiro de 2014.' });
+        else self.setState({ i: k, erro: '' });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

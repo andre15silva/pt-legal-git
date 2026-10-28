@@ -54,6 +54,9 @@ The reviews found three problems in the data, not the layout. I checked each one
 
 ## 4. The navigation model
 
+Designed on a canvas with the Redação design system: https://claude.ai/artifact/CW7sr2iWRXabdDnAsMgbUZ (copy of the artboards in [`design/navegacao/`](../design/navegacao/)). The article, phone and compare screens work: they step through the eight real redações of CIRC art. 87.º and compute the diff with the same engine as `app/app.js`.
+
+
 **One state, several ways in.** An article view has one state: the article, the redação shown, and optionally a second redação to compare with. A date resolves to a redação. Every control changes that one state, and every state has a URL.
 
 **Barra de redações.** Sticky, directly above the text.
