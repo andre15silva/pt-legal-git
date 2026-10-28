@@ -105,6 +105,21 @@ def assign_ids(items: list[tuple[list[dict], dict]], codigo_no_anexo: bool) -> l
     return ids
 
 
+def parte(frags: list[dict], cfg: dict) -> list[dict]:
+    """Only the articles in cfg["artigos"] and the headings above them (the Código Civil's Locação)."""
+    keep, stack = set(), []
+    for i, f in enumerate(frags):
+        nivel = f["Nivel"]
+        stack = [(n, j) for n, j in stack if n < nivel]
+        if f["FragmentoVersao"]["TipoFragmentoId"] == ARTIGO:
+            if fetch.no_intervalo(f, cfg):
+                keep.add(i)
+                keep.update(j for _, j in stack)
+        else:
+            stack.append((nivel, i))
+    return [f for i, f in enumerate(frags) if i in keep or frags[i]["Nivel"] == 0]
+
+
 def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
     cfg = raw["diploma"]
     head = raw["header"]["ConsolidadaConteudoDetalhe"]
@@ -126,6 +141,8 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
         if m.get("SumarioDiplomaLegis") and not reg.acts[aid]["sumario"]:
             reg.acts[aid]["sumario"] = m["SumarioDiplomaLegis"].strip()
 
+    if cfg.get("artigos"):
+        now = parte(now, cfg)
     nodes, items, stack = [], [], []
     for f in now:
         fv, cf = f["FragmentoVersao"], f["ConsolidacaoFragmento"]
@@ -159,7 +176,7 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
                      "artigo": aid, "estado": hist["estado"], "n": len(hist["versoes"]), "ultima": last["vigor"] or last["publicacao"]})
 
     index = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "genitivo": cfg.get("genitivo"),
-             "vigor_original": cfg.get("vigor_original"), "inicio_historia": cfg.get("inicio_historia"), "designacao": original["designacao"],
+             "vigor_original": cfg.get("vigor_original"), "inicio_historia": cfg.get("inicio_historia"), "parte": cfg.get("parte"), "designacao": original["designacao"],
              "ato_original": original["id"], "publicacao": original["publicacao"], "link": original["link"],
              "eli": frag.get("ELI") or None, "sumario": reg.acts[original["id"]]["sumario"], "arvore": tree, "artigos": artigos}
     summary = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "designacao": original["designacao"],

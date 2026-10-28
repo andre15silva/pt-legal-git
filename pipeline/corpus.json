@@ -173,6 +173,60 @@
           "fonte": "Lei n.º 6/2006, artigo 65.º, n.º 1"
         }
       ]
+    },
+    {
+      "slug": "codigo-civil-locacao",
+      "titulo": "Código Civil: locação",
+      "sigla": "CC",
+      "frag_id": "34509075",
+      "tipo": "decreto-lei",
+      "key": "1966-34509075",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código Civil",
+      "artigos": {
+        "de": 1022,
+        "ate": 1113
+      },
+      "vigor_original": {
+        "data": "1967-06-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 47344, artigo 2.º, n.º 1"
+      },
+      "parte": "Só o capítulo da locação: artigos 1022.º a 1113.º."
+    },
+    {
+      "slug": "codigo-irs",
+      "titulo": "Código do Imposto sobre o Rendimento das Pessoas Singulares",
+      "sigla": "CIRS",
+      "frag_id": "70048167",
+      "tipo": "lei",
+      "key": "2014-70048167",
+      "codigo_no_anexo": true,
+      "genitivo": "do Código do IRS",
+      "inicio_historia": {
+        "rotulo": "Republicação",
+        "nota": "O histórico deste código começa na republicação pela Lei n.º 82-E/2014, de 31 de dezembro. O Código do IRS é de 1988 (Decreto-Lei n.º 442-A/88, de 30 de novembro). As redações anteriores a 2015 ainda não estão no Redação."
+      },
+      "vigor_original": {
+        "data": "2015-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 82-E/2014, artigo 19.º"
+      }
+    },
+    {
+      "slug": "lei-formulario",
+      "titulo": "Lei formulário (publicação, identificação e formulário dos diplomas)",
+      "sigla": "Lei 74/98",
+      "frag_id": "34448175",
+      "tipo": "lei",
+      "key": "1998-34448175",
+      "codigo_no_anexo": false,
+      "genitivo": "da Lei n.º 74/98",
+      "vigor_original": {
+        "data": "1998-11-16",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2 (redação original)"
+      }
     }
   ]
 }

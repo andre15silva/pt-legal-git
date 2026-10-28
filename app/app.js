@@ -366,7 +366,9 @@
 
   // ---- Home ---------------------------------------------------------------------------------
   var SIGLAS = { crp: 'constituicao', constituicao: 'constituicao', 'constituição': 'constituicao', ct: 'codigo-do-trabalho', trabalho: 'codigo-do-trabalho',
-    circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau', arrendamento: 'nrau', rendas: 'nrau' };
+    circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau', arrendamento: 'nrau', rendas: 'nrau',
+    cc: 'codigo-civil-locacao', civil: 'codigo-civil-locacao', 'locação': 'codigo-civil-locacao', locacao: 'codigo-civil-locacao',
+    cirs: 'codigo-irs', irs: 'codigo-irs', formulario: 'lei-formulario', 'formulário': 'lei-formulario', '74/98': 'lei-formulario' };
   function fold(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function search(index, q) {
     var words = fold(q).replace(/[º.]/g, ' ').split(/\s+/).filter(Boolean);
@@ -444,6 +446,7 @@
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, d.titulo),
         d.sumario ? h('p', { className: 'lead' }, d.sumario) : null,
+        d.parte ? h('p', { className: 'regra' }, h('strong', null, 'Nota: '), d.parte) : null,
         // The facts of the diploma on one row: what it is, when it was published, when it took effect.
         h('dl', { className: 'meta' },
           h('div', null, h('dt', null, 'Diploma'), h('dd', null, d.designacao + ' (' + d.sigla + ')')),
@@ -586,7 +589,7 @@
     function fechar(k) {
       if (run.length < 2) run.forEach(function (x) { out.push(x.el); });
       else out.push(h('details', { key: 'd' + k, className: 'dobra' },
-        h('summary', null, run.length + ' parágrafos sem alterações, ' + run[0].w.de + ' ' + run[run.length - 1].w.a + '.'), run.map(function (x) { return x.el; })));
+        h('summary', null, run.length + ' parágrafos sem alterações' + (run[0].w.de === 'do parágrafo' && run[run.length - 1].w.a === 'ao parágrafo' ? '.' : ', ' + run[0].w.de + ' ' + run[run.length - 1].w.a + '.')), run.map(function (x) { return x.el; })));
       run = [];
     }
     lines.forEach(function (l, k) {

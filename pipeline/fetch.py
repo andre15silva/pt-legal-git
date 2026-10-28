@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -58,6 +59,15 @@ def cached(name: str, *args):
     return data
 
 
+def no_intervalo(f: dict, d: dict) -> bool:
+    """corpus.json may keep only part of a large code: "artigos": {"de": 1022, "ate": 1113}."""
+    r = d.get("artigos")
+    if not r:
+        return True
+    m = re.match(r"Artigo\s+(\d+)", f["ConsolidacaoFragmento"]["Name"])
+    return bool(m) and r["de"] <= int(m.group(1)) <= r["ate"]
+
+
 def fetch(d: dict, today: str) -> dict:
     header = cached("diploma_header", d["frag_id"], d["tipo"], d["key"])
     legis_id = header["ConsolidadaConteudoDetalhe"]["DiplomaLegis"]["Id"]
@@ -66,7 +76,7 @@ def fetch(d: dict, today: str) -> dict:
     now = cached("as_of", d["frag_id"], legis_id, today, header)
     first = cached("as_of", d["frag_id"], legis_id, initial_date, header)
     timeline = cached("timeline", d["frag_id"], legis_id, today)
-    articles = [f for f in now["LegConsBase"]["List"] if f["FragmentoVersao"]["TipoFragmentoId"] == 11]
+    articles = [f for f in now["LegConsBase"]["List"] if f["FragmentoVersao"]["TipoFragmentoId"] == 11 and no_intervalo(f, d)]
 
     def versions(f):
         return f["FragmentoVersao"]["FragmentoId"], cached(

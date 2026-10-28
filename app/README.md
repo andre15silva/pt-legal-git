@@ -61,5 +61,6 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 - The text comes from the DR's consolidated legislation, which has no legal value. For the Constitution, `verificacao.py` checks every version against the official republications, and the article page says the result. The other diplomas are not checked yet.
 - The DR gives production of effects only as text notes. The app shows the notes, and warns when the "produção de efeitos" basis is selected.
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
+- Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. We show one cell per line.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
 - The especialidade votes in committee are only in PDFs (from legislatura XII). The app says that it does not have them.
