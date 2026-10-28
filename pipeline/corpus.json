@@ -91,6 +91,10 @@
       "key": "2014-64205634",
       "codigo_no_anexo": true,
       "genitivo": "do Código do IRC",
+      "inicio_historia": {
+        "rotulo": "Republicação",
+        "nota": "O histórico deste código começa na republicação pela Lei n.º 2/2014, de 16 de janeiro. O Código do IRC é de 1988 (Decreto-Lei n.º 442-B/88, de 30 de novembro). As redações anteriores a 2014 ainda não estão no Redação."
+      },
       "vigor_original": {
         "data": "2014-01-21",
         "regra": "supletiva",

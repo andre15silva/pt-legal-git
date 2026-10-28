@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"VersionBar"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Citation"},{"name":"SourceNote"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Citation"},{"name":"SourceNote"}]} */
 (function () {
   var React = window.React;
   var h = React.createElement;
@@ -85,7 +85,7 @@
   }
 
   // ---- TextOrigin -----------------------------------------------------------
-  // paragraphs: [{number?, spans: [{text, act}]}]
+  // paragraphs: [{number?, kind?: 'n'|'al'|'rev', spans: [{text, act}]}]
   // acts: [{index, label, date, href?, hrefLabel?, diffHref?, beforeHref?}]
   // The chips mark words. They do not change the text. Choosing a phrase opens a popover under
   // its paragraph with links to the change that wrote it (diffHref), to the text before that
@@ -114,7 +114,7 @@
       h('div', { className: 'rd-origin-text' },
         (props.paragraphs || []).map(function (p, pi) {
           return h(React.Fragment, { key: pi },
-            h('p', { className: 'rd-statute' },
+            h('p', { className: cx('rd-statute', p.kind && 'rd-p-' + p.kind) },
               p.number ? h('span', { className: 'rd-num' }, p.number + ' ') : null,
               p.spans.map(function (s, si) {
                 var a = byIndex[s.act] || { label: '' };
@@ -145,52 +145,104 @@
           : 'Escolha uma frase ou um diploma para marcar as palavras que ele escreveu.'));
   }
 
-  // ---- VersionBar -------------------------------------------------------------
-  // The reader's place in the history of one article: previous and next redação, a status
-  // line that screen readers announce, and a strip with one segment per redação on a time axis.
-  // versions: [{label, start, technical?, pending?}] oldest first. current: index shown.
-  // onGo(i): show redação i. status: what the status line says. today: ISO date for the axis end.
-  function dias(a, b) { return Math.max(0, (Date.parse(b) - Date.parse(a)) / 86400000); }
-  function VersionBar(props) {
+  // ---- TimeRuler ------------------------------------------------------------
+  // A hairline time axis for one article: a tick where each redação starts (half ticks for
+  // retificações), year labels at their true positions, and the redação on screen as a heavy
+  // span. Each span is a radio in one radiogroup: one tab stop, arrow keys move, Home and End
+  // go to the ends. versions: [{label, start, technical?, pending?}] oldest first.
+  function dias(a, b) { return (Date.parse(b) - Date.parse(a)) / 86400000; }
+  function TimeRuler(props) {
     var vs = props.versions || [], i = props.current, n = vs.length;
-    var id = props.id || 'rd-vbar';
     var today = props.today || '2026-10-28';
+    if (!n) return null;
+    var lo = vs[0].start, last = vs[n - 1].start > today ? vs[n - 1].start : today;
+    var total = Math.max(1, dias(lo, last));
+    var pct = function (d) { return Math.max(0, Math.min(100, dias(lo, d) / total * 100)); };
     var go = function (k) { if (k >= 0 && k < n && k !== i && props.onGo) props.onGo(k); };
-    var first = vs.length ? vs[0].start : today;
-    // Inside the bar, ← and → move one redação, Home and End go to the first and the last.
-    // On a segment of the strip, focus follows to the segment of the new redação.
+    var y0 = Number(lo.slice(0, 4)) + 1, y1 = Number(last.slice(0, 4));
+    var step = y1 - y0 > 24 ? 10 : y1 - y0 > 10 ? 2 : 1;
+    var years = [];
+    for (var y = y0; y <= y1; y++) if ((y - y0) % step === 0 && pct(y + '-01-01') < 94) years.push(y);
     var onKey = function (e) {
-      if (e.target.tagName !== 'BUTTON' || e.altKey || e.ctrlKey || e.metaKey) return;
+      var k = { ArrowLeft: i - 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowDown: i + 1, Home: 0, End: n - 1 }[e.key];
+      if (k == null || k < 0 || k >= n) return;
+      e.preventDefault();
+      go(k);
+      setTimeout(function () { var b = document.querySelectorAll('#' + (props.id || 'rd-ruler') + ' .rd-ruler-span')[k]; if (b) b.focus(); }, 0);
+    };
+    return h('div', { className: 'rd-ruler', id: props.id || 'rd-ruler' },
+      h('div', { className: 'rd-ruler-track', role: 'radiogroup', 'aria-label': props.label || 'Linha do tempo das redações', onKeyDown: onKey },
+        h('span', { className: 'rd-ruler-line', 'aria-hidden': 'true' }),
+        years.map(function (y) { return h('span', { key: 'y' + y, className: 'rd-ruler-year', style: { left: pct(y + '-01-01') + '%' }, 'aria-hidden': 'true' }); }),
+        vs.map(function (v, k) {
+          var end = k < n - 1 ? vs[k + 1].start : last;
+          var left = pct(v.start), width = Math.max(0, pct(end) - left);
+          return h(React.Fragment, { key: k },
+            h('span', { className: cx('rd-ruler-tick', v.technical && 'is-half', v.pending && 'is-pending'), style: { left: left + '%' }, 'aria-hidden': 'true' }),
+            h('button', {
+              type: 'button', role: 'radio', 'aria-checked': k === i, tabIndex: k === i ? 0 : -1, 'aria-label': v.label, title: v.label,
+              className: cx('rd-ruler-span', k === i && 'is-on', v.pending && 'is-pending'),
+              style: { left: left + '%', width: 'max(' + width + '%, 8px)' },
+              onClick: function () { go(k); }
+            }));
+        }),
+        h('span', { className: 'rd-ruler-today', style: { left: pct(today) + '%' }, 'aria-hidden': 'true' })),
+      h('div', { className: 'rd-ruler-labels', 'aria-hidden': 'true' },
+        years.map(function (y) { return h('span', { key: y, style: { left: pct(y + '-01-01') + '%' } }, y); }),
+        h('span', { className: 'rd-ruler-hoje', style: { left: pct(today) + '%' } }, 'hoje')));
+  }
+
+  // ---- VersionBar -------------------------------------------------------------
+  // The one sticky row of the article page: previous and next redação around a short status
+  // that screen readers announce, and room on the right for the view tabs and the date.
+  // Inside the row, ← and → move one redação and Home and End go to the ends.
+  function VersionBar(props) {
+    var i = props.current, n = props.count;
+    var id = props.id || 'rd-vbar';
+    var go = function (k) { if (k >= 0 && k < n && k !== i && props.onGo) props.onGo(k); };
+    var onKey = function (e) {
+      if (!e.target.classList.contains('rd-vbar-step') || e.altKey || e.ctrlKey || e.metaKey) return;
       var k = { ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: n - 1 }[e.key];
       if (k == null || k < 0 || k >= n) return;
       e.preventDefault();
-      var seg = e.target.classList.contains('rd-vbar-seg');
       go(k);
-      if (seg) setTimeout(function () { var b = document.querySelectorAll('#' + id + ' .rd-vbar-seg')[k]; if (b) b.focus(); }, 0);
     };
-    return h('section', { className: 'rd-vbar', id: id, 'aria-labelledby': id + '-h', onKeyDown: onKey },
-      h('h2', { className: 'rd-sr', id: id + '-h' }, props.heading || 'Redação mostrada'),
-      h('div', { className: 'rd-vbar-row' },
-        h('button', { type: 'button', className: 'rd-btn rd-btn-quiet rd-vbar-step', 'aria-disabled': i <= 0, 'aria-describedby': id + '-s', onClick: function () { go(i - 1); } },
-          h('span', { 'aria-hidden': 'true' }, '‹'), h('span', { className: 'rd-vbar-word' }, ' Redação anterior')),
-        h('p', { id: id + '-s', className: 'rd-vbar-status', role: 'status' }, props.status),
-        h('button', { type: 'button', className: 'rd-btn rd-btn-quiet rd-vbar-step', 'aria-disabled': i >= n - 1, 'aria-describedby': id + '-s', onClick: function () { go(i + 1); } },
-          h('span', { className: 'rd-vbar-word' }, 'Redação seguinte '), h('span', { 'aria-hidden': 'true' }, '›')),
-        props.onList ? h('button', { type: 'button', className: 'rd-btn rd-btn-quiet rd-vbar-list', onClick: props.onList }, 'Lista') : null),
-      n > 1 ? h('div', { className: 'rd-vbar-axis' },
-        h('div', { className: 'rd-vbar-strip', role: 'group', 'aria-label': 'Linha do tempo das redações' },
-          vs.map(function (v, k) {
-            var end = k < n - 1 ? vs[k + 1].start : today;
-            var d = v.pending ? 60 : dias(v.start, end > v.start ? end : v.start);
-            return h('button', {
-              key: k, type: 'button', title: v.label, 'aria-label': v.label, 'aria-pressed': k === i,
-              className: cx('rd-vbar-seg', k === i && 'is-on', v.technical && 'is-technical', v.pending && 'is-pending'),
-              style: { flexGrow: Math.max(1, Math.round(d)) },
-              onClick: function () { go(k); }
-            });
-          })),
-        h('div', { className: 'rd-vbar-years', 'aria-hidden': 'true' }, h('span', null, first.slice(0, 4)), h('span', null, 'hoje'))) : null,
+    return h('div', { className: 'rd-vbar', id: id, role: 'group', 'aria-label': props.heading || 'Redação mostrada', onKeyDown: onKey },
+      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i <= 0, 'aria-describedby': id + '-s', onClick: function () { go(i - 1); } },
+        h('span', { 'aria-hidden': 'true' }, '‹ '), 'Anterior'),
+      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i >= n - 1, 'aria-describedby': id + '-s', onClick: function () { go(i + 1); } },
+        'Seguinte', h('span', { 'aria-hidden': 'true' }, ' ›')),
+      h('p', { id: id + '-s', className: 'rd-vbar-status', role: 'status', onClick: props.onStatus }, props.status),
       props.children ? h('div', { className: 'rd-vbar-tools' }, props.children) : null);
+  }
+
+  // ---- Register ---------------------------------------------------------------
+  // The history of an article as a ledger: one ruled row per redação, oldest first, with
+  // ordinal, act and start date. The row on screen has an inset verde rule and opens to show
+  // its details. Retificações are quiet and sit under the redação they correct.
+  // items: [{ordinal, label, date, band?, href?, current?, technical?, details?}]
+  function Register(props) {
+    return h('ol', { className: 'rd-reg', 'aria-label': props.label || 'Redações' },
+      (props.items || []).map(function (it, k) {
+        return h('li', { key: k, className: cx('rd-reg-row', it.current && 'is-current', it.technical && 'is-technical'), 'aria-current': it.current ? 'true' : undefined },
+          h('span', { className: 'rd-reg-ord' }, it.ordinal),
+          h('span', { className: 'rd-reg-band rd-c-act-' + (it.band == null ? 0 : it.band), 'aria-hidden': 'true' }),
+          it.href && !it.current ? h('a', { className: 'rd-reg-act', href: it.href }, it.label) : h('span', { className: 'rd-reg-act' }, it.label),
+          h('span', { className: 'rd-reg-date' }, it.date),
+          it.current && it.details ? h('div', { className: 'rd-reg-more' }, it.details) : null);
+      }));
+  }
+
+  // ---- Popover ----------------------------------------------------------------
+  // A small disclosure that floats: a summary button and a panel. Esc closes it and returns
+  // focus to the button.
+  function Popover(props) {
+    var ref = React.useRef(null);
+    return h('details', { className: cx('rd-pop', props.className), ref: ref, onKeyDown: function (e) {
+      if (e.key === 'Escape' && ref.current && ref.current.open) { ref.current.open = false; ref.current.querySelector('summary').focus(); }
+    } },
+      h('summary', { className: 'rd-pop-btn' }, props.label),
+      h('div', { className: 'rd-pop-body', role: 'group', 'aria-label': props.title || props.label }, props.children));
   }
 
   // ---- DateLens ---------------------------------------------------------------
@@ -226,7 +278,7 @@
         h(Button, { variant: 'ghost', onClick: function () { var t = props.today || '2026-10-28'; setDate(t); commit(t, basis); } }, 'Hoje')),
       h('fieldset', { className: 'rd-seg' },
         h('legend', { className: 'rd-sr' }, 'Que data conta'),
-        BASES.map(function (b) {
+        BASES.filter(function (b) { return !props.bases || props.bases.indexOf(b.id) >= 0; }).map(function (b) {
           return h('label', { key: b.id, className: cx('rd-seg-opt', basis === b.id && 'is-on') },
             h('input', { type: 'radio', name: id + '-basis', value: b.id, checked: basis === b.id, onChange: function () { setBasis(b.id); commit(shown, b.id); } }),
             h('span', { className: 'rd-seg-mark', 'aria-hidden': 'true' }, basis === b.id ? '✓' : ''),
@@ -350,6 +402,6 @@
         props.verification ? h(StatusPill, { status: props.verification }) : null));
   }
 
-  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, VersionBar: VersionBar, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
+  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
   window.Redacao = Object.assign(window.Redacao || {}, api);
 })();

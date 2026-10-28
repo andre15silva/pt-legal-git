@@ -24,6 +24,8 @@ pairs = [
     ('revogado', ['paper', 'paper-raised', 'paper-sunken'], 4.5),
     ('focus', ['paper', 'paper-raised', 'paper-sunken', 'verde-soft'], 3),
     ('rule-strong', ['paper', 'paper-raised'], 3),
+    ('aviso-rule', ['paper', 'paper-raised'], 3),
+    ('act-0', ['paper', 'paper-raised'], 2),
 ] + [(f'act-{i}', ['paper', 'paper-raised'], 3) for i in range(1, 8)]
 bad = 0
 for th in ('light', 'dark'):

@@ -1,65 +1,71 @@
-/* Redação — generated from tokens.json */
+/* Redação — generated from tokens.json by tools/tokens_css.py */
 :root, [data-theme="light"] {
-  --paper: #f6f7f4;
+  color-scheme: light;
+  --paper: #ffffff;
   --paper-raised: #ffffff;
-  --paper-sunken: #ebeee9;
-  --rule: #c9d0ca;
-  --rule-strong: #7d8a82;
-  --ink: #17201b;
-  --ink-muted: #4b5751;
+  --paper-sunken: #f5f6f5;
+  --rule: #e3e6e4;
+  --rule-mid: #c9cecb;
+  --rule-strong: #7a827e;
+  --ink: #1a1f1c;
+  --ink-muted: #525a56;
+  --revogado: #69716d;
   --verde: #1d5c44;
-  --verde-soft: #dcebe3;
+  --verde-soft: #e6f1eb;
   --on-verde: #ffffff;
   --ins-ink: #00578a;
-  --ins-bg: #dbedf9;
-  --del-ink: #9c3d08;
-  --del-bg: #fbe3d4;
+  --ins-bg: #e1f0fa;
+  --del-ink: #9a3c06;
+  --del-bg: #fce8dc;
   --pendente: #7e3765;
-  --pendente-bg: #f5e4ef;
+  --pendente-bg: #f7e9f2;
   --aviso: #7a5000;
-  --aviso-bg: #fbefcf;
-  --revogado: #5f6863;
-  --focus: #1546b8;
-  --act-1: #3567a0;
-  --act-2: #a95c17;
-  --act-3: #2b7d5e;
-  --act-4: #7f4791;
-  --act-5: #8a7414;
-  --act-6: #4f6b7a;
-  --act-7: #983553;
-  --act-0: #9aa59f;
-  --shadow-sheet: 0 8px 24px rgba(23,32,27,0.14);
+  --aviso-rule: #b07a00;
+  --aviso-bg: #fdf4dc;
+  --focus: #1a1f1c;
+  --act-0: #a7aeaa;
+  --act-1: #1f5fa0;
+  --act-2: #cc6a1a;
+  --act-3: #147a64;
+  --act-4: #73306f;
+  --act-5: #d0607f;
+  --act-6: #59661a;
+  --act-7: #8a7fd6;
+  --shadow-sheet: 0 1px 2px rgba(26,31,28,.06), 0 8px 24px rgba(26,31,28,.10);
 }
 [data-theme="dark"] {
-  --paper: #111513;
-  --paper-raised: #191e1b;
-  --paper-sunken: #0b0e0c;
-  --rule: #323b35;
-  --rule-strong: #7a8880;
-  --ink: #e6ebe7;
-  --ink-muted: #a7b3ac;
-  --verde: #74c7a2;
-  --verde-soft: #173326;
-  --on-verde: #08170f;
-  --ins-ink: #86c9f2;
-  --ins-bg: #0f2c40;
-  --del-ink: #f3a778;
-  --del-bg: #3b1f0f;
-  --pendente: #e3a3cf;
-  --pendente-bg: #33182a;
-  --aviso: #f0c463;
-  --aviso-bg: #33280c;
-  --revogado: #97a29b;
-  --focus: #9cc0ff;
-  --act-1: #7fb0e6;
-  --act-2: #e7a364;
-  --act-3: #6fcfa6;
-  --act-4: #c99ad8;
-  --act-5: #dcc35a;
-  --act-6: #9cb8c6;
-  --act-7: #e88aa6;
-  --act-0: #58635d;
-  --shadow-sheet: 0 8px 24px rgba(0,0,0,0.5);
+  color-scheme: dark;
+  --paper: #121413;
+  --paper-raised: #191c1a;
+  --paper-sunken: #0c0e0d;
+  --rule: #2a2f2c;
+  --rule-mid: #3d4440;
+  --rule-strong: #7f8883;
+  --ink: #e6e9e7;
+  --ink-muted: #a8b0ab;
+  --revogado: #8f9893;
+  --verde: #7ccaa5;
+  --verde-soft: #16291f;
+  --on-verde: #0a1610;
+  --ins-ink: #8fcdf3;
+  --ins-bg: #0f2b3d;
+  --del-ink: #f2a77a;
+  --del-bg: #3a1e0e;
+  --pendente: #e3a6d0;
+  --pendente-bg: #311829;
+  --aviso: #eec46a;
+  --aviso-rule: #c99a35;
+  --aviso-bg: #30260c;
+  --focus: #e6e9e7;
+  --act-0: #5a625e;
+  --act-1: #5a93db;
+  --act-2: #f2b27a;
+  --act-3: #2e9e80;
+  --act-4: #a8689f;
+  --act-5: #f5a6c0;
+  --act-6: #a4b04c;
+  --act-7: #b3abff;
+  --shadow-sheet: 0 8px 24px rgba(0,0,0,.5);
 }
 :root {
   --space-1: 4px;
@@ -69,23 +75,30 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
+  --space-16: 64px;
   --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --measure: 68ch;
-  --band: 4px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --measure: 64ch;
+  --hang: 46px;
+  --hang-al: 30px;
+  --register: 300px;
+  --row: 48px;
+  --band: 3px;
   --target: 44px;
   --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
-  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
-.display { font-family: var(--font-serif); font-size: 44px; line-height: 48px; font-weight: 600; letter-spacing: -0.01em; }
-.title { font-family: var(--font-serif); font-size: 28px; line-height: 34px; font-weight: 600; }
-.article { font-family: var(--font-serif); font-size: 20px; line-height: 28px; font-weight: 600; }
-.statute { font-family: var(--font-serif); font-size: 19px; line-height: 31px; font-weight: 400; }
+.display { font-family: var(--font-serif); font-size: 40px; line-height: 44px; font-weight: 600; }
+.title { font-family: var(--font-serif); font-size: 40px; line-height: 44px; font-weight: 600; }
+.epigrafe { font-family: var(--font-serif); font-size: 32px; line-height: 38px; font-weight: 400; }
+.section { font-family: var(--font-serif); font-size: 22px; line-height: 28px; font-weight: 600; }
+.status { font-family: var(--font-serif); font-size: 17px; line-height: 26px; font-weight: 400; }
+.statute { font-family: var(--font-serif); font-size: 19px; line-height: 30px; font-weight: 400; }
 .statute-small { font-family: var(--font-serif); font-size: 16px; line-height: 26px; font-weight: 400; }
-.heading { font-family: var(--font-sans); font-size: 18px; line-height: 24px; font-weight: 700; }
+.register { font-family: var(--font-serif); font-size: 15px; line-height: 22px; font-weight: 400; }
+.action { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 500; }
 .body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
 .small { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
-.label { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.06em; }
 .id { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; }

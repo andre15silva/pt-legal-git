@@ -155,7 +155,7 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
                      "artigo": aid, "estado": hist["estado"], "n": len(hist["versoes"]), "ultima": last["vigor"] or last["publicacao"]})
 
     index = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "genitivo": cfg.get("genitivo"),
-             "vigor_original": cfg.get("vigor_original"), "designacao": original["designacao"],
+             "vigor_original": cfg.get("vigor_original"), "inicio_historia": cfg.get("inicio_historia"), "designacao": original["designacao"],
              "ato_original": original["id"], "publicacao": original["publicacao"], "link": original["link"],
              "eli": frag.get("ELI") or None, "sumario": reg.acts[original["id"]]["sumario"], "arvore": tree, "artigos": artigos}
     summary = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "designacao": original["designacao"],
