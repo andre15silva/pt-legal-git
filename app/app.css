@@ -47,7 +47,6 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 /* Bills now in Parliament: on the diploma, the article and the bill's own page. */
 .dip-lado { display: flex; flex-direction: column; gap: 48px; min-width: 0; }
 .no-parl { display: flex; flex-direction: column; gap: 12px; }
-.art-registo .no-parl { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--rule); }
 .no-parl h2, .no-parl h3 { margin: 0; }
 .parl-lista { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
 .parl-lista li { padding: 12px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
@@ -200,7 +199,7 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .pop-data .rd-pop-btn { color: var(--ink); }
 .art-corpo, .duas { display: grid; grid-template-columns: minmax(0, 650px) 300px; justify-content: space-between; column-gap: 64px; margin-top: 40px; align-items: start; }
 .art-texto, .art-lei { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
-.art-registo { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 64px; }
+.art-registo { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 .art-registo h2 { margin: 0; font-family: var(--font-serif); font-size: 18px; line-height: 24px; font-weight: 600; }
 .art-registo p { margin: 0; }
 .nao-alteraram { font-family: var(--font-serif); font-size: 15px; line-height: 22px; }

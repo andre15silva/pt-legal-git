@@ -1065,6 +1065,8 @@
           // Keyed by redação and view: a new text arrives with a short fade from the side it came from.
           h('div', { key: (sel ? sel.i : '-') + ver, className: 'art-lei' }, resumo, corpo),
           d.inicio_historia && cur && sel.i === 0 ? h('p', { className: 'nota-hist' }, d.inicio_historia.nota) : null,
+          // Bills that would change this article: right under its text, where readers look.
+          propostas.length ? h(NoParlamento, { lista: propostas, id: 'parl', secao: true }) : null,
           outras.length ? h('section', { className: 'secao', 'aria-labelledby': 'notas' },
             h('h2', { id: 'notas' }, 'Notas'),
             h('ul', { className: 'notas' }, outras.map(function (x, i) {
@@ -1082,8 +1084,7 @@
           h('h2', { id: 'historia', tabIndex: -1 }, 'Redações'),
           h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: itensRegisto }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
-          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null,
-          propostas.length ? h(NoParlamento, { lista: propostas, id: 'parl' }) : null)),
+          naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)),
       cur ? h(Folha, { id: 'folha', aberta: fl[0], onFechar: function () { fl[1](false); }, titulo: ordinal(sel.i) + ' redação de ' + n },
         h('p', { className: 'folha-estado' }, h('em', null, f[0], f[1]), h('br'), intervalo(art, sel.i, base, hojeIdx)),
         h('section', { className: 'folha-sec', 'aria-labelledby': 'folha-data' }, h('h3', { id: 'folha-data' }, 'Ver noutra data'),
@@ -1149,8 +1150,8 @@
   }
   function NoParlamento(props) {
     var H = props.nivel || 'h2', n = props.lista.length;
-    return h('section', { className: 'no-parl', 'aria-labelledby': props.id },
-      h(H, { id: props.id, className: props.nivel ? null : 'h2' }, 'No Parlamento'),
+    return h('section', { className: props.secao ? 'secao no-parl' : 'no-parl', 'aria-labelledby': props.id },
+      h(H, { id: props.id, className: props.nivel || props.secao ? null : 'h2' }, 'No Parlamento'),
       h('p', { className: 'muted small' }, n === 1 ? 'Uma iniciativa em curso propõe alterar este artigo. Ainda não é lei.' : n + ' iniciativas em curso propõem alterar este artigo. Ainda não são lei.'),
       h('ul', { className: 'parl-lista' }, props.lista.map(function (i) {
         return h('li', { key: i.id },

@@ -34,7 +34,7 @@ Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.
 
 ## Website
 
-[`.github/workflows/site.yml`](../.github/workflows/site.yml) builds the data and publishes `app/` on GitHub Pages every day at 05:41 UTC:
+[`.github/workflows/site.yml`](../.github/workflows/site.yml) builds the data and publishes `app/` on GitHub Pages every day at 05:41 UTC, and after each push that changes the app or the pipeline:
 
 1. It restores `data/` from the Actions cache (about 1 GB, mostly the AR open data).
 2. It downloads the AR files of the current legislatura again (`fetch_parlamento.py --refresh XVII`).

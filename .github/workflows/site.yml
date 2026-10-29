@@ -4,6 +4,9 @@ name: site
 # data, check it, and publish app/ on GitHub Pages. See app/README.md, "Website".
 
 on:
+  push:   # a change to the app or the pipeline goes live without waiting for the next day
+    branches: [claude/gracious-goldberg-pr0us6]
+    paths: [app/**, design-system/**, pipeline/**, tools/**, .github/workflows/site.yml]
   schedule:
     - cron: "41 5 * * *"   # 05:41 UTC, after the DR's morning edition
   workflow_dispatch:
