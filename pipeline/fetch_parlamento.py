@@ -12,6 +12,7 @@ into data/parlamento/. Existing files are kept unless --refresh is given.
 from __future__ import annotations
 
 import html
+import http.client
 import os
 import re
 import sys
@@ -25,10 +26,19 @@ DATASETS = ["DAIniciativas", "DADiplomasAprovados", "DAInformacaoBase"]
 UA = {"User-Agent": "redacao-phase0/0.1 (+https://github.com/andre15silva/pt-legal-git)"}
 
 
-def get(url: str) -> bytes:
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=600) as resp:
-        return resp.read()
+def get(url: str, tentativas: int = 5) -> bytes:
+    """The body of url. parlamento.pt sometimes drops a connection: try again, waiting longer."""
+    for k in range(tentativas):
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=600) as resp:
+                return resp.read()
+        except (OSError, http.client.HTTPException) as e:  # URLError, reset, RemoteDisconnected
+            if k == tentativas - 1:
+                raise
+            espera = 10 * 2 ** k
+            sys.stderr.write(f"{e}; nova tentativa em {espera} s\n")
+            time.sleep(espera)
 
 
 def links(page: str, kind: str) -> list[tuple[str, str]]:
@@ -60,8 +70,9 @@ def main(argv: list[str]) -> int:
                 if os.path.exists(path) and not refresh:
                     continue
                 data = get(url)
-                with open(path, "wb") as fh:
+                with open(path + ".tmp", "wb") as fh:  # a cut download never leaves half a file
                     fh.write(data)
+                os.replace(path + ".tmp", path)
                 print(f"{name}: {len(data) / 1e6:.1f} MB")
                 time.sleep(0.5)
             time.sleep(0.5)
