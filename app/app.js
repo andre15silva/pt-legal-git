@@ -108,7 +108,11 @@
     if (/^\d+$/.test(value)) return +value < art.versoes.length ? +value : -1;
     if (value === 'hoje') value = hoje();
     if (validDate(value)) { var p = pick(art.versoes, value, base || 'vigor'); return p ? p.i : -1; }
-    return art.versoes.map(function (v) { return v.ato; }).lastIndexOf(value);
+    var i = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(value);
+    if (i >= 0) return i;
+    // An act that left the text as it was (a republication) names the redação it kept.
+    for (var k = art.versoes.length - 1; k >= 0; k--) if ((art.versoes[k].sem_alteracao || []).some(function (x) { return x.ato === value; })) return k;
+    return -1;
   }
   // When redação i applies: from its start to the day before the next redação starts.
   // fim is null for the last redação and 'mesma' when the next one starts on the same day.
@@ -661,6 +665,13 @@
   function guardarVer(v) { try { localStorage.setItem('redacao-ver', v); } catch (e) { /* private window */ } }
   // Another state of the same page, without a new entry in the browser history.
   function substituir(hash) { history.replaceState(null, '', hash); window.dispatchEvent(new HashChangeEvent('hashchange')); }
+  // An act that touched an article without changing its text (pipeline/build.py, "sem_alteracao").
+  var SEM_ALT = {
+    republicado: function (ato) { return 'Republicado sem alterações ' + pela(ato) + ' ' + ato; },
+    revogado: function (ato) { return 'Revogado de novo ' + pela(ato) + ' ' + ato; },
+    retificado: function (ato) { return 'A ' + ato + ' não mudou o texto'; },
+    alterado: function (ato) { return 'Alterado ' + pela(ato) + ' ' + ato + ' sem mudar o texto (talvez a epígrafe)'; }
+  };
   function nomeAto(v, atos, d) {
     if (v.tipo === 'original') return d && d.inicio_historia ? d.inicio_historia.rotulo + ' (' + d.designacao + ')' : 'Texto original';
     return (atos[v.ato] || { designacao: v.ato }).designacao;
@@ -950,7 +961,7 @@
     var vizinho = function (k) { var x = ordem[pos + k]; return x ? h('a', { href: link(['d', d.slug, x.artigo]) }, (k < 0 ? '‹ ' : '') + x.rotulo.replace(/^Artigo\s*/, '') + (k > 0 ? ' ›' : '')) : null; };
     // For diplomas with few acts (the Constitution), say which acts did not change this article.
     var doDiploma = Object.keys(atos).map(function (k) { return atos[k]; }).filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); });
-    var naoAlteraram = doDiploma.length <= 10 ? doDiploma.filter(function (a) { return !art.versoes.some(function (v) { return v.ato === a.id; }); })
+    var naoAlteraram = doDiploma.length <= 10 ? doDiploma.filter(function (a) { return !art.versoes.some(function (v) { return v.ato === a.id || (v.sem_alteracao || []).some(function (x) { return x.ato === a.id; }); }); })
       .sort(function (a, b) { return a.publicacao < b.publicacao ? -1 : 1; }) : [];
     var naoFrase = naoAlteraram.length ? (naoAlteraram.every(function (a) { return /^Lei Constitucional/.test(a.designacao); })
       ? (naoAlteraram.length === 1 ? 'A revisão constitucional de ' : 'As revisões constitucionais de ') + naoAlteraram.map(function (a) { return a.publicacao.slice(0, 4); }).join(', ').replace(/, (\d{4})$/, ' e $1') + (naoAlteraram.length === 1 ? ' não alterou este artigo.' : ' não alteraram este artigo.')
@@ -979,7 +990,7 @@
         if (v && v.tipo !== 'original') a.nota = ps[v.ato] ? 'No Parlamento: ' + resumoParlamento(ps[v.ato]) : /^Decreto-Lei/.test((atos[v.ato] || {}).designacao || '') ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.' : null;
       });
       corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts, margem: true }));
-    } else if (cur && ver === 'mudou' && (sel.i > 0 || q.com)) {
+    } else if (cur && ver === 'mudou' && n > 1 && (sel.i > 0 || q.com)) {
       // Compare with the redação before, or with the one the reader chose ("Comparar com").
       var com = q.com ? resolve(art, q.com, base) : -1;
       if (com < 0 || com === sel.i) com = sel.i - 1;
@@ -1015,7 +1026,8 @@
       corpo = h('div', { className: 'lei' + (lado ? ' lei-lado' : '') }, alt.nodes,
         h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))));
     } else if (cur) {
-      if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior. ',
+      if (ver === 'mudou' && n === 1) resumo = h('p', { className: 'resumo' }, 'Este artigo tem uma só redação: o texto nunca mudou.');
+      else if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior. ',
         n > 1 ? h('a', { href: versionHref(0, { ver: 'mudou', com: versionKey(art, 1) }) }, 'Comparar com a redação seguinte') : null);
       corpo = h('div', { className: 'lei' }, vista.desde != null
         ? cur.linhas.map(function (l, k) { return linhaMarcada(l, k, marcas, vista.desde); })
@@ -1035,6 +1047,10 @@
               details: atual ? [
                 h('p', { key: 'd' }, 'Publicação: ' + curta(v.publicacao) + (v.vigor ? ' · Em vigor: ' + curta(v.vigor) + (p.fim && p.fim !== 'mesma' ? ' a ' + curta(p.fim) : '') : ' · Entrada em vigor não indicada')),
                 v.artigo_do_ato && a ? h('p', { key: 'n' }, TIPO[v.tipo] + ' pelo ' + v.artigo_do_ato.toLowerCase() + ' ' + (pela(a.designacao) === 'pelo' ? 'do ' : 'da ') + a.designacao + '.') : null,
+                (v.sem_alteracao || []).length ? h('p', { key: 's', className: 'reg-sem' }, v.sem_alteracao.map(function (x) {
+                  var ax = atos[x.ato] || { designacao: x.ato };
+                  return SEM_ALT[x.tipo] ? SEM_ALT[x.tipo](ax.designacao) + ' (' + curta(x.publicacao) + '). ' : ax.designacao + ' abrangeu este artigo sem mudar o texto (' + curta(x.publicacao) + '). ';
+                })) : null,
                 ps[v.ato] ? h('p', { key: 'p', className: 'reg-parl' }, resumoParlamento(ps[v.ato])) : a && /^Decreto-Lei/.test(a.designacao) ? h('p', { key: 'p' }, 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.') : null,
                 h('p', { key: 'l' }, i > 0 ? h('a', { href: versionHref(i, { ver: 'mudou' }) }, 'Ver as alterações') : null, i > 0 && a ? ' · ' : null,
                   a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a votação no Parlamento' : 'Ver o ato') : null)
@@ -1373,7 +1389,7 @@
     var p = ps[a.id], dl = /^Decreto-Lei/.test(a.designacao);
     document.title = a.designacao + ' · Redação';
     // The changes as an amending law writes them: "Alterou os artigos 14.º, 15.º e 15.º-A."
-    var VERBO = { alterado: 'Alterou', aditado: 'Aditou', revogado: 'Revogou', retificado: 'Retificou' };
+    var VERBO = { alterado: 'Alterou', aditado: 'Aditou', revogado: 'Revogou', retificado: 'Retificou', sem_alteracao: 'Abrangeu, sem mudar o texto,' };
     var facto = function (k, v) { return [h('dt', { key: k + 't' }, k), h('dd', { key: k + 'd' }, v)]; };
     return h('div', { className: 'pagina-ato' },
       h(Crumbs, { items: [['Diplomas', '#/'], [a.designacao]] }),
@@ -1388,12 +1404,13 @@
             by[slug].forEach(function (c) { (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c); });
             return h('div', { key: slug, className: 'mudou' },
               h('p', { className: 'mudou-diploma' }, nomes[slug] ? nomes[slug].titulo : slug),
-              ['alterado', 'aditado', 'revogado', 'retificado'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
+              ['alterado', 'aditado', 'revogado', 'retificado', 'sem_alteracao'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
                 var cs = porTipo[t];
                 return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
                   cs.map(function (c, i) {
                     return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
-                      h('a', { href: link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null, ato: a.id }) }, c.rotulo.replace(/^Artigo\s*/, '')));
+                      // An article the act left as it was has no redação of this act: open it at that date.
+                      h('a', { href: t === 'sem_alteracao' ? link(['d', slug, c.artigo], { em: c.vigor || a.publicacao }) : link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null, ato: a.id }) }, c.rotulo.replace(/^Artigo\s*/, '')));
                   }), '.');
               }));
           })),

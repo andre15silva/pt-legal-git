@@ -58,6 +58,8 @@ assert.strictEqual(resolve(art, '2'), 2);
 assert.strictEqual(resolve(art, '2015-06-30'), 1);
 assert.strictEqual(resolve(art, '2010-01-01'), -1);
 assert.strictEqual(resolve(art, 'lei-nao-existe'), -1);
+// An act that republished the article without changing it opens the redação it kept.
+assert.strictEqual(resolve({ versoes: [{ ato: 'lo-2-2003', tipo: 'original', sem_alteracao: [{ ato: 'lo-2-2008', tipo: 'republicado' }] }] }, 'lo-2-2008'), 0);
 assert.strictEqual(versionKey(art, 1), 'declaracao-de-retificacao-18-2014');
 assert.strictEqual(JSON.stringify(periodo(art, 0, 'vigor')), '{"inicio":"2014-01-21","fim":"mesma"}');
 assert.strictEqual(JSON.stringify(periodo(art, 1, 'vigor')), '{"inicio":"2014-01-21","fim":"2016-03-30"}');
@@ -106,4 +108,4 @@ assert.strictEqual(mud('2019-01-01', '2026-10-29'), 'artigo-2:alterado:lei-93-20
 assert.strictEqual(mud('2020-01-01', '2023-04-30'), '');
 assert.strictEqual(mud('2019-10-01', '2019-10-01'), '');
 
-console.log('ok: ' + cases.length + ' diff cases, 9 URL cases, 6 search cases, 3 diploma-diff cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));
+console.log('ok: ' + cases.length + ' diff cases, 10 URL cases, 6 search cases, 3 diploma-diff cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));

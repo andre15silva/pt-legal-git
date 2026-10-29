@@ -202,6 +202,9 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
             if i or v["tipo"] != "original":
                 reg.acts[v["ato"]]["alteracoes"].append({"diploma": cfg["slug"], "artigo": aid, "rotulo": hist["rotulo"],
                                                        "tipo": v["tipo"], "vigor": v["vigor"]})
+            for x in v.get("sem_alteracao", []):  # the act lists the article, without a redação of its own
+                reg.acts[x["ato"]]["alteracoes"].append({"diploma": cfg["slug"], "artigo": aid, "rotulo": hist["rotulo"],
+                                                       "tipo": "sem_alteracao", "vigor": x["vigor"]})
         artigos[aid] = hist
         last = hist["versoes"][-1]
         tree.append({"nivel": f["Nivel"], "tipo": "artigo", "rotulo": f["ConsolidacaoFragmento"]["Name"], "epigrafe": hist["epigrafe"],
@@ -322,6 +325,16 @@ def build_article(f: dict, first: dict | None, entries: list[dict], original: di
             v["vigor"] = None
     # Order by the date each version took effect; unknown entry dates fall back to publication.
     versions.sort(key=lambda v: (v["vigor"] or v["publicacao"] or NO_DATE))
+    # An act that touched the article without changing its text (a republication, a second
+    # revocation, a change the DR does not show, such as to the heading) is not a new redação: it
+    # stays as a note on the redação it left as it was.
+    juntas = []
+    for v in versions:
+        if juntas and re.sub(r"\s+", " ", v["texto"]).strip() == re.sub(r"\s+", " ", juntas[-1]["texto"]).strip():
+            juntas[-1].setdefault("sem_alteracao", []).append({k: v[k] for k in ("ato", "tipo", "artigo_do_ato", "publicacao", "vigor")})
+        else:
+            juntas.append(v)
+    versions = juntas
     spans = texto.blame([v["texto"] for v in versions])
     for v, s in zip(versions, spans):
         v["vigor_conhecido"] = bool(v["vigor"])
