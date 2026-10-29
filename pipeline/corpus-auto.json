@@ -1,0 +1,1136 @@
+{
+  "_nota": "Escrito por pipeline/descobrir.py a partir de pipeline/alvos.json. Não editar à mão: corrija alvos.json ou mova a entrada para corpus.json.",
+  "diplomas": [
+    {
+      "slug": "codigo-procedimento-administrativo",
+      "titulo": "Código do Procedimento Administrativo",
+      "sigla": "CPA",
+      "area": "Administração pública",
+      "frag_id": "105602322",
+      "tipo": "decreto-lei",
+      "key": "2015-105602322",
+      "genitivo": "do Código do Procedimento Administrativo",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2015-04-07",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 4/2015, artigo 9.º (90 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Pp]r[oóôõ][cç][eéê]d[ií]m[eéê]nt[oóôõ]\\s+[Aa]dm[ií]n[ií]str[aáàâã]t[ií]v[oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*4/2015\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 212,
+      "_ultima_alteracao": "2023-02-10",
+      "_atos": 4
+    },
+    {
+      "slug": "codigo-contratos-publicos",
+      "titulo": "Código dos Contratos Públicos",
+      "sigla": "CCP",
+      "area": "Administração pública",
+      "frag_id": "34455475",
+      "tipo": "decreto-lei",
+      "key": "2008-34455475",
+      "genitivo": "do Código dos Contratos Públicos",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2008-07-29",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 18/2008, artigo 18.º (6 meses após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]s\\s+[Cc][oóôõ]ntr[aáàâã]t[oóôõ]s\\s+[Pp][úu]bl[ií][cç][oóôõ]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*18/2008\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 588,
+      "_ultima_alteracao": "2026-09-04",
+      "_atos": 24
+    },
+    {
+      "slug": "codigo-expropriacoes",
+      "titulo": "Código das Expropriações",
+      "sigla": "CExp",
+      "area": "Administração pública",
+      "frag_id": "34538575",
+      "tipo": "lei",
+      "key": "1999-34538575",
+      "genitivo": "do Código das Expropriações",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "1999-11-17",
+        "regra": "explicita",
+        "fonte": "Lei n.º 168/99, artigo 4.º (60 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[aáàâã]s\\s+[Ee]xpr[oóôõ]pr[ií][aáàâã][çc][õo][eéê]s|[Ll][eéê][ií]\\s+n\\.º\\s*168/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 104,
+      "_ultima_alteracao": "2026-08-04",
+      "_atos": 9
+    },
+    {
+      "slug": "rjue",
+      "titulo": "Regime Jurídico da Urbanização e Edificação",
+      "sigla": "RJUE",
+      "area": "Administração pública",
+      "frag_id": "34567875",
+      "tipo": "decreto-lei",
+      "key": "1999-34567875",
+      "genitivo": "do Regime Jurídico da Urbanização e Edificação",
+      "vigor_original": {
+        "data": "2000-04-14",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 555/99, artigo 130.º (120 dias após a publicação)"
+      },
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Jj][uú]r[íi]d[ií][cç][oóôõ]\\s+d[aáàâã]\\s+[Uu]rb[aáàâã]n[ií]z[aáàâã][çc][ãa][oóôõ]\\s+[eéê]\\s+[Ee]d[ií]f[ií][cç][aáàâã][çc][ãa][oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*555/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 158,
+      "_ultima_alteracao": "2026-05-29",
+      "_atos": 29
+    },
+    {
+      "slug": "lei-acesso-documentos-administrativos",
+      "titulo": "Lei de Acesso aos Documentos Administrativos",
+      "sigla": "LADA",
+      "area": "Administração pública",
+      "frag_id": "106603618",
+      "tipo": "lei",
+      "key": "2016-106603618",
+      "genitivo": "da Lei de Acesso aos Documentos Administrativos",
+      "vigor_original": {
+        "data": "2016-10-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 26/2016, artigo 50.º (primeiro dia do mês seguinte à publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Aa][cç][eéê]ss[oóôõ]\\s+[aáàâã][oóôõ]s\\s+[Dd][oóôõ][cç][uú]m[eéê]nt[oóôõ]s\\s+[Aa]dm[ií]n[ií]str[aáàâã]t[ií]v[oóôõ]s|[Ll][eéê][ií]\\s+n\\.º\\s*26/2016\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2021-08-26: confirme que o DR ainda o atualiza."
+      ],
+      "_artigos_no_registo": 52,
+      "_ultima_alteracao": "2021-08-26",
+      "_atos": 4
+    },
+    {
+      "slug": "regime-autarquias-locais",
+      "titulo": "Regime Jurídico das Autarquias Locais",
+      "sigla": "RJAL",
+      "area": "Administração pública",
+      "frag_id": "56366098",
+      "tipo": "lei",
+      "key": "2013-56366098",
+      "genitivo": "do Regime Jurídico das Autarquias Locais",
+      "codigo_no_anexo": "Anexo I",
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Jj][uú]r[íi]d[ií][cç][oóôõ]\\s+d[aáàâã]s\\s+[Aa][uú]t[aáàâã]rq[uú][ií][aáàâã]s\\s+[Ll][oóôõ][cç][aáàâã][ií]s|[Ll][eéê][ií]\\s+n\\.º\\s*75/2013\\b",
+      "auto": true,
+      "revisao": [
+        "O texto está no anexo «Anexo I» ((a que se refere o n.º 2 do artigo 1.º)), escolhido por ter mais artigos.",
+        "Não percebemos a data de entrada em vigor em Artigo 4.º: «Sem prejuízo do disposto no n.º 2 do artigo anterior, a presente lei entra em vigor no dia seguinte ao da realização das eleições gerais para os órgãos das auta». Ficou sem data."
+      ],
+      "_artigos_no_registo": 145,
+      "_ultima_alteracao": "2024-01-08",
+      "_atos": 12
+    },
+    {
+      "slug": "lei-financas-locais",
+      "titulo": "Lei das Finanças Locais",
+      "sigla": "LFL",
+      "area": "Administração pública",
+      "frag_id": "105795409",
+      "tipo": "lei",
+      "key": "2013-105795409",
+      "genitivo": "da Lei das Finanças Locais",
+      "vigor_original": {
+        "data": "2014-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 73/2013, artigo 92.º"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[aáàâã]s\\s+[Ff][ií]n[aáàâã]n[çc][aáàâã]s\\s+[Ll][oóôõ][cç][aáàâã][ií]s|[Ll][eéê][ií]\\s+n\\.º\\s*73/2013\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 113,
+      "_ultima_alteracao": "2026-08-17",
+      "_atos": 16
+    },
+    {
+      "slug": "lei-enquadramento-orcamental",
+      "titulo": "Lei de Enquadramento Orçamental",
+      "sigla": "LEO",
+      "area": "Administração pública",
+      "frag_id": "105756679",
+      "tipo": "lei",
+      "key": "2015-105756679",
+      "genitivo": "da Lei de Enquadramento Orçamental",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2015-09-12",
+        "regra": "explicita",
+        "fonte": "Lei n.º 151/2015, artigo 8.º (dia seguinte após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Ee]nq[uú][aáàâã]dr[aáàâã]m[eéê]nt[oóôõ]\\s+[Oo]r[çc][aáàâã]m[eéê]nt[aáàâã]l|[Ll][eéê][ií]\\s+n\\.º\\s*151/2015\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2022-04-28: confirme que o DR ainda o atualiza."
+      ],
+      "_artigos_no_registo": 86,
+      "_ultima_alteracao": "2022-04-28",
+      "_atos": 6
+    },
+    {
+      "slug": "lei-bases-saude",
+      "titulo": "Lei de Bases da Saúde",
+      "sigla": "LBS",
+      "area": "Administração pública",
+      "auto": true,
+      "falha": true,
+      "revisao": [
+        "O Lei n.º 95/2019 não está na lista de legislação consolidada do DR, nem uma republicação dele."
+      ]
+    },
+    {
+      "slug": "lei-bases-habitacao",
+      "titulo": "Lei de Bases da Habitação",
+      "sigla": "LBH",
+      "area": "Administração pública",
+      "auto": true,
+      "falha": true,
+      "revisao": [
+        "O Lei n.º 83/2019 não está na lista de legislação consolidada do DR, nem uma republicação dele."
+      ]
+    },
+    {
+      "slug": "lei-bases-sistema-educativo",
+      "titulo": "Lei de Bases do Sistema Educativo",
+      "sigla": "LBSE",
+      "area": "Administração pública",
+      "frag_id": "34444975",
+      "tipo": "lei",
+      "key": "1986-34444975",
+      "genitivo": "da Lei de Bases do Sistema Educativo",
+      "vigor_original": {
+        "data": "1986-10-19",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, quinto dia após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Bb][aáàâã]s[eéê]s\\s+d[oóôõ]\\s+[Ss][ií]st[eéê]m[aáàâã]\\s+[Ee]d[uú][cç][aáàâã]t[ií]v[oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*46/86\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 69,
+      "_ultima_alteracao": "2026-08-07",
+      "_atos": 7
+    },
+    {
+      "slug": "lei-bases-ambiente",
+      "titulo": "Lei de Bases do Ambiente",
+      "sigla": "LBA",
+      "area": "Administração pública",
+      "auto": true,
+      "falha": true,
+      "revisao": [
+        "O Lei n.º 19/2014 não está na lista de legislação consolidada do DR, nem uma republicação dele."
+      ]
+    },
+    {
+      "slug": "ltfp",
+      "titulo": "Lei Geral do Trabalho em Funções Públicas",
+      "sigla": "LTFP",
+      "area": "Trabalho e segurança social",
+      "frag_id": "57466875",
+      "tipo": "lei",
+      "key": "2014-57466875",
+      "genitivo": "da Lei Geral do Trabalho em Funções Públicas",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2014-08-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 35/2014, artigo 44.º (primeiro dia do mês seguinte à publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+[Gg][eéê]r[aáàâã]l\\s+d[oóôõ]\\s+[Tt]r[aáàâã]b[aáàâã]lh[oóôõ]\\s+[eéê]m\\s+[Ff][uú]n[çc][õo][eéê]s\\s+[Pp][úu]bl[ií][cç][aáàâã]s|[Ll][eéê][ií]\\s+n\\.º\\s*35/2014\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 468,
+      "_ultima_alteracao": "2024-01-10",
+      "_atos": 21
+    },
+    {
+      "slug": "codigo-processo-trabalho",
+      "titulo": "Código de Processo do Trabalho",
+      "sigla": "CPT",
+      "area": "Trabalho e segurança social",
+      "frag_id": "34575575",
+      "tipo": "decreto-lei",
+      "key": "1999-34575575",
+      "genitivo": "do Código de Processo do Trabalho",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2000-01-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 480/99, artigo 3.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[eéê]\\s+[Pp]r[oóôõ][cç][eéê]ss[oóôõ]\\s+d[oóôõ]\\s+[Tt]r[aáàâã]b[aáàâã]lh[oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*480/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 253,
+      "_ultima_alteracao": "2024-11-07",
+      "_atos": 11
+    },
+    {
+      "slug": "codigo-contributivo",
+      "titulo": "Código dos Regimes Contributivos do Sistema Previdencial de Segurança Social",
+      "sigla": "CRCSPSS",
+      "area": "Trabalho e segurança social",
+      "frag_id": "34514575",
+      "tipo": "lei",
+      "key": "2009-34514575",
+      "genitivo": "do Código dos Regimes Contributivos do Sistema Previdencial de Segurança Social",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2011-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 110/2009, artigo 6.º, na redação dada pela Lei n.º 119/2009"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]s\\s+[Rr][eéê]g[ií]m[eéê]s\\s+[Cc][oóôõ]ntr[ií]b[uú]t[ií]v[oóôõ]s\\s+d[oóôõ]\\s+[Ss][ií]st[eéê]m[aáàâã]\\s+[Pp]r[eéê]v[ií]d[eéê]n[cç][ií][aáàâã]l\\s+d[eéê]\\s+[Ss][eéê]g[uú]r[aáàâã]n[çc][aáàâã]\\s+[Ss][oóôõ][cç][ií][aáàâã]l|[Ll][eéê][ií]\\s+n\\.º\\s*110/2009\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 310,
+      "_ultima_alteracao": "2025-12-09",
+      "_atos": 22
+    },
+    {
+      "slug": "codigo-insolvencia",
+      "titulo": "Código da Insolvência e da Recuperação de Empresas",
+      "sigla": "CIRE",
+      "area": "Civil e comercial",
+      "frag_id": "34529075",
+      "tipo": "decreto-lei",
+      "key": "2004-34529075",
+      "genitivo": "do Código da Insolvência e da Recuperação de Empresas",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2004-09-14",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 53/2004, artigo 13.º (180 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[aáàâã]\\s+[Ii]ns[oóôõ]lv[êe]n[cç][ií][aáàâã]\\s+[eéê]\\s+d[aáàâã]\\s+[Rr][eéê][cç][uú]p[eéê]r[aáàâã][çc][ãa][oóôõ]\\s+d[eéê]\\s+[Ee]mpr[eéê]s[aáàâã]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*53/2004\\b",
+      "auto": true,
+      "revisao": [
+        "Um ato de 2004-08-18 alterou o diploma antes de 2004-09-14: confirme que não adiou a entrada em vigor."
+      ],
+      "_artigos_no_registo": 341,
+      "_ultima_alteracao": "2024-11-07",
+      "_atos": 20
+    },
+    {
+      "slug": "codigo-valores-mobiliarios",
+      "titulo": "Código dos Valores Mobiliários",
+      "sigla": "CVM",
+      "area": "Civil e comercial",
+      "frag_id": "34575175",
+      "tipo": "decreto-lei",
+      "key": "1999-34575175",
+      "genitivo": "do Código dos Valores Mobiliários",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2000-03-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 486/99, artigo 2.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]s\\s+[Vv][aáàâã]l[oóôõ]r[eéê]s\\s+[Mm][oóôõ]b[ií]l[ií][áa]r[ií][oóôõ]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*486/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 675,
+      "_ultima_alteracao": "2026-08-26",
+      "_atos": 57
+    },
+    {
+      "slug": "codigo-registo-predial",
+      "titulo": "Código do Registo Predial",
+      "sigla": "CRPredial",
+      "area": "Civil e comercial",
+      "frag_id": "34544675",
+      "tipo": "decreto-lei",
+      "key": "1984-34544675",
+      "genitivo": "do Código do Registo Predial",
+      "codigo_no_anexo": "CÓDIGO DO REGISTO PREDIAL",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "1984-10-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 224/84, artigo 10.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Rr][eéê]g[ií]st[oóôõ]\\s+[Pp]r[eéê]d[ií][aáàâã]l|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*224/84\\b",
+      "auto": true,
+      "revisao": [
+        "Um ato de 1984-08-31 alterou o diploma antes de 1984-10-01: confirme que não adiou a entrada em vigor."
+      ],
+      "_artigos_no_registo": 250,
+      "_ultima_alteracao": "2026-04-15",
+      "_atos": 42
+    },
+    {
+      "slug": "codigo-registo-civil",
+      "titulo": "Código do Registo Civil",
+      "sigla": "CRCivil",
+      "area": "Civil e comercial",
+      "frag_id": "34525275",
+      "tipo": "decreto-lei",
+      "key": "1995-34525275",
+      "genitivo": "do Código do Registo Civil",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "1995-09-15",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 131/95, artigo 3.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Rr][eéê]g[ií]st[oóôõ]\\s+[Cc][ií]v[ií]l|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*131/95\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 352,
+      "_ultima_alteracao": "2025-04-01",
+      "_atos": 33
+    },
+    {
+      "slug": "codigo-notariado",
+      "titulo": "Código do Notariado",
+      "sigla": "CNot",
+      "area": "Civil e comercial",
+      "frag_id": "34509175",
+      "tipo": "decreto-lei",
+      "key": "1995-34509175",
+      "genitivo": "do Código do Notariado",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "1995-09-15",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 207/95, artigo 6.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Nn][oóôõ]t[aáàâã]r[ií][aáàâã]d[oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*207/95\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 221,
+      "_ultima_alteracao": "2024-12-31",
+      "_atos": 29
+    },
+    {
+      "slug": "codigo-publicidade",
+      "titulo": "Código da Publicidade",
+      "sigla": "CPub",
+      "area": "Civil e comercial",
+      "frag_id": "34537375",
+      "tipo": "decreto-lei",
+      "key": "1990-34537375",
+      "genitivo": "do Código da Publicidade",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "1990-10-28",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, quinto dia após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[aáàâã]\\s+[Pp][uú]bl[ií][cç][ií]d[aáàâã]d[eéê]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*330/90\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 51,
+      "_ultima_alteracao": "2026-09-16",
+      "_atos": 17
+    },
+    {
+      "slug": "codigo-cooperativo",
+      "titulo": "Código Cooperativo",
+      "sigla": "CCoop",
+      "area": "Civil e comercial",
+      "frag_id": "70147380",
+      "tipo": "lei",
+      "key": "2015-70147380",
+      "genitivo": "do Código Cooperativo",
+      "vigor_original": {
+        "data": "2015-09-30",
+        "regra": "explicita",
+        "fonte": "Lei n.º 119/2015, artigo 122.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+[Cc][oóôõ][oóôõ]p[eéê]r[aáàâã]t[ií]v[oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*119/2015\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 122,
+      "_ultima_alteracao": "2026-07-28",
+      "_atos": 3
+    },
+    {
+      "slug": "codigo-propriedade-industrial",
+      "titulo": "Código da Propriedade Industrial",
+      "sigla": "CPI",
+      "area": "Civil e comercial",
+      "frag_id": "117279941",
+      "tipo": "decreto-lei",
+      "key": "2018-117279941",
+      "genitivo": "do Código da Propriedade Industrial",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2019-01-09",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 110/2018, artigo 16.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[aáàâã]\\s+[Pp]r[oóôõ]pr[ií][eéê]d[aáàâã]d[eéê]\\s+[Ii]nd[uú]str[ií][aáàâã]l|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*110/2018\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 391,
+      "_ultima_alteracao": "2026-09-25",
+      "_atos": 3
+    },
+    {
+      "slug": "codigo-direito-autor",
+      "titulo": "Código do Direito de Autor e dos Direitos Conexos",
+      "sigla": "CDADC",
+      "area": "Civil e comercial",
+      "frag_id": "34475475",
+      "tipo": "decreto-lei",
+      "key": "1985-34475475",
+      "genitivo": "do Código do Direito de Autor e dos Direitos Conexos",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "1985-03-19",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, quinto dia após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Dd][ií]r[eéê][ií]t[oóôõ]\\s+d[eéê]\\s+[Aa][uú]t[oóôõ]r\\s+[eéê]\\s+d[oóôõ]s\\s+[Dd][ií]r[eéê][ií]t[oóôõ]s\\s+[Cc][oóôõ]n[eéê]x[oóôõ]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*63/85\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 275,
+      "_ultima_alteracao": "2023-06-19",
+      "_atos": 19
+    },
+    {
+      "slug": "contrato-seguro",
+      "titulo": "Regime Jurídico do Contrato de Seguro",
+      "sigla": "RJCS",
+      "area": "Civil e comercial",
+      "frag_id": "34457275",
+      "tipo": "decreto-lei",
+      "key": "2008-34457275",
+      "genitivo": "do Regime Jurídico do Contrato de Seguro",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2009-01-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 72/2008, artigo 7.º"
+      },
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Jj][uú]r[íi]d[ií][cç][oóôõ]\\s+d[oóôõ]\\s+[Cc][oóôõ]ntr[aáàâã]t[oóôõ]\\s+d[eéê]\\s+[Ss][eéê]g[uú]r[oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*72/2008\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 226,
+      "_ultima_alteracao": "2026-03-17",
+      "_atos": 7
+    },
+    {
+      "slug": "rgicsf",
+      "titulo": "Regime Geral das Instituições de Crédito e Sociedades Financeiras",
+      "sigla": "RGICSF",
+      "area": "Civil e comercial",
+      "frag_id": "70072322",
+      "tipo": "decreto-lei",
+      "key": "1992-70072322",
+      "genitivo": "do Regime Geral das Instituições de Crédito e Sociedades Financeiras",
+      "codigo_no_anexo": "Regime Geral das Instituições de Crédito e Sociedades Financeiras",
+      "vigor_original": {
+        "data": "1993-01-05",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, quinto dia após a publicação)"
+      },
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Gg][eéê]r[aáàâã]l\\s+d[aáàâã]s\\s+[Ii]nst[ií]t[uú][ií][çc][õo][eéê]s\\s+d[eéê]\\s+[Cc]r[ée]d[ií]t[oóôõ]\\s+[eéê]\\s+[Ss][oóôõ][cç][ií][eéê]d[aáàâã]d[eéê]s\\s+[Ff][ií]n[aáàâã]n[cç][eéê][ií]r[aáàâã]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*298/92\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 546,
+      "_ultima_alteracao": "2025-12-23",
+      "_atos": 66
+    },
+    {
+      "slug": "lei-defesa-consumidor",
+      "titulo": "Lei de Defesa do Consumidor",
+      "sigla": "LDC",
+      "area": "Civil e comercial",
+      "frag_id": "34491075",
+      "tipo": "lei",
+      "key": "1996-34491075",
+      "genitivo": "da Lei de Defesa do Consumidor",
+      "vigor_original": {
+        "data": "1996-08-05",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 6/83, artigo 2.º, n.º 2 (no continente, quinto dia após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Dd][eéê]f[eéê]s[aáàâã]\\s+d[oóôõ]\\s+[Cc][oóôõ]ns[uú]m[ií]d[oóôõ]r|[Ll][eéê][ií]\\s+n\\.º\\s*24/96\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 29,
+      "_ultima_alteracao": "2023-07-04",
+      "_atos": 11
+    },
+    {
+      "slug": "codigo-imi",
+      "titulo": "Código do Imposto Municipal sobre Imóveis",
+      "sigla": "CIMI",
+      "area": "Fiscal",
+      "frag_id": "34499575",
+      "tipo": "decreto-lei",
+      "key": "2003-34499575",
+      "genitivo": "do Código do Imposto Municipal sobre Imóveis",
+      "codigo_no_anexo": "Anexo I",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2003-12-31",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 287/2003, artigo 21.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Ii]mp[oóôõ]st[oóôõ]\\s+[Mm][uú]n[ií][cç][ií]p[aáàâã]l\\s+s[oóôõ]br[eéê]\\s+[Ii]m[óo]v[eéê][ií]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*287/2003\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 331,
+      "_ultima_alteracao": "2026-05-20",
+      "_atos": 47
+    },
+    {
+      "slug": "codigo-imt",
+      "titulo": "Código do Imposto Municipal sobre as Transmissões Onerosas de Imóveis",
+      "sigla": "CIMT",
+      "area": "Fiscal",
+      "frag_id": "34499575",
+      "tipo": "decreto-lei",
+      "key": "2003-34499575",
+      "genitivo": "do Código do Imposto Municipal sobre as Transmissões Onerosas de Imóveis",
+      "codigo_no_anexo": "Anexo II",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2003-12-31",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 287/2003, artigo 21.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Ii]mp[oóôõ]st[oóôõ]\\s+[Mm][uú]n[ií][cç][ií]p[aáàâã]l\\s+s[oóôõ]br[eéê]\\s+[aáàâã]s\\s+[Tt]r[aáàâã]nsm[ií]ss[õo][eéê]s\\s+[Oo]n[eéê]r[oóôõ]s[aáàâã]s\\s+d[eéê]\\s+[Ii]m[óo]v[eéê][ií]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*287/2003\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 331,
+      "_ultima_alteracao": "2026-05-20",
+      "_atos": 47
+    },
+    {
+      "slug": "codigo-imposto-selo",
+      "titulo": "Código do Imposto do Selo",
+      "sigla": "CIS",
+      "area": "Fiscal",
+      "frag_id": "34540175",
+      "tipo": "lei",
+      "key": "1999-34540175",
+      "genitivo": "do Código do Imposto do Selo",
+      "codigo_no_anexo": "Anexo I",
+      "vigor_original": {
+        "data": "2000-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 150/99, artigo 6.º, na redação dada pela Lei n.º 176-A/99"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Ii]mp[oóôõ]st[oóôõ]\\s+d[oóôõ]\\s+[Ss][eéê]l[oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*150/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 83,
+      "_ultima_alteracao": "2025-03-27",
+      "_atos": 55
+    },
+    {
+      "slug": "codigo-iec",
+      "titulo": "Código dos Impostos Especiais de Consumo",
+      "sigla": "CIEC",
+      "area": "Fiscal",
+      "frag_id": "34478675",
+      "tipo": "decreto-lei",
+      "key": "2010-34478675",
+      "genitivo": "do Código dos Impostos Especiais de Consumo",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2010-07-21",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 73/2010, artigo 8.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]s\\s+[Ii]mp[oóôõ]st[oóôõ]s\\s+[Ee]sp[eéê][cç][ií][aáàâã][ií]s\\s+d[eéê]\\s+[Cc][oóôõ]ns[uú]m[oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*73/2010\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 148,
+      "_ultima_alteracao": "2026-04-15",
+      "_atos": 31
+    },
+    {
+      "slug": "codigo-iuc",
+      "titulo": "Código do Imposto Único de Circulação",
+      "sigla": "CIUC",
+      "area": "Fiscal",
+      "frag_id": "34445975",
+      "tipo": "lei",
+      "key": "2007-34445975",
+      "genitivo": "do Código do Imposto Único de Circulação",
+      "codigo_no_anexo": "Anexo II",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2007-07-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 22-A/2007, artigo 14.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Ii]mp[oóôõ]st[oóôõ]\\s+[Úúu]n[ií][cç][oóôõ]\\s+d[eéê]\\s+[Cc][ií]r[cç][uú]l[aáàâã][çc][ãa][oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*22\\-A/2007\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 110,
+      "_ultima_alteracao": "2026-08-04",
+      "_atos": 32
+    },
+    {
+      "slug": "codigo-isv",
+      "titulo": "Código do Imposto sobre Veículos",
+      "sigla": "CISV",
+      "area": "Fiscal",
+      "frag_id": "34445975",
+      "tipo": "lei",
+      "key": "2007-34445975",
+      "genitivo": "do Código do Imposto sobre Veículos",
+      "codigo_no_anexo": "Anexo I",
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2007-07-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 22-A/2007, artigo 14.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[oóôõ]\\s+[Ii]mp[oóôõ]st[oóôõ]\\s+s[oóôõ]br[eéê]\\s+[Vv][eéê][íi][cç][uú]l[oóôõ]s|[Ll][eéê][ií]\\s+n\\.º\\s*22\\-A/2007\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 110,
+      "_ultima_alteracao": "2026-08-04",
+      "_atos": 32
+    },
+    {
+      "slug": "rgit",
+      "titulo": "Regime Geral das Infrações Tributárias",
+      "sigla": "RGIT",
+      "area": "Fiscal",
+      "frag_id": "34474475",
+      "tipo": "lei",
+      "key": "2001-34474475",
+      "genitivo": "do Regime Geral das Infrações Tributárias",
+      "codigo_no_anexo": {
+        "nome": "Anexo",
+        "epigrafe": "REGIME GERAL DAS INFRACÇÕES TRIBUTÁRIAS"
+      },
+      "so_anexo": true,
+      "vigor_original": {
+        "data": "2001-07-05",
+        "regra": "explicita",
+        "fonte": "Lei n.º 15/2001, artigo 14.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Gg][eéê]r[aáàâã]l\\s+d[aáàâã]s\\s+[Ii]nfr[aáàâã][çc][õo][eéê]s\\s+[Tt]r[ií]b[uú]t[áa]r[ií][aáàâã]s|[Ll][eéê][ií]\\s+n\\.º\\s*15/2001\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 562,
+      "_ultima_alteracao": "2026-06-03",
+      "_atos": 45
+    },
+    {
+      "slug": "cppt",
+      "titulo": "Código de Procedimento e de Processo Tributário",
+      "sigla": "CPPT",
+      "area": "Fiscal",
+      "frag_id": "34577575",
+      "tipo": "decreto-lei",
+      "key": "1999-34577575",
+      "genitivo": "do Código de Procedimento e de Processo Tributário",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2000-01-01",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 433/99, artigo 4.º"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[eéê]\\s+[Pp]r[oóôõ][cç][eéê]d[ií]m[eéê]nt[oóôõ]\\s+[eéê]\\s+d[eéê]\\s+[Pp]r[oóôõ][cç][eéê]ss[oóôõ]\\s+[Tt]r[ií]b[uú]t[áa]r[ií][oóôõ]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*433/99\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 327,
+      "_ultima_alteracao": "2025-03-27",
+      "_atos": 47
+    },
+    {
+      "slug": "codigo-execucao-penas",
+      "titulo": "Código da Execução das Penas e Medidas Privativas da Liberdade",
+      "sigla": "CEPMPL",
+      "area": "Penal",
+      "frag_id": "34515975",
+      "tipo": "lei",
+      "key": "2009-34515975",
+      "genitivo": "do Código da Execução das Penas e Medidas Privativas da Liberdade",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2010-04-10",
+        "regra": "explicita",
+        "fonte": "Lei n.º 115/2009, artigo 10.º (180 dias após a publicação)"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[aáàâã]\\s+[Ee]x[eéê][cç][uú][çc][ãa][oóôõ]\\s+d[aáàâã]s\\s+[Pp][eéê]n[aáàâã]s\\s+[eéê]\\s+[Mm][eéê]d[ií]d[aáàâã]s\\s+[Pp]r[ií]v[aáàâã]t[ií]v[aáàâã]s\\s+d[aáàâã]\\s+[Ll][ií]b[eéê]rd[aáàâã]d[eéê]|[Ll][eéê][ií]\\s+n\\.º\\s*115/2009\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 264,
+      "_ultima_alteracao": "2023-07-21",
+      "_atos": 7
+    },
+    {
+      "slug": "rgco",
+      "titulo": "Regime Geral das Contraordenações",
+      "sigla": "RGCO",
+      "area": "Penal",
+      "frag_id": "34484875",
+      "tipo": "decreto-lei",
+      "key": "1982-34484875",
+      "genitivo": "do Regime Geral das Contraordenações",
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Gg][eéê]r[aáàâã]l\\s+d[aáàâã]s\\s+[Cc][oóôõ]ntr[aáàâã][oóôõ]rd[eéê]n[aáàâã][çc][õo][eéê]s|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*433/82\\b",
+      "auto": true,
+      "revisao": [
+        "Sem regra de entrada em vigor para um diploma anterior a 1983."
+      ],
+      "_artigos_no_registo": 104,
+      "_ultima_alteracao": "2025-12-17",
+      "_atos": 10
+    },
+    {
+      "slug": "lei-armas",
+      "titulo": "Lei das Armas",
+      "sigla": "LArmas",
+      "area": "Penal",
+      "frag_id": "34574575",
+      "tipo": "lei",
+      "key": "2006-34574575",
+      "genitivo": "da Lei das Armas",
+      "vigor_original": {
+        "data": "2006-08-22",
+        "regra": "explicita",
+        "fonte": "Lei n.º 5/2006, artigo 120.º (180 dias após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[aáàâã]s\\s+[Aa]rm[aáàâã]s|[Ll][eéê][ií]\\s+n\\.º\\s*5/2006\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2019-07-24: confirme que o DR ainda o atualiza."
+      ],
+      "_artigos_no_registo": 141,
+      "_ultima_alteracao": "2019-07-24",
+      "_atos": 7
+    },
+    {
+      "slug": "lei-droga",
+      "titulo": "Lei da Droga",
+      "sigla": "LDroga",
+      "area": "Penal",
+      "frag_id": "58872437",
+      "tipo": "decreto-lei",
+      "key": "1993-58872437",
+      "genitivo": "da Lei da Droga",
+      "vigor_original": {
+        "data": "1993-02-21",
+        "regra": "explicita",
+        "fonte": "Decreto-Lei n.º 15/93, artigo 76.º (30 dias após a publicação), na redação dada pela Declaração de Rectificação n.º 20/93"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[aáàâã]\\s+[Dd]r[oóôõ]g[aáàâã]|[Dd][eéê][cç]r[eéê]t[oóôõ]\\-[Ll][eéê][ií]\\s+n\\.º\\s*15/93\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 81,
+      "_ultima_alteracao": "2026-05-08",
+      "_atos": 35
+    },
+    {
+      "slug": "lei-cibercrime",
+      "titulo": "Lei do Cibercrime",
+      "sigla": "LCiber",
+      "area": "Penal",
+      "frag_id": "128879174",
+      "tipo": "lei",
+      "key": "2009-128879174",
+      "genitivo": "da Lei do Cibercrime",
+      "vigor_original": {
+        "data": "2009-10-15",
+        "regra": "explicita",
+        "fonte": "Lei n.º 109/2009, artigo 32.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[oóôõ]\\s+[Cc][ií]b[eéê]r[cç]r[ií]m[eéê]|[Ll][eéê][ií]\\s+n\\.º\\s*109/2009\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 43,
+      "_ultima_alteracao": "2026-08-20",
+      "_atos": 4
+    },
+    {
+      "slug": "cpta",
+      "titulo": "Código de Processo nos Tribunais Administrativos",
+      "sigla": "CPTA",
+      "area": "Tribunais e processo",
+      "frag_id": "34464475",
+      "tipo": "lei",
+      "key": "2002-34464475",
+      "genitivo": "do Código de Processo nos Tribunais Administrativos",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2004-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 15/2002, artigo 7.º (1 ano após a publicação), na redação dada pela Lei n.º 4-A/2003"
+      },
+      "iniciativas": "[Cc][óo]d[ií]g[oóôõ]\\s+d[eéê]\\s+[Pp]r[oóôõ][cç][eéê]ss[oóôõ]\\s+n[oóôõ]s\\s+[Tt]r[ií]b[uú]n[aáàâã][ií]s\\s+[Aa]dm[ií]n[ií]str[aáàâã]t[ií]v[oóôõ]s|[Ll][eéê][ií]\\s+n\\.º\\s*15/2002\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 217,
+      "_ultima_alteracao": "2026-08-06",
+      "_atos": 13
+    },
+    {
+      "slug": "etaf",
+      "titulo": "Estatuto dos Tribunais Administrativos e Fiscais",
+      "sigla": "ETAF",
+      "area": "Tribunais e processo",
+      "frag_id": "34463275",
+      "tipo": "lei",
+      "key": "2002-34463275",
+      "genitivo": "do Estatuto dos Tribunais Administrativos e Fiscais",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2004-01-01",
+        "regra": "explicita",
+        "fonte": "Lei n.º 13/2002, artigo 9.º (1 ano após a publicação), na redação dada pela Lei n.º 4-A/2003"
+      },
+      "iniciativas": "[Ee]st[aáàâã]t[uú]t[oóôõ]\\s+d[oóôõ]s\\s+[Tt]r[ií]b[uú]n[aáàâã][ií]s\\s+[Aa]dm[ií]n[ií]str[aáàâã]t[ií]v[oóôõ]s\\s+[eéê]\\s+[Ff][ií]s[cç][aáàâã][ií]s|[Ll][eéê][ií]\\s+n\\.º\\s*13/2002\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 110,
+      "_ultima_alteracao": "2025-07-24",
+      "_atos": 17
+    },
+    {
+      "slug": "lei-organizacao-sistema-judiciario",
+      "titulo": "Lei da Organização do Sistema Judiciário",
+      "sigla": "LOSJ",
+      "area": "Tribunais e processo",
+      "frag_id": "34581275",
+      "tipo": "lei",
+      "key": "2013-34581275",
+      "genitivo": "da Lei da Organização do Sistema Judiciário",
+      "iniciativas": "[Ll][eéê][ií]\\s+d[aáàâã]\\s+[Oo]rg[aáàâã]n[ií]z[aáàâã][çc][ãa][oóôõ]\\s+d[oóôõ]\\s+[Ss][ií]st[eéê]m[aáàâã]\\s+[Jj][uú]d[ií][cç][ií][áa]r[ií][oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*62/2013\\b",
+      "auto": true,
+      "revisao": [
+        "Não percebemos a data de entrada em vigor em Artigo 188.º: «1 - Sem prejuízo do disposto nos números seguintes, a presente lei entra em vigor na data de início da produção de efeitos do decreto-lei que aprove o Regime de». Ficou sem data."
+      ],
+      "_artigos_no_registo": 194,
+      "_ultima_alteracao": "2026-07-28",
+      "_atos": 19
+    },
+    {
+      "slug": "estatuto-magistrados-judiciais",
+      "titulo": "Estatuto dos Magistrados Judiciais",
+      "sigla": "EMJ",
+      "area": "Tribunais e processo",
+      "frag_id": "34488375",
+      "tipo": "lei",
+      "key": "1985-34488375",
+      "genitivo": "do Estatuto dos Magistrados Judiciais",
+      "vigor_original": {
+        "data": "1985-07-31",
+        "regra": "explicita",
+        "fonte": "Lei n.º 21/85, artigo 189.º (dia seguinte após a publicação)"
+      },
+      "iniciativas": "[Ee]st[aáàâã]t[uú]t[oóôõ]\\s+d[oóôõ]s\\s+[Mm][aáàâã]g[ií]str[aáàâã]d[oóôõ]s\\s+[Jj][uú]d[ií][cç][ií][aáàâã][ií]s|[Ll][eéê][ií]\\s+n\\.º\\s*21/85\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 248,
+      "_ultima_alteracao": "2025-07-24",
+      "_atos": 20
+    },
+    {
+      "slug": "estatuto-ordem-advogados",
+      "titulo": "Estatuto da Ordem dos Advogados",
+      "sigla": "EOA",
+      "area": "Tribunais e processo",
+      "frag_id": "105332944",
+      "tipo": "lei",
+      "key": "2015-105332944",
+      "genitivo": "do Estatuto da Ordem dos Advogados",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2015-10-09",
+        "regra": "explicita",
+        "fonte": "Lei n.º 145/2015, artigo 5.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Ee]st[aáàâã]t[uú]t[oóôõ]\\s+d[aáàâã]\\s+[Oo]rd[eéê]m\\s+d[oóôõ]s\\s+[Aa]dv[oóôõ]g[aáàâã]d[oóôõ]s|[Ll][eéê][ií]\\s+n\\.º\\s*145/2015\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 239,
+      "_ultima_alteracao": "2024-01-19",
+      "_atos": 4
+    },
+    {
+      "slug": "rgptc",
+      "titulo": "Regime Geral do Processo Tutelar Cível",
+      "sigla": "RGPTC",
+      "area": "Tribunais e processo",
+      "frag_id": "70215261",
+      "tipo": "lei",
+      "key": "2015-70215261",
+      "genitivo": "do Regime Geral do Processo Tutelar Cível",
+      "codigo_no_anexo": "Anexo",
+      "vigor_original": {
+        "data": "2015-10-08",
+        "regra": "explicita",
+        "fonte": "Lei n.º 141/2015, artigo 7.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Rr][eéê]g[ií]m[eéê]\\s+[Gg][eéê]r[aáàâã]l\\s+d[oóôõ]\\s+[Pp]r[oóôõ][cç][eéê]ss[oóôõ]\\s+[Tt][uú]t[eéê]l[aáàâã]r\\s+[Cc][íi]v[eéê]l|[Ll][eéê][ií]\\s+n\\.º\\s*141/2015\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2017-05-24: confirme que o DR ainda o atualiza.",
+        "O texto está no anexo «Anexo» ((a que se refere o artigo 2.º)), escolhido por ter mais artigos."
+      ],
+      "_artigos_no_registo": 76,
+      "_ultima_alteracao": "2017-05-24",
+      "_atos": 2
+    },
+    {
+      "slug": "lei-protecao-criancas",
+      "titulo": "Lei de Proteção de Crianças e Jovens em Perigo",
+      "sigla": "LPCJP",
+      "area": "Direitos e cidadania",
+      "frag_id": "34542475",
+      "tipo": "lei",
+      "key": "1999-34542475",
+      "genitivo": "da Lei de Proteção de Crianças e Jovens em Perigo",
+      "codigo_no_anexo": "Anexo",
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Pp]r[oóôõ]t[eéê][çc][ãa][oóôõ]\\s+d[eéê]\\s+[Cc]r[ií][aáàâã]n[çc][aáàâã]s\\s+[eéê]\\s+[Jj][oóôõ]v[eéê]ns\\s+[eéê]m\\s+[Pp][eéê]r[ií]g[oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*147/99\\b",
+      "auto": true,
+      "revisao": [
+        "Não percebemos a data de entrada em vigor em Artigo 6.º: «Sem prejuízo do disposto no artigo 3.º, a lei de protecção de crianças e jovens em perigo, bem como os artigos 2.º e 4.º do presente diploma, entram em vigor co». Ficou sem data."
+      ],
+      "_artigos_no_registo": 142,
+      "_ultima_alteracao": "2025-04-01",
+      "_atos": 9
+    },
+    {
+      "slug": "lei-nacionalidade",
+      "titulo": "Lei da Nacionalidade",
+      "sigla": "LN",
+      "area": "Direitos e cidadania",
+      "frag_id": "34536975",
+      "tipo": "lei",
+      "key": "1981-34536975",
+      "genitivo": "da Lei da Nacionalidade",
+      "iniciativas": "[Ll][eéê][ií]\\s+d[aáàâã]\\s+[Nn][aáàâã][cç][ií][oóôõ]n[aáàâã]l[ií]d[aáàâã]d[eéê]|[Ll][eéê][ií]\\s+n\\.º\\s*37/81\\b",
+      "auto": true,
+      "revisao": [
+        "Sem regra de entrada em vigor para um diploma anterior a 1983."
+      ],
+      "_artigos_no_registo": 43,
+      "_ultima_alteracao": "2026-05-18",
+      "_atos": 13
+    },
+    {
+      "slug": "lei-estrangeiros",
+      "titulo": "Lei de Estrangeiros",
+      "sigla": "LEst",
+      "area": "Direitos e cidadania",
+      "frag_id": "67564445",
+      "tipo": "lei",
+      "key": "2007-67564445",
+      "genitivo": "da Lei de Estrangeiros",
+      "vigor_original": {
+        "data": "2007-08-03",
+        "regra": "explicita",
+        "fonte": "Lei n.º 23/2007, artigo 220.º (30 dias após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[eéê]\\s+[Ee]str[aáàâã]ng[eéê][ií]r[oóôõ]s|[Ll][eéê][ií]\\s+n\\.º\\s*23/2007\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 304,
+      "_ultima_alteracao": "2026-09-10",
+      "_atos": 20
+    },
+    {
+      "slug": "lei-asilo",
+      "titulo": "Lei do Asilo",
+      "sigla": "LAsilo",
+      "area": "Direitos e cidadania",
+      "frag_id": "74902145",
+      "tipo": "lei",
+      "key": "2008-74902145",
+      "genitivo": "da Lei do Asilo",
+      "vigor_original": {
+        "data": "2008-08-29",
+        "regra": "explicita",
+        "fonte": "Lei n.º 27/2008, artigo 89.º (60 dias após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[oóôõ]\\s+[Aa]s[ií]l[oóôõ]|[Ll][eéê][ií]\\s+n\\.º\\s*27/2008\\b",
+      "auto": true,
+      "revisao": [],
+      "_artigos_no_registo": 110,
+      "_ultima_alteracao": "2026-09-10",
+      "_atos": 7
+    },
+    {
+      "slug": "lei-protecao-dados",
+      "titulo": "Lei de Proteção de Dados Pessoais",
+      "sigla": "LPDP",
+      "area": "Direitos e cidadania",
+      "auto": true,
+      "falha": true,
+      "revisao": [
+        "O Lei n.º 58/2019 não está na lista de legislação consolidada do DR, nem uma republicação dele."
+      ]
+    },
+    {
+      "slug": "lei-eleitoral-ar",
+      "titulo": "Lei Eleitoral da Assembleia da República",
+      "sigla": "LEAR",
+      "area": "Constituição e sistema político",
+      "frag_id": "34485975",
+      "tipo": "lei",
+      "key": "1979-34485975",
+      "genitivo": "da Lei Eleitoral da Assembleia da República",
+      "iniciativas": "[Ll][eéê][ií]\\s+[Ee]l[eéê][ií]t[oóôõ]r[aáàâã]l\\s+d[aáàâã]\\s+[Aa]ss[eéê]mbl[eéê][ií][aáàâã]\\s+d[aáàâã]\\s+[Rr][eéê]p[úu]bl[ií][cç][aáàâã]|[Ll][eéê][ií]\\s+n\\.º\\s*14/79\\b",
+      "auto": true,
+      "revisao": [
+        "Sem regra de entrada em vigor para um diploma anterior a 1983."
+      ],
+      "_artigos_no_registo": 198,
+      "_ultima_alteracao": "2026-07-23",
+      "_atos": 24
+    },
+    {
+      "slug": "lei-partidos-politicos",
+      "titulo": "Lei dos Partidos Políticos",
+      "sigla": "LPP",
+      "area": "Constituição e sistema político",
+      "frag_id": "34568275",
+      "tipo": "lei-organica",
+      "key": "2003-34568275",
+      "genitivo": "da Lei dos Partidos Políticos",
+      "vigor_original": {
+        "data": "2003-08-27",
+        "regra": "supletiva",
+        "fonte": "Lei n.º 74/98, artigo 2.º, n.º 2 (quinto dia após a publicação)"
+      },
+      "iniciativas": "[Ll][eéê][ií]\\s+d[oóôõ]s\\s+[Pp][aáàâã]rt[ií]d[oóôõ]s\\s+[Pp][oóôõ]l[íi]t[ií][cç][oóôõ]s|[Ll][eéê][ií]\\s+[Oo]rg[âa]n[ií][cç][aáàâã]\\s+n\\.º\\s*2/2003\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2018-04-19: confirme que o DR ainda o atualiza."
+      ],
+      "_artigos_no_registo": 40,
+      "_ultima_alteracao": "2018-04-19",
+      "_atos": 3
+    },
+    {
+      "slug": "lei-tribunal-constitucional",
+      "titulo": "Lei do Tribunal Constitucional",
+      "sigla": "LTC",
+      "area": "Constituição e sistema político",
+      "frag_id": "34556275",
+      "tipo": "lei",
+      "key": "1982-34556275",
+      "genitivo": "da Lei do Tribunal Constitucional",
+      "iniciativas": "[Ll][eéê][ií]\\s+d[oóôõ]\\s+[Tt]r[ií]b[uú]n[aáàâã]l\\s+[Cc][oóôõ]nst[ií]t[uú][cç][ií][oóôõ]n[aáàâã]l|[Ll][eéê][ií]\\s+n\\.º\\s*28/82\\b",
+      "auto": true,
+      "revisao": [
+        "A última alteração no consolidado do DR é de 2022-01-04: confirme que o DR ainda o atualiza.",
+        "Sem regra de entrada em vigor para um diploma anterior a 1983."
+      ],
+      "_artigos_no_registo": 145,
+      "_ultima_alteracao": "2022-01-04",
+      "_atos": 11
+    }
+  ]
+}

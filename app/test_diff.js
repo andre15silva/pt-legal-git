@@ -77,8 +77,8 @@ if (fs.existsSync(dir)) {
 // Search in everyday words (pipeline/sinonimos.json): the words people use find the law's words.
 const { search } = window.RedacaoApp;
 const { sinonimos } = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'pipeline', 'sinonimos.json'), 'utf8'));
-const indice = { sinonimos, pesquisa: [
-  ['codigo-civil-locacao', 'artigo-1100', 'Artigo 1100.º', 'Denúncia pelo arrendatário', 'vigente'],
+const indice = { sinonimos, diplomas: [{ slug: 'codigo-irc', sigla: 'CIRC' }], pesquisa: [
+  ['codigo-civil', 'artigo-1100', 'Artigo 1100.º', 'Denúncia pelo arrendatário', 'vigente'],
   ['codigo-do-trabalho', 'artigo-268', 'Artigo 268.º', 'Pagamento de trabalho suplementar', 'vigente'],
   ['codigo-do-trabalho', 'artigo-338', 'Artigo 338.º', 'Proibição de despedimento sem justa causa', 'vigente'],
   ['codigo-irs', 'artigo-68', 'Artigo 68.º', 'Taxas gerais', 'vigente'],

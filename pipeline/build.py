@@ -84,6 +84,9 @@ def e_anexo_do_codigo(p: dict, codigo_no_anexo) -> bool:
     ("Anexo IV" in the CIVA's DL 102/2008, "CÓDIGO PENAL" in DL 48/95)."""
     if p["tipo"] != ANEXO:
         return False
+    if isinstance(codigo_no_anexo, dict):  # two annexes with one name: the heading decides
+        return (p["nome"].strip().upper() == codigo_no_anexo["nome"].upper()
+                and (p.get("epigrafe") or "").startswith(codigo_no_anexo["epigrafe"]))
     if isinstance(codigo_no_anexo, str):
         return p["nome"].strip().upper() == codigo_no_anexo.upper()
     return p["nome"].lower().startswith("anexo")
@@ -168,7 +171,7 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
         fv, cf = f["FragmentoVersao"], f["ConsolidacaoFragmento"]
         tipo, nivel = fv["TipoFragmentoId"], f["Nivel"]
         stack = [p for p in stack if p["nivel"] < nivel]
-        este = {"nivel": nivel, "tipo": tipo, "nome": cf["Name"]}
+        este = {"nivel": nivel, "tipo": tipo, "nome": cf["Name"], "epigrafe": (fv.get("Epigrafe") or "").strip()}
         # so_anexo: keep the approving act and the code's annex only (the CIVA's DL 102/2008 also
         # republishes the RITI and tables of correspondence).
         if cfg.get("so_anexo") and any(p["tipo"] == ANEXO and not e_anexo_do_codigo(p, cna) for p in stack + [este]):
@@ -386,6 +389,38 @@ def link_parliament(reg: Registry, pdir: str) -> tuple[dict, dict]:
     return out, passagens
 
 
+def verificar_diploma(slug: str) -> list[str]:
+    """What is wrong with a built diploma, for entries pipeline/descobrir.py wrote: [] when it holds up."""
+    with open(os.path.join(OUT, "d", slug + ".json"), encoding="utf-8") as fh:
+        d = json.load(fh)
+    arts = [n for n in d["arvore"] if n["tipo"] == "artigo"]
+    out = []
+    if not arts:
+        out.append("sem artigos")
+    if any(not n["artigo"] or not n["rotulo"] for n in arts):
+        out.append("artigos sem número")
+    sem, total = 0, 0  # amended redações without a date (an original without one is a known gap)
+    for n in arts:
+        with open(os.path.join(OUT, "d", slug, n["artigo"] + ".json"), encoding="utf-8") as fh:
+            vs = [v for v in json.load(fh)["versoes"] if v["tipo"] != "original"]
+        total += len(vs)
+        sem += sum(1 for v in vs if not v.get("vigor"))
+    if total and sem / total > 0.5:
+        out.append(f"{sem} de {total} redações sem data de entrada em vigor")
+    return out
+
+
+def retirar(slug: str, reg: Registry) -> None:
+    """Take a diploma off the site: its files, and its rows in the acts' lists of changes."""
+    pasta = os.path.join(OUT, "d", slug)
+    if os.path.isdir(pasta):
+        shutil.rmtree(pasta)
+    if os.path.exists(pasta + ".json"):
+        os.remove(pasta + ".json")
+    for a in reg.acts.values():
+        a["alteracoes"] = [c for c in a["alteracoes"] if c["diploma"] != slug]
+
+
 def sinonimos() -> list[dict]:
     """Everyday words and the law's words, for search (pipeline/sinonimos.json)."""
     with open(os.path.join(ROOT, "pipeline", "sinonimos.json"), encoding="utf-8") as fh:
@@ -403,10 +438,9 @@ def copy_design_system() -> None:
 
 def main() -> int:
     copy_design_system()
-    with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
-        corpus = json.load(fh)
+    corpus = fetch.carregar_corpus()
     reg = Registry()
-    summaries, search, relatorios, ids = [], [], {}, {}
+    summaries, search, relatorios, ids, excluidos = [], [], {}, {}, []
     for cfg in corpus["diplomas"]:
         path = os.path.join(ROOT, "data", "raw", cfg["slug"] + ".json")
         if not os.path.exists(path):
@@ -417,6 +451,13 @@ def main() -> int:
         raw["diploma"] = {**raw["diploma"], **cfg}
         index, summary = build_diploma(raw, reg)
         summary["n_artigos"] = sum(1 for n in index["arvore"] if n["tipo"] == "artigo")
+        problemas = verificar_diploma(cfg["slug"]) if cfg.get("auto") else []
+        if problemas:  # a generated entry that does not hold up stays off the site
+            retirar(cfg["slug"], reg)
+            excluidos.append((cfg["slug"], problemas))
+            sys.stderr.write(f"{cfg['slug']}: FORA ({'; '.join(problemas)})\n")
+            continue
+        summary["area"] = cfg.get("area")
         summary["n_atos"] = sum(1 for a in reg.acts.values() if any(ch["diploma"] == cfg["slug"] for ch in a["alteracoes"]))
         summaries.append(summary)
         if index.get("verificacao"):
@@ -439,12 +480,16 @@ def main() -> int:
     for a in reg.acts.values():
         a["alteracoes"].sort(key=lambda c: (c["diploma"], c["vigor"] or ""))
     write(os.path.join(OUT, "atos.json"), reg.acts)
-    write(os.path.join(OUT, "index.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": summaries, "pesquisa": search,
+    # Every article's number and heading, for search: loaded only when the reader searches.
+    write(os.path.join(OUT, "pesquisa.json"), search)
+    write(os.path.join(OUT, "index.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": summaries,
                                             "sinonimos": sinonimos()})
     # The check against official republications, per diploma, for the Verificação page.
     write(os.path.join(OUT, "verificacao.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": {
         x["slug"]: {"titulo": x["titulo"], "sigla": x["sigla"], "relatorio": relatorios.get(x["slug"])} for x in summaries}})
     sys.stderr.write(f"{len(reg.acts)} atos, {len(iniciativas)} iniciativas ligadas\n")
+    for slug, problemas in excluidos:
+        print(f"fora do site: {slug}: {'; '.join(problemas)}")
     return 0
 
 

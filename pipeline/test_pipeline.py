@@ -9,6 +9,7 @@ import atos  # noqa: E402
 import build  # noqa: E402
 import passagem  # noqa: E402
 import pendentes  # noqa: E402
+import descobrir  # noqa: E402
 import verificacao  # noqa: E402
 import replay  # noqa: E402
 import texto  # noqa: E402
@@ -271,6 +272,56 @@ Os artigos 15.º-EA, 15.º I e 15.ºJ do NRAU passam a ter a seguinte redação:
     def test_part_of_a_code(self):
         self.assertTrue(pendentes.no_intervalo("artigo-1083-a", {"de": 1022, "ate": 1113}))
         self.assertFalse(pendentes.no_intervalo("artigo-824", {"de": 1022, "ate": 1113}))
+
+
+class Descobrir(unittest.TestCase):
+    """The automatic set-up of a diploma (pipeline/descobrir.py)."""
+    PUB = __import__("datetime").date(2015, 1, 7)
+
+    def data(self, frase):
+        d, _ = descobrir.ler_data(frase, self.PUB)
+        return d.isoformat() if d else None
+
+    def test_explicit_date(self):
+        self.assertEqual(self.data("O Código Penal revisto entra em vigor em 1 de Outubro de 1995."), "1995-10-01")
+
+    def test_relative_dates(self):
+        self.assertEqual(self.data("O presente decreto-lei entra em vigor no dia seguinte ao da sua publicação."), "2015-01-08")
+        self.assertEqual(self.data("A presente lei entra em vigor 90 dias após a sua publicação."), "2015-04-07")
+        self.assertEqual(self.data("O presente decreto-lei entra em vigor noventa dias após a data da sua publicação."), "2015-04-07")
+        self.assertEqual(self.data("A presente lei entra em vigor no primeiro dia do mês seguinte ao da sua publicação."), "2015-02-01")
+        self.assertEqual(self.data("entra em vigor no 1.º dia do segundo mês seguinte ao da sua publicação"), "2015-03-01")
+        self.assertEqual(self.data("A presente lei entra em vigor um ano após a data da sua publicação."), "2016-01-07")
+        self.assertEqual(self.data("O presente decreto-lei entra em vigor seis meses após a data da sua publicação."), "2015-07-07")
+        self.assertEqual(self.data("A presente lei entra em vigor no trigésimo dia após a sua publicação."), "2015-02-06")
+        self.assertEqual(self.data("A presente lei entra em vigor no 30.º dia após a data da sua publicação."), "2015-02-06")
+        self.assertEqual(self.data("O Código entra em vigor no dia 1 Março de 2000."), "2000-03-01")
+        # The main clause, not the exception after it (Lei n.º 13/2002, artigo 9.º)
+        self.assertEqual(self.data("A presente lei entra em vigor um ano após a data da sua publicação, com excepção do artigo 7.º, que entra em vigor no dia seguinte ao da publicação da presente lei."), "2016-01-07")
+
+    def test_unreadable_date(self):
+        self.assertIsNone(self.data("A presente lei entra em vigor com o Orçamento do Estado subsequente à sua aprovação."))
+        self.assertIsNone(self.data("entra em vigor 30 dias úteis após a sua publicação"))
+
+    def test_annex_named_after_the_code(self):
+        def f(nivel, tipo, nome, ep=""):
+            return {"Nivel": nivel, "FragmentoVersao": {"TipoFragmentoId": tipo, "Epigrafe": ep}, "ConsolidacaoFragmento": {"Name": nome}}
+        frags = [f(1, 11, "Artigo 1.º"), f(1, 14, "Anexo I", "Código do Imposto Municipal sobre Imóveis"), f(2, 11, "Artigo 1.º"), f(2, 11, "Artigo 2.º"),
+                 f(1, 14, "Anexo II", "Código do Imposto Municipal sobre as Transmissões Onerosas de Imóveis"), f(2, 11, "Artigo 1.º")]
+        self.assertEqual(descobrir.onde({"titulo": "Código do Imposto Municipal sobre Imóveis", "anexo": "Imposto Municipal sobre Imóveis"}, frags, []),
+                         {"codigo_no_anexo": "Anexo I", "so_anexo": True})
+        self.assertEqual(descobrir.onde({"titulo": "Código do IMT", "anexo": "Transmissões Onerosas"}, frags, [])["codigo_no_anexo"], "Anexo II")
+
+    def test_law_without_annex(self):
+        frags = [{"Nivel": 1, "FragmentoVersao": {"TipoFragmentoId": 11}, "ConsolidacaoFragmento": {"Name": "Artigo 1.º"}}]
+        self.assertEqual(descobrir.onde({"titulo": "Lei da Nacionalidade"}, frags, []), {})
+
+    def test_bill_pattern(self):
+        p = re.compile(descobrir.padrao("Código do Procedimento Administrativo"))
+        self.assertTrue(p.search("Altera o código do procedimento administrativo"))
+        self.assertTrue(p.search("Altera o Codigo do Procedimento  Administrativo"))
+        self.assertEqual(descobrir.genitivo("Lei da Nacionalidade"), "da Lei da Nacionalidade")
+        self.assertEqual(descobrir.genitivo("Código Cooperativo"), "do Código Cooperativo")
 
 
 @unittest.skipUnless(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "data", "verificacao.json")),

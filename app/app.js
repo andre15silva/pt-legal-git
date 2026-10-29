@@ -291,6 +291,7 @@
   function Pesquisa() {
     var r = useData(['index.json']);
     var qs = useState(''), ab = useState(false), at = useState(0);
+    var rp = useData(ab[0] || qs[0] ? ['pesquisa.json'] : []);  // the article list, only once the reader searches
     var ref = React.useRef(null);
     useEffect(function () {
       function tecla(e) {
@@ -302,7 +303,7 @@
       document.addEventListener('keydown', tecla);
       return function () { document.removeEventListener('keydown', tecla); };
     }, []);
-    var index = r.data ? r.data[0] : null;
+    var index = r.data && rp.data && rp.data[0] ? comPesquisa(r.data[0], rp.data[0]) : null;
     var res = index && qs[0] ? search(index, qs[0]).slice(0, 8) : [];
     var nomes = {};
     if (index) index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
@@ -368,11 +369,22 @@
   // ---- Home ---------------------------------------------------------------------------------
   var SIGLAS = { crp: 'constituicao', constituicao: 'constituicao', 'constituição': 'constituicao', ct: 'codigo-do-trabalho', trabalho: 'codigo-do-trabalho',
     circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau',
-    cc: 'codigo-civil-locacao', civil: 'codigo-civil-locacao', 'locação': 'codigo-civil-locacao', locacao: 'codigo-civil-locacao',
+    cc: 'codigo-civil', civil: 'codigo-civil',
     cirs: 'codigo-irs', irs: 'codigo-irs', formulario: 'lei-formulario', 'formulário': 'lei-formulario', '74/98': 'lei-formulario',
     cp: 'codigo-penal', penal: 'codigo-penal', cpc: 'codigo-processo-civil', cpp: 'codigo-processo-penal',
     csc: 'codigo-sociedades-comerciais', sociedades: 'codigo-sociedades-comerciais', civa: 'codigo-iva', iva: 'codigo-iva',
     lgt: 'lei-geral-tributaria', ebf: 'estatuto-beneficios-fiscais' };
+  // Each diploma's abbreviation finds it ("cpa 5", "cire 18"), on top of the names above.
+  var siglasCache = null;
+  function siglasDe(index) {
+    if (siglasCache && siglasCache.diplomas === index.diplomas) return siglasCache.mapa;
+    var mapa = Object.assign({}, SIGLAS);
+    index.diplomas.forEach(function (d) { if (d.sigla) mapa[fold(d.sigla)] = d.slug; });
+    siglasCache = { diplomas: index.diplomas, mapa: mapa };
+    return mapa;
+  }
+  // index.json with the article list (pesquisa.json), as search() wants it.
+  function comPesquisa(index, pesquisa) { return { diplomas: index.diplomas, sinonimos: index.sinonimos, pesquisa: pesquisa }; }
   function fold(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   // Everyday words (pipeline/sinonimos.json): "inquilino" finds "arrendatário", "horas extra" finds
   // "trabalho suplementar". Each word or phrase of the query becomes a group of alternatives; an
@@ -398,7 +410,7 @@
     if (!words.length && !g.grupos.length) return [];
     var diploma = null, num = null, rest = g.grupos.slice();
     words.forEach(function (w) {
-      if (SIGLAS[w]) diploma = SIGLAS[w];
+      if (siglasDe(index)[w]) diploma = siglasDe(index)[w];
       else if (/^\d+(-[a-z])?$/.test(w)) num = w;
       else if (!/^(art|artigo|do|da|de|o|a|n|e|um|uma|os|as|no|na|em|para|com|por|que|se|me|eu|fui|ser)$/.test(w)) rest.push([w]);
     });
@@ -411,14 +423,17 @@
     }).sort(function (a, b) { return (a[4] === 'revogado') - (b[4] === 'revogado'); }).slice(0, 30);
   }
   function epigrafe(e) { return (e || '').replace(/^\((.*)\)$/, '$1'); }
+  var AREAS = ['Constituição e sistema político', 'Direitos e cidadania', 'Civil e comercial', 'Trabalho e segurança social', 'Fiscal',
+    'Penal', 'Tribunais e processo', 'Administração pública'];
   function Home() {
     var r = useData(['index.json', 'atos.json']);
     var qs = useState('');
+    var rp = useData(qs[0] ? ['pesquisa.json'] : []);
     if (!r.data) return h(Loading, { error: r.error });
-    var index = r.data[0], atos = r.data[1];
+    var index = r.data[0], atos = r.data[1], carregada = !qs[0] || (rp.data && rp.data[0]);
     var nomes = {};
     index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
-    var results = search(index, qs[0]);
+    var results = carregada && qs[0] ? search(comPesquisa(index, rp.data[0]), qs[0]) : [];
     var recent = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.length; })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; }).slice(0, 8);
@@ -431,19 +446,25 @@
           h('input', { id: 'q', type: 'search', className: 'rd-input search-input', value: qs[0], autoComplete: 'off',
             placeholder: 'Por exemplo: «art 87 circ», «inquilino», «horas extra», «crp 1»', onChange: function (e) { qs[1](e.target.value); } })),
         qs[0] ? h('section', { 'aria-live': 'polite', className: 'results' },
-          h('p', { className: 'muted' }, results.length ? results.length + (results.length === 1 ? ' artigo encontrado' : ' artigos encontrados') : 'Não encontrámos artigos. Escreva o número do artigo e a sigla do diploma (CRP, CT, CIRC, NRAU) ou palavras como «despedimento», «renda», «férias».'),
+          h('p', { className: 'muted' }, !carregada ? 'A carregar…' : results.length ? results.length + (results.length === 1 ? ' artigo encontrado' : ' artigos encontrados') : 'Não encontrámos artigos. Escreva o número do artigo e a sigla do diploma (CRP, CT, CC, CPA) ou palavras como «despedimento», «renda», «férias».'),
           h('ul', { className: 'list' }, results.map(function (x) {
             return h('li', { key: x[0] + x[1] }, h('a', { href: link(['d', x[0], x[1]]) }, h('strong', null, x[2]), x[3] ? ' ' + epigrafe(x[3]) : ''),
               h('span', { className: 'muted' }, ' · ' + nomes[x[0]].sigla), x[4] === 'revogado' ? h(R.StatusPill, { status: 'revogado' }) : null);
           }))) : null),
       h('div', { className: 'duas duas-largo' },
         h('section', { 'aria-labelledby': 'dipl' },
-          h('h2', { id: 'dipl', className: 'h2' }, 'Diplomas'),
-          h('ul', { className: 'cards' }, index.diplomas.map(function (d) {
-            return h('li', { key: d.slug, className: 'card' },
-              h('a', { className: 'card-title', href: link(['d', d.slug]) }, d.titulo),
-              h('p', null, d.designacao + ' · ' + d.n_artigos + ' artigos · ' + d.n_atos + (d.n_atos === 1 ? ' alteração' : ' alterações')));
-          }))),
+          h('h2', { id: 'dipl', className: 'h2' }, index.diplomas.length + ' diplomas'),
+          AREAS.concat(['Outros']).map(function (area) {
+            var ds = index.diplomas.filter(function (d) { return (AREAS.indexOf(d.area) >= 0 ? d.area : 'Outros') === area; });
+            if (!ds.length) return null;
+            return h('div', { key: area, className: 'area' },
+              h('h3', { className: 'area-h' }, area),
+              h('ul', { className: 'cards' }, ds.map(function (d) {
+                return h('li', { key: d.slug, className: 'card' },
+                  h('a', { className: 'card-title', href: link(['d', d.slug]) }, d.titulo),
+                  h('p', null, (fold(d.designacao).replace(/[^a-z0-9]/g, '').indexOf(fold(d.sigla).replace(/[^a-z0-9]/g, '')) >= 0 ? '' : d.sigla + ' · ') + d.designacao + ' · ' + d.n_artigos + ' artigos · ' + d.n_atos + (d.n_atos === 1 ? ' alteração' : ' alterações')));
+              })));
+          })),
         h('section', { 'aria-labelledby': 'rec' },
           h('h2', { id: 'rec', className: 'h2' }, 'Alterações mais recentes'),
           h('ol', { className: 'list' }, recent.map(function (a) {
@@ -1528,6 +1549,11 @@
       // The compare page became the Alterações view of the article. Old links still work.
       var q = route.q, novo = link(['d', s[1], s[2]], { redacao: q.ate || q.ato || null, com: q.de || null, ver: 'mudou', lado: q.vista === 'lado' ? '1' : null, ato: q.ato || null });
       setTimeout(function () { substituir(novo); }, 0);
+      return h(Shell, null, h(Loading, {}));
+    }
+    if (s[0] === 'd' && s[1] === 'codigo-civil-locacao') {
+      // The Código Civil was only its locação chapter at first. Old links open the whole code.
+      setTimeout(function () { substituir(link(['d', 'codigo-civil'].concat(s.slice(2)), route.q)); }, 0);
       return h(Shell, null, h(Loading, {}));
     }
     if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });

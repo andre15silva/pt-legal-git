@@ -78,7 +78,7 @@ const clips = {
 
   // 6. Bills now in Parliament, on the article they would change.
   6: ['6-no-parlamento', async (v, gravar) => {
-    await v.ir('#/d/codigo-civil-locacao/artigo-1083');
+    await v.ir('#/d/codigo-civil/artigo-1083');
     await v.page.mouse.move(700, 200);
     gravar();
     await v.legenda('O que está em discussão no Parlamento para este artigo', 'Código Civil, artigo 1083.º · Fundamento da resolução do arrendamento');

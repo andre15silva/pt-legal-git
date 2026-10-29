@@ -88,6 +88,8 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 .mud-por { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 .mud-art .lei { margin: 8px 0 0; }
 .mud-mais { margin: 32px 0 0; }
+.area + .area { margin-top: 32px; }
+.area-h { margin: 16px 0 8px; font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--ink-muted); }
 .cards { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
 .card { display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .card p { margin: 0; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }

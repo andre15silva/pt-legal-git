@@ -1,4 +1,4 @@
-"""Fetch the consolidated history of the diplomas in corpus.json from the Diário da República.
+"""Fetch the consolidated history of the diplomas in corpus.json and corpus-auto.json from the Diário da República.
 
 For each diploma: the header, the as-of snapshot today, the snapshot on the initial date
 (original texts), the list of amending acts, and the version history of every article.
@@ -64,6 +64,19 @@ def cached(name: str, *args):
     return data
 
 
+def carregar_corpus() -> dict:
+    """pipeline/corpus.json (checked by hand) and pipeline/corpus-auto.json (written by
+    descobrir.py), as one corpus. Generated entries that descobrir.py could not set up are left out."""
+    with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
+        corpus = json.load(fh)
+    auto = os.path.join(ROOT, "pipeline", "corpus-auto.json")
+    if os.path.exists(auto):
+        with open(auto, encoding="utf-8") as fh:
+            slugs = {d["slug"] for d in corpus["diplomas"]}
+            corpus["diplomas"] += [d for d in json.load(fh)["diplomas"] if not d.get("falha") and d["slug"] not in slugs]
+    return corpus
+
+
 def hoje(corpus: dict) -> str:
     """The date the data is fetched as of: REDACAO_HOJE (the daily job), else corpus.json."""
     return os.environ.get("REDACAO_HOJE") or corpus["consultado_em"]
@@ -121,12 +134,17 @@ def fetch(d: dict, today: str) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
-        corpus = json.load(fh)
+    corpus = carregar_corpus()
     wanted = {a for a in argv[1:] if not a.startswith("--")}
     so_mudados, today = "--se-mudou" in argv, hoje(corpus)
+    # REDACAO_ORCAMENTO_MIN: start no new diploma after this many minutes (the daily job). The
+    # build publishes what is there; the rest is fetched on the next days.
+    fim = time.monotonic() + 60 * float(os.environ.get("REDACAO_ORCAMENTO_MIN") or "inf")
     for d in corpus["diplomas"]:
         if wanted and d["slug"] not in wanted:
+            continue
+        if time.monotonic() > fim:
+            sys.stderr.write(f"{d['slug']}: fica para a próxima vez (orçamento de tempo)\n")
             continue
         if so_mudados and not mudou(d, today):
             sys.stderr.write(f"{d['slug']}: sem alterações\n")

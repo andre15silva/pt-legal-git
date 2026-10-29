@@ -28,7 +28,27 @@ python3 -m http.server 8000 -d app       # then open http://localhost:8000
 
 `app/data/d/<slug>.json` holds a diploma's índice and metadata. `app/data/d/<slug>/<artigo>.json` holds one article's history. A page loads only the files it shows: the Código do Trabalho índice is 144 KB, not 1.6 MB.
 
-The corpus has 14 diplomas: the Constitution, the Código do Trabalho, the Código Civil (locação), the NRAU, the Códigos do IRS, do IRC and do IVA, the Lei Geral Tributária, the Estatuto dos Benefícios Fiscais, the Código Penal, the Códigos de Processo Civil and de Processo Penal, the Código das Sociedades Comerciais and the Lei n.º 74/98. We left out the Código da Estrada: the DR's consolidated text of it starts in 2020 and stops at Decreto-Lei n.º 102-B/2020.
+The hand-checked corpus has 14 diplomas: the Constitution, the Código do Trabalho, the Código Civil, the NRAU, the Códigos do IRS, do IRC and do IVA, the Lei Geral Tributária, the Estatuto dos Benefícios Fiscais, the Código Penal, the Códigos de Processo Civil and de Processo Penal, the Código das Sociedades Comerciais and the Lei n.º 74/98. We left out the Código da Estrada: the DR's consolidated text of it starts in 2020 and stops at Decreto-Lei n.º 102-B/2020.
+
+### Adding diplomas
+
+Two lists say which diplomas the site has:
+
+- [`pipeline/corpus.json`](../pipeline/corpus.json): set up and checked by hand.
+- [`pipeline/alvos.json`](../pipeline/alvos.json): only a name, an abbreviation, an area and the act that approved each one. [`pipeline/descobrir.py`](../pipeline/descobrir.py) does the rest and writes `pipeline/corpus-auto.json`:
+  1. It finds the DR record in `data/catalogo.json` (every consolidated law and decree-law, from [`pipeline/catalogo.py`](../pipeline/catalogo.py)). When several records name the diploma (the act that approved it, a later republication), it keeps the one whose amending acts reach furthest.
+  2. It finds the annex that holds the code, by its heading.
+  3. It reads the approving act's article on entry into force (a date, or "no dia seguinte", "30 dias após", "no primeiro dia do mês seguinte"); without one, it uses the default rule of the period.
+  4. It notes when the history starts at a republication, and writes the names and the pattern that finds bills in Parliament.
+
+  It prints what a person should check. The build checks each generated diploma again and leaves it off the site when it does not hold up (no articles, or most redações without a date).
+
+```bash
+python -I pipeline/catalogo.py    # once: about 2800 records, 45 minutes, cached
+python -I pipeline/descobrir.py   # writes pipeline/corpus-auto.json and prints what to check
+```
+
+To add a diploma, add a line to `alvos.json` and run `descobrir.py`. The daily job fetches it, within a time budget of 2 hours per run, so a large addition arrives over a few days. To fix a generated entry by hand, move it to `corpus.json`.
 
 Choose which diplomas to include in [`pipeline/corpus.json`](../pipeline/corpus.json). Each entry needs the DR consolidation ID (`frag_id`, `tipo`, `key`, all taken from the consolidated-text URL). Where the DR leaves a date out, the entry records the entry-into-force rule for the original text, with the provision that sets it.
 

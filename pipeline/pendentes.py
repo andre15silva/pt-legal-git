@@ -287,8 +287,8 @@ def pendentes(corpus: list[dict], ids_por_diploma: dict[str, set[str]], comps: d
 
 
 def main() -> int:
-    with open(os.path.join(ROOT, "pipeline", "corpus.json"), encoding="utf-8") as fh:
-        corpus = json.load(fh)["diplomas"]
+    import fetch
+    corpus = fetch.carregar_corpus()["diplomas"]
     padroes = [re.compile(c["iniciativas"]) for c in corpus if c.get("iniciativas")]
     with open(os.path.join(PDIR, f"Iniciativas{LEGISLATURA}_json.txt"), encoding="utf-8-sig") as fh:
         raws = json.load(fh)

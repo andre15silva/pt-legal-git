@@ -53,6 +53,9 @@ jobs:
           python -I pipeline/fetch_parlamento.py
           python -I pipeline/fetch_parlamento.py --refresh XVII
       - name: Diário da República (only the diplomas whose amending acts changed)
+        # At most 2 h of new diplomas per run: a large addition arrives over a few days.
+        env:
+          REDACAO_ORCAMENTO_MIN: "120"
         run: python -I pipeline/fetch.py ${{ inputs.completo && ' ' || '--se-mudou' }}
       - name: Texts of the bills now in Parliament
         run: python -I pipeline/pendentes.py
