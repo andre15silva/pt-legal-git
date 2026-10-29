@@ -72,6 +72,23 @@ a:hover { text-decoration-thickness: 2px; text-decoration-color: var(--verde); }
 .search-label { font-weight: 500; }
 .search-input { width: 100%; box-sizing: border-box; min-height: 48px; font-size: 17px; }
 .results { max-width: 860px; }
+/* The whole diploma between two dates (#/alteracoes/<diploma>). */
+.dip-acoes { margin: 24px 0 0; }
+.mud-datas { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; margin: 24px 0 0; }
+.mud-datas label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.mud-atalhos { display: flex; flex-wrap: wrap; gap: 8px; }
+.mud-atalhos .rd-btn[aria-pressed="true"] { color: var(--ink); font-weight: 600; }
+.mudancas .lead { margin-top: 24px; }
+.dobra.mud-atos { margin: 32px 0 0; max-width: 860px; }
+.mud-lista { display: flex; flex-direction: column; gap: 48px; margin-top: 48px; max-width: calc(650px + var(--hang)); }
+.mud-art { border-top: 1px solid var(--ink); padding-top: 16px; }
+.mud-cab { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-family: var(--font-serif); font-size: 20px; line-height: 28px; font-weight: 400; }
+.mud-cab a { color: var(--ink); text-decoration: none; }
+.mud-cab a:hover { text-decoration: underline; }
+.mud-n { font-weight: 600; }
+.mud-por { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.mud-art .lei { margin: 8px 0 0; }
+.mud-mais { margin: 32px 0 0; }
 .cards { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
 .card { display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .card p { margin: 0; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }

@@ -56,6 +56,7 @@ When the DR changes its web app, `dr_client.py` stops with `StaleApiVersion` and
 | What changed in a redação, against the one before | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025&ver=mudou` |
 | Against any other redação, side by side | `&com=lei-82-2023&lado=1` |
 | Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
+| What changed in a whole diploma between two dates | `#/alteracoes/codigo-do-trabalho?de=2023-01-01&ate=2026-10-29` |
 | One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
 | One parliamentary initiative (or a bill now in Parliament) | `#/iniciativa/315386` |
 | The check of the text against the official republications | `#/verificacao` |
@@ -85,5 +86,5 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
 - Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. The pipeline writes each row as one line, `│ cell │ cell │ cell`, filling merged cells (colspan, rowspan) with empty cells so the rows of a table have the same number of cells. The app shows the rows as a grid: text in the first column, numbers right-aligned. Changes inside a cell are marked as in any line. In Origem do texto the rows of one table share one margin note.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
 - Bills in Parliament: we read the articles from the first sentence of each article of the bill. A bill that changes only a list or an annex (the IVA rate lists), or whose PDF has no text layer, is listed on the diploma without articles. A bill that changes a part of a code we do not have (Código Civil outside the locação) is left out.
-- Some codes start their history at a republication or revision: the CIRC (2014), the CIRS (2015), the CIVA (2008) and the Código Penal (1995). The page says so on the first redação.
+- Some codes start their history at a republication or revision: the CIRC (2014), the CIRS (2015), the CIVA (2008) and the Código Penal (1995). The page says so on the first redação. The DR has no consolidated text for the years before: its page for Decreto-Lei n.º 442-A/88 sends readers to the 2014 republication of the CIRS, and the consolidation of Decreto-Lei n.º 198/2001 (CIRS, CIRC and EBF) records only the changes of 2001 and 2002.
 - The especialidade votes in committee are only in PDFs (from legislatura XII). The app says that it does not have them.

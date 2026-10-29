@@ -92,4 +92,18 @@ assert.strictEqual(ids('escalões'), 'artigo-68');
 assert.strictEqual(ids('art 87 circ'), 'artigo-87');
 assert.strictEqual(ids('de'), '');
 
-console.log('ok: ' + cases.length + ' diff cases, 9 URL cases, 6 search cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));
+// The whole diploma between two dates: which articles changed, were added or revoked.
+const { mudancas } = window.RedacaoApp;
+const dip = { arvore: [
+  { tipo: 'divisao' },
+  { tipo: 'artigo', artigo: 'artigo-1', datas: ['2009-02-17'], atos: ['lei-7-2009'], tipos: ['original'] },
+  { tipo: 'artigo', artigo: 'artigo-2', datas: ['2009-02-17', '2019-10-01', '2023-05-01'], atos: ['lei-7-2009', 'lei-93-2019', 'lei-13-2023'], tipos: ['original', 'alterado', 'alterado'] },
+  { tipo: 'artigo', artigo: 'artigo-2-a', datas: ['2023-05-01'], atos: ['lei-13-2023'], tipos: ['aditado'] },
+  { tipo: 'artigo', artigo: 'artigo-3', datas: ['2009-02-17', '2023-05-01'], atos: ['lei-7-2009', 'lei-13-2023'], tipos: ['original', 'revogado'] },
+] };
+const mud = (de, ate) => mudancas(dip, de, ate).map(x => x.n.artigo + ':' + x.tipo + ':' + x.atos.join('+')).join(' ');
+assert.strictEqual(mud('2019-01-01', '2026-10-29'), 'artigo-2:alterado:lei-93-2019+lei-13-2023 artigo-2-a:aditado:lei-13-2023 artigo-3:revogado:lei-13-2023');
+assert.strictEqual(mud('2020-01-01', '2023-04-30'), '');
+assert.strictEqual(mud('2019-10-01', '2019-10-01'), '');
+
+console.log('ok: ' + cases.length + ' diff cases, 9 URL cases, 6 search cases, 3 diploma-diff cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : ''));

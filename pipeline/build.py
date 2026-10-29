@@ -204,7 +204,10 @@ def build_diploma(raw: dict, reg: Registry) -> tuple[dict, dict]:
         tree.append({"nivel": f["Nivel"], "tipo": "artigo", "rotulo": f["ConsolidacaoFragmento"]["Name"], "epigrafe": hist["epigrafe"],
                      "artigo": aid, "estado": hist["estado"], "n": len(hist["versoes"]), "ultima": last["vigor"] or last["publicacao"],
                      # Start of each redação, for the strip of ticks in the index.
-                     "datas": [v["vigor"] or v["publicacao"] for v in hist["versoes"]]})
+                     "datas": [v["vigor"] or v["publicacao"] for v in hist["versoes"]],
+                     # The act and type of each redação, for the comparison of the whole diploma
+                     # between two dates without loading every article.
+                     "atos": [v["ato"] for v in hist["versoes"]], "tipos": [v["tipo"] for v in hist["versoes"]]})
 
     index = {"slug": cfg["slug"], "titulo": cfg["titulo"], "sigla": cfg["sigla"], "genitivo": cfg.get("genitivo"),
              "vigor_original": cfg.get("vigor_original"), "inicio_historia": cfg.get("inicio_historia"), "parte": cfg.get("parte"), "designacao": original["designacao"],

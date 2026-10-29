@@ -455,6 +455,89 @@
           })))));
   }
 
+  // ---- The whole diploma between two dates ------------------------------------------------------
+  // Like a diff of two commits: every article whose text changed between `de` and `ate`, by
+  // entry into force (publication when the DR has no date). The índice holds each redação's start,
+  // act and type, so we know which articles changed before loading any of them.
+  var LOTE = 15;
+  function redacaoEm(n, data) {
+    for (var i = n.datas.length - 1; i >= 0; i--) if (n.datas[i] <= data) return i;
+    return -1;
+  }
+  function mudancas(d, de, ate) {
+    var out = [];
+    d.arvore.forEach(function (n) {
+      if (n.tipo !== 'artigo' || !n.atos) return;
+      var a = redacaoEm(n, de), b = redacaoEm(n, ate);
+      if (b < 0 || a === b) return;
+      var atos = [];
+      for (var i = a + 1; i <= b; i++) if (atos.indexOf(n.atos[i]) < 0) atos.push(n.atos[i]);
+      var tipo = a < 0 ? 'aditado' : n.tipos[b] === 'revogado' && n.tipos[a] !== 'revogado' ? 'revogado' : 'alterado';
+      out.push({ n: n, a: a, b: b, atos: atos, tipo: tipo });
+    });
+    return out;
+  }
+  function Mudancas(props) {
+    var slug = props.slug, q = props.q;
+    var r0 = useData(['d/' + slug + '.json', 'atos.json']);
+    var mais = useState(1);
+    var hj = hoje(), ano = function (n) { return (Number(hj.slice(0, 4)) - n) + hj.slice(4); };
+    var de = validDate(q.de) || ano(1), ate = validDate(q.ate) || hj;
+    if (de > ate) { var t = de; de = ate; ate = t; }
+    var d = r0.data ? r0.data[0] : null, mud = d ? mudancas(d, de, ate) : [];
+    var mostrados = mud.slice(0, LOTE * mais[0]);
+    var r = useData(mostrados.map(function (x) { return 'd/' + slug + '/' + x.n.artigo + '.json'; }));
+    if (!r0.data) return h(Loading, { error: r0.error });
+    var atos = r0.data[1];
+    document.title = 'O que mudou · ' + d.sigla + ' · Redação';
+    var ir = function (o) { substituir(link(['alteracoes', slug], Object.assign({ de: de, ate: ate }, o))); };
+    var conta = { alterado: 0, aditado: 0, revogado: 0 }, porAto = {};
+    mud.forEach(function (x) { conta[x.tipo]++; x.atos.forEach(function (a) { porAto[a] = (porAto[a] || 0) + 1; }); });
+    var idsAtos = Object.keys(porAto).sort(function (x, y) { return ((atos[x] || {}).publicacao || '') < ((atos[y] || {}).publicacao || '') ? -1 : 1; });
+    var partesResumo = [[conta.alterado, 'artigo alterado', 'artigos alterados'], [conta.aditado, 'aditado', 'aditados'], [conta.revogado, 'revogado', 'revogados']]
+      .filter(function (x) { return x[0]; }).map(function (x) { return x[0] + ' ' + (x[0] === 1 ? x[1] : x[2]); });
+    var atalhos = [['Último ano', ano(1)], ['Últimos 5 anos', ano(5)], ['Desde o início', d.publicacao]];
+    return h('div', { className: 'pagina-ato mudancas' },
+      h(Crumbs, { items: [['Diplomas', '#/'], [d.titulo, link(['d', slug])], ['O que mudou']] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'O que mudou ' + (d.genitivo ? d.genitivo.replace(/^d([ao]s?) /, 'n$1 ') : 'no diploma')),
+        h('form', { className: 'mud-datas', onSubmit: function (e) { e.preventDefault(); } },
+          h('label', null, h('span', null, 'De'), h('input', { type: 'date', className: 'rd-input', value: de, min: d.publicacao, max: ate, onChange: function (e) { if (validDate(e.target.value)) { mais[1](1); ir({ de: e.target.value }); } } })),
+          h('label', null, h('span', null, 'Até'), h('input', { type: 'date', className: 'rd-input', value: ate, min: de, onChange: function (e) { if (validDate(e.target.value)) { mais[1](1); ir({ ate: e.target.value }); } } })),
+          h('span', { className: 'mud-atalhos' }, atalhos.map(function (x) {
+            return h('button', { key: x[0], type: 'button', className: 'rd-btn', 'aria-pressed': de === x[1] && ate === hj, onClick: function () { mais[1](1); ir({ de: x[1], ate: hj }); } }, x[0]);
+          }))),
+        h('p', { className: 'lead', 'aria-live': 'polite' }, 'De ' + extenso(de) + ' a ' + extenso(ate) + ': ',
+          mud.length ? lista(partesResumo) + ', por ' + idsAtos.length + (idsAtos.length === 1 ? ' ato.' : ' atos.') : 'nenhum artigo mudou.'),
+        h('p', { className: 'muted small' }, 'Contamos cada redação da data de entrada em vigor, ou da publicação quando o Diário da República não indica a data.')),
+      idsAtos.length ? h('details', { className: 'dobra mud-atos' },
+        h('summary', null, idsAtos.length === 1 ? 'O ato' : 'Os ' + idsAtos.length + ' atos, do mais antigo para o mais recente'),
+        h('ol', { className: 'list' }, idsAtos.map(function (id) {
+          var a = atos[id] || { designacao: id };
+          return h('li', { key: id }, h('a', { href: link(['ato', id]) }, a.designacao),
+            h('span', { className: 'muted' }, (a.publicacao ? ' · ' + curta(a.publicacao) : '') + ' · ' + porAto[id] + (porAto[id] === 1 ? ' artigo' : ' artigos')));
+        }))) : null,
+      h('div', { className: 'mud-lista' }, mostrados.map(function (x, k) {
+        var art = r.data ? r.data[k] : null, n = x.n;
+        var antes = art && x.a >= 0 ? texto(art.versoes[x.a]) : '', depois = art ? texto(art.versoes[x.b]) : '';
+        var href = art ? link(['d', slug, n.artigo], { redacao: versionKey(art, x.b), ver: 'mudou', com: x.a >= 0 && x.a !== x.b - 1 ? versionKey(art, x.a) : null }) : link(['d', slug, n.artigo]);
+        var alt = art ? alteracoes(antes, depois, false, -1) : null;
+        return h('section', { key: n.artigo, className: 'mud-art', 'aria-labelledby': 'm-' + n.artigo },
+          h('h2', { id: 'm-' + n.artigo, className: 'mud-cab' },
+            h('a', { href: href }, h('span', { className: 'mud-n' }, n.rotulo), n.epigrafe ? ' ' + epigrafe(n.epigrafe) : ''),
+            x.tipo !== 'alterado' ? h(R.StatusPill, { status: x.tipo === 'aditado' ? 'aditado' : 'revogado' }) : null),
+          h('p', { className: 'mud-por' }, (x.atos.length === 1 ? 'Pelo ato: ' : 'Pelos atos: '), x.atos.map(function (a, j) {
+            return [j ? (j === x.atos.length - 1 ? ' e ' : ', ') : '', h('a', { key: a, href: link(['ato', a]) }, (atos[a] || { designacao: a }).designacao)];
+          })),
+          !art ? h('p', { className: 'muted' }, 'A carregar…')
+            : alt.n ? h('div', { className: 'lei' }, alt.nodes)
+            : h('p', { className: 'muted' }, 'O texto ficou igual (a alteração não mudou as palavras).'));
+      })),
+      mud.length > mostrados.length ? h('p', { className: 'mud-mais' }, h('button', { type: 'button', className: 'rd-btn', onClick: function () { mais[1](mais[0] + 1); } },
+        'Mostrar mais ' + Math.min(LOTE, mud.length - mostrados.length) + ' de ' + (mud.length - mostrados.length) + ' artigos')) : null,
+      mud.length ? h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))) : null);
+  }
+
   // ---- Diploma -------------------------------------------------------------------------------
   function Diploma(props) {
     var r = useData(['d/' + props.slug + '.json', 'atos.json', 'pendentes.json']);
@@ -479,7 +562,8 @@
           h('div', null, h('dt', null, 'Diploma'), h('dd', null, d.designacao + ' (' + d.sigla + ')')),
           h('div', null, h('dt', null, 'Publicação'), h('dd', null, extenso(d.publicacao))),
           d.vigor_original ? h('div', null, h('dt', null, 'Entrada em vigor'), h('dd', null, extenso(d.vigor_original.data), h('span', { className: 'factos-sub' }, d.vigor_original.fonte))) : null,
-          d.link ? h('div', null, h('dt', null, 'Fonte'), h('dd', null, h('a', { href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗'))) : null)),
+          d.link ? h('div', null, h('dt', null, 'Fonte'), h('dd', null, h('a', { href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗'))) : null),
+        h('p', { className: 'dip-acoes' }, h('a', { className: 'rd-btn', href: link(['alteracoes', d.slug]) }, 'O que mudou entre duas datas'))),
       h('div', { className: 'duas duas-largo' },
         h('nav', { className: 'toc', 'aria-label': 'Índice' },
           h('h2', { className: 'h2' }, 'Índice'),
@@ -1448,6 +1532,7 @@
     if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });
     else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
     else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
+    else if (s[0] === 'alteracoes' && s[1]) view = h(Mudancas, { slug: s[1], q: route.q });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else if (s[0] === 'verificacao') view = h(Verificacao);
@@ -1463,6 +1548,6 @@
   if (!root.hasAttribute('data-theme')) { root.setAttribute('data-theme-auto', ''); theme(); }
   if (mq && mq.addEventListener) mq.addEventListener('change', theme);
 
-  window.RedacaoApp = { pick: pick, diff: diff, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey };
+  window.RedacaoApp = { pick: pick, diff: diff, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey };
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();
