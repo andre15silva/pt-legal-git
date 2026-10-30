@@ -135,6 +135,9 @@ class Passagem(unittest.TestCase):
         self.assertEqual((d["proponente"], d["operacao"]), ("PSD", "eliminação"))
         self.assertTrue(d["alvo"].startswith("alínea c) do n.º 2 do artigo 1.º"))
         self.assertIsNone(passagem.ler_descricao("Texto final apresentado pela Comissão de Trabalho"))
+        # F2: a comma after «Proposta» (LO 1/2024: 11 votes had no proposer).
+        self.assertEqual(passagem.ler_descricao("Proposta, do PSD, de substituição do n.º 3 do artigo 1.º da Lei n.º 37/81")["proponente"], "PSD")
+        self.assertEqual(passagem.ler_descricao("Proposta de alteração, do BE, de aditamento ao artigo 2.º")["proponente"], "BE")
 
     def test_seats_on_a_date(self):
         comp = passagem.Composicao({"GruposParlamentares": [{"sigla": "PS"}, {"sigla": "PSD"}], "Deputados": [

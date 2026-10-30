@@ -26,7 +26,8 @@ pairs = [
     ('rule-strong', ['paper', 'paper-raised'], 3),
     ('aviso-rule', ['paper', 'paper-raised'], 3),
     ('act-0', ['paper', 'paper-raised'], 2),
-] + [(f'act-{i}', ['paper', 'paper-raised'], 3) for i in range(1, 8)]
+# Act colours are underlines in Origem do texto, also on the chosen word's paper-sunken wash (FINAL-SPEC R5).
+] + [(f'act-{i}', ['paper', 'paper-raised', 'paper-sunken'], 3) for i in range(1, 8)]
 bad = 0
 for th in ('light', 'dark'):
     for fg, bgs, need in pairs:

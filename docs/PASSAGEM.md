@@ -89,6 +89,8 @@ Show the deepest verified level first. Never raise a level. Never fill a gap wit
 
 ## 4. Where it appears
 
+*Amended 30/10/2026:* siglas may appear in a margin note (Origem do texto) only as the complete list of the act's proposers, in AR order, at most 4. Never a vote. Above 4 groups the note says «de deputados de {n} grupos».
+
 All entry points lead to one component, **Passagem no Parlamento**. Its address is `#/ato/<id>#passagem`, and `?artigo=<diploma>/<artigo>` marks the steps that concern one article.
 
 - **The phrase popover (Origem do texto).** Below "Escrito por …", a short block "No Parlamento", about 8 lines at most:
@@ -114,7 +116,7 @@ All entry points lead to one component, **Passagem no Parlamento**. Its address 
   - "Comparar a proposta com a lei publicada": a redline of the initial text against the final text for that article. It also shows text that Parliament removed.
   - "Votações por grupo parlamentar": a matrix with groups as rows, stages as columns, and words in the cells.
 - **The diploma page.** "Iniciativas que alteraram este diploma", listed by date. Each row has the act, the initiative, who proposed it and the VFG on one line. A filter "Proponente ▾" lists groups alphabetically, with no counts.
-- **The text itself.** A phrase that Parliament added to the initiative gets a dotted underline in the same act colour. The margin note gets a second muted line, "mudado no Parlamento". Party names never appear in the margin, only in the popover next to the votes.
+- **The text itself.** A phrase that Parliament added to the initiative gets a dotted underline in the same act colour. The margin note gets a second muted line, "mudado no Parlamento". Party names appear in the margin only as the list of proposers (amended rule above); the votes stay in the sheet.
 - **Phone.** The popover becomes a bottom sheet. The passage stacks the date above each step. The matrix scrolls inside its own frame, with the group column fixed.
 - **Every claim cites its source and date:** "Fonte: Assembleia da República, dados abertos. Consultado a 28/10/2026". Each span has "Reportar um erro", answered within 72 h, with a public log of corrections (see the plan).
 

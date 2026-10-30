@@ -210,3 +210,21 @@ def verificar(index: dict, republicacoes: list[dict]) -> dict:
     return {"republicacoes": por_ponto, "versoes": {"total": total, **estados},
             "m2": round((estados.get("verificado", 0) + estados.get("forma", 0)) / total, 4) if total else None,
             "divergentes": divergentes}
+
+
+def atos_em_falta(pasta_d: str, atos: dict) -> list[dict]:
+    """Redações whose act is not in atos.json, in every article file under d/ (data fix F4).
+
+    An act id the app cannot find shows as «Quem fez: desconhecido» in Origem do texto. The build
+    lists them on the Verificação page, and the strict tests want none."""
+    import glob
+    import json
+    import os
+    out = []
+    for path in sorted(glob.glob(os.path.join(pasta_d, "*", "*.json"))):
+        with open(path, encoding="utf-8") as fh:
+            art = json.load(fh)
+        for v in art.get("versoes", []):
+            if v.get("ato") not in atos:
+                out.append({"diploma": os.path.basename(os.path.dirname(path)), "artigo": art.get("id") or os.path.basename(path)[:-5], "ato": v.get("ato")})
+    return out

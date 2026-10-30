@@ -484,6 +484,9 @@ def link_parliament(reg: Registry, pdir: str, corpus: dict | None = None) -> tup
         contexto[aid] = {"publicacao": a.get("publicacao"), "grupos": grupos, "alvos": [x for x in alvos if x],
                          "decretos": {"meus": sorted(meus, key=lambda x: x["ordem"]),
                                       "outros": sorted((x for x in todos.values() if x not in meus), key=lambda x: x["ordem"])}}
+    # Initiatives a committee text of these acts cites, by (tipo, número, legislatura): one the AR links
+    # to another law is joined to this act's passage after the first pass (PJL 847/XIII, Lei n.º 13/2019).
+    citadas_ini: dict[tuple, tuple] = {}
     for leg, ids in wanted.items():
         # Legislatura I has two AR files (IA, IB); every other one has its own.
         for path in [os.path.join(pdir, f"Iniciativas{x}_json.txt") for x in (("IA", "IB") if leg == "I" else (leg,))]:
@@ -491,6 +494,7 @@ def link_parliament(reg: Registry, pdir: str, corpus: dict | None = None) -> tup
                 continue
             with open(path, encoding="utf-8-sig") as fh:
                 data = json.load(fh)
+            cit: set[tuple] = set()
             for raw_ini in data:
                 LIGACAO["indice"][(raw_ini.get("IniDescTipo"), str(raw_ini.get("IniNr")), raw_ini.get("IniLeg"))] = str(raw_ini.get("IniId"))
                 iid = str(raw_ini.get("IniId"))
@@ -505,9 +509,31 @@ def link_parliament(reg: Registry, pdir: str, corpus: dict | None = None) -> tup
                 por_ato.setdefault(ids[iid], []).append((raw_ini, ini))
                 reg.acts[ids[iid]].setdefault("iniciativas", []).append(
                     {"id": iid, "designacao": f"{ini.kind} n.º {ini.number}/{ini.legislature}", "titulo": ini.title, "autores": ini.authors})
+                for v in ini.votes:
+                    if v.phase == "Votação na generalidade" and passagem._TEXTO_COMISSAO.match(v.description or ""):
+                        cit |= passagem.citadas(v.description)
+            for raw_ini in data:
+                k = (raw_ini.get("IniDescTipo"), str(raw_ini.get("IniNr")), raw_ini.get("IniLeg"))
+                if k in cit:  # even when the AR links it to another act (it is then in `ids` too)
+                    citadas_ini[k] = (raw_ini, normalise_iniciativa(raw_ini))
     comps = passagem.carregar_composicoes(pdir, grupos)
     LIGACAO["comps"] = comps
     passagens = {aid: passagem.passagem(inis, aid, comps, contexto[aid]) for aid, inis in por_ato.items()}
+    # F3: the initiatives the act's own committee text cites stay in its passage, even when the AR
+    # links them to another law. The passage is read again with them (never as the main initiative).
+    for aid, p in passagens.items():
+        tcs = [g for g in p["generalidade"] if g["origem"] == "texto_comissao"]
+        if not tcs:
+            continue
+        tem = {i["id"] for i in p["iniciativas"]}
+        novas = []
+        for c in p["texto_comissao"][tcs[0]["indice"]].get("citadas_todas") or []:
+            x = citadas_ini.get((c["tipo"], c["numero"], c["legislatura"]))
+            if x and str(x[1].id) not in tem and x not in novas:
+                novas.append(x)
+        if novas:
+            contexto[aid]["juntas"] = {str(x[1].id) for x in novas}
+            passagens[aid] = passagem.passagem(por_ato[aid] + novas, aid, comps, contexto[aid])
     return out, passagens
 
 
@@ -580,6 +606,27 @@ def verificar_diploma(slug: str) -> list[str]:
     return out
 
 
+def podar(pasta_d: str, slugs: set[str]) -> list[str]:
+    """Remove d/<slug>.json and d/<slug>/ of diplomas the build did not write: what an earlier
+    corpus left. Returns the slugs removed."""
+    fora = set()
+    if not os.path.isdir(pasta_d):
+        return []
+    for nome in os.listdir(pasta_d):
+        s = nome[:-5] if nome.endswith(".json") else nome
+        if s in slugs:
+            continue
+        p = os.path.join(pasta_d, nome)
+        if os.path.isdir(p):
+            shutil.rmtree(p)
+        else:
+            os.remove(p)
+        fora.add(s)
+    for s in sorted(fora):
+        sys.stderr.write(f"{s}: retirado de app/data/d (já não está no corpus)\n")
+    return sorted(fora)
+
+
 def retirar(slug: str, reg: Registry) -> None:
     """Take a diploma off the site: its files, and its rows in the acts' lists of changes."""
     pasta = os.path.join(OUT, "d", slug)
@@ -636,6 +683,9 @@ def main() -> int:
         ids[cfg["slug"]] = {n["artigo"] for n in index["arvore"] if n["tipo"] == "artigo"}
         sys.stderr.write(f"{cfg['slug']}: {summary['n_artigos']} artigos\n")
     marcar_copias(summaries, ids, search)
+    # F4: a diploma that left the corpus (the Código Civil's locação chapter became the whole code)
+    # leaves no files behind, so no article names an act id that atos.json no longer has.
+    podar(os.path.join(OUT, "d"), {x["slug"] for x in summaries})
     iniciativas, passagens = link_parliament(reg, os.path.join(ROOT, "data", "parlamento"), {"diplomas": summaries})
     write(os.path.join(OUT, "iniciativas.json"), iniciativas)
     write(os.path.join(OUT, "passagem.json"), passagens)
@@ -658,6 +708,7 @@ def main() -> int:
                                             "sinonimos": sinonimos(), "aliases_atos": reg.aliases()})
     # Who made each act (pipeline/quem.py): quem.json, governos.json, quem/<slug>.json, grupos/.
     verif_quem = quem.construir(OUT, reg.acts, passagens, iniciativas, LIGACAO, reg.notas, reg.retifica, summaries, fetch.hoje(corpus))
+    verif_quem["atos_em_falta"] = verificacao.atos_em_falta(os.path.join(OUT, "d"), reg.acts)
     relatar_quem(verif_quem)
     # The check against official republications, per diploma, for the Verificação page.
     write(os.path.join(OUT, "verificacao.json"), {"consultado_em": fetch.hoje(corpus), "diplomas": {
@@ -682,6 +733,8 @@ def relatar_quem(v: dict) -> None:
     c = v["cobertura"]
     sys.stderr.write(f"quem: decretos-leis com data do Conselho de Ministros {c['dl_d_cm']:.1%}; leis com promulgação {c['leis_promulgacao']:.1%}; "
                      f"{len(v['cruzamento'])} avisos ou conflitos; {len(v['mesmo_pm'])} decretos-leis perto de uma posse com o mesmo Primeiro-Ministro\n")
+    for x in v.get("atos_em_falta", []):
+        sys.stderr.write(f"quem: ATO EM FALTA {x['diploma']}/{x['artigo']}: {x['ato']} não está em atos.json\n")
     for x in v["cruzamento"]:
         if x["estado"] == "conflito":
             sys.stderr.write(f"quem: CONFLITO {x['ato']} ({x['regra']}): {x['detalhe']}\n")

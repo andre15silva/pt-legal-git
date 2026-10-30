@@ -91,7 +91,8 @@
   // elements and textoDe() into plain text (node tests read that). The pipeline writes facts and
   // reason codes; the words are here.
   // partes: string | {t:'link', href, texto} | {t:'termo', id, texto} | {t:'sigla', sigla, nome}
-  //   | {t:'governo', numero} | {t:'forte', texto} | {t:'lista', itens: [partes], dobra?} | {t:'votos', ato}
+  //   | {t:'governo', numero} | {t:'forte', texto} | {t:'lista', itens: [partes], dobra?, mostrar?, mais?} | {t:'votos', ato}
+  //   | {t:'votacao', v, ordem, destaque} (every group's vote) | {t:'dobra', rotulo, frases} | {t:'troca', ato, texto} (a button)
   // ref: {atos, quem, governos, passagem, index}, any of them possibly missing.
   var MOTIVOS = {
     sem_d_cm: 'Não encontrámos a data do Conselho de Ministros no texto do decreto-lei.',
@@ -120,6 +121,8 @@
       if (x.t === 'governo' && x.numero != null) return romano(x.numero) + ' Governo Constitucional';
       if (x.t === 'sigla') return x.sigla;
       if (x.t === 'lista') return ' ' + x.itens.map(textoDe).join(' · ');
+      if (x.t === 'dobra') return x.rotulo + ': ' + x.frases.map(textoDe).join(' ');
+      if (x.t === 'votacao') return '';
       if (x.partes) return textoDe(x.partes);
       return x.texto || '';
     }).join('');
@@ -240,7 +243,9 @@
         var antes = i.parte ? ['o ' + i.parte + ' ' + daDe(i.designacao) + ' ', des] : [des];
         return a ? antes.concat([', ']).concat(autorIni(a, ref, leg).de) : antes;
       });
-      out.push([k === 1 ? 'Uma comissão do Parlamento escreveu o texto final a partir de uma iniciativa:' : 'Uma comissão do Parlamento juntou ' + k + ' iniciativas num só texto:',
+      // The same words as the sheet of «Origem do texto» (contaOrigem): a texto de substituição is named.
+      out.push([k === 1 ? (tc.tipo === 'texto_substituicao' ? 'Uma comissão do Parlamento escreveu um texto de substituição a partir de uma iniciativa:' : 'Uma comissão do Parlamento escreveu o texto final a partir de uma iniciativa:')
+        : 'Uma comissão do Parlamento juntou ' + k + ' iniciativas num só texto:',
         { t: 'lista', itens: itens, dobra: itens.length > 3 ? 'Ver as ' + itens.length + ' iniciativas' : null }]);
       return out;
     }
@@ -502,6 +507,271 @@
     }
     return out;
   }
+  // ---- Origem do texto: the copy (FINAL-SPEC §2) ---------------------------------------------------
+  // Step 1 names who started each law, not who worded each line: every law's note says «Iniciativa»
+  // and every law's sheet carries the honesty line. Siglas appear in a note only as the complete
+  // list of the act's proposers, in AR order, at most 4 (R6); never a vote.
+  var HONESTA = ['Mostramos quem apresentou a iniciativa que deu origem a esta lei. Na especialidade, os grupos parlamentares propõem alterações ao texto. Ainda não sabemos que alteração escreveu cada frase.'];
+  var LENTE_HONESTA = 'Mostra quem apresentou a iniciativa que deu origem à lei, não quem escreveu cada frase.';
+  // The lens categories (R7), in the order of the legend.
+  var CATEGORIAS = [['gov', 'Governo'], ['dep', 'Deputados'], ['mix', 'Governo e deputados'], ['dl', 'Decreto-lei do Governo'], ['ret', 'Retificação'],
+    ['unk', 'Sem dados do Parlamento'], ['orig', 'Texto original, sem marca']];
+  // Gloss lines of the sheet (panel item 16): one per section.
+  var GLOSSAS = {
+    comissao: 'Texto da comissão: uma comissão do Parlamento junta as iniciativas e escreve um só texto.',
+    generalidade: 'Na generalidade, o Parlamento vota a ideia geral do texto.',
+    vfg: 'A votação final global é a votação da lei inteira, no fim.',
+    veto: 'O Presidente da República pode recusar a promulgação. O Parlamento pode então aprovar um novo texto.',
+    promulgacao: 'O Presidente da República assina a lei. Depois, a lei é publicada.'
+  };
+  function glossa(id) { return GLOSSAS[id] ? [GLOSSAS[id]] : null; }
+  // porque: the address of «Como lemos a origem» on this page.
+  function linhaHonesta(porque) { return HONESTA.concat(porque ? [' ', lig(porque, 'Porquê?')] : []); }
+  function tipoOrigem(ref, id) {
+    var r = registo(ref, id);
+    return (ref.atos || {})[id] ? r.quem.tipo_ato || tipoDe(r.ato.designacao) : 'desconhecido';
+  }
+  // The proposer lens: the kind of initiative that started an act (shape only, never a party).
+  function catOrigem(ref, id, original) {
+    if (original) return 'orig';
+    var t = tipoOrigem(ref, id);
+    if (t === 'decreto-lei') return 'dl';
+    if (t === 'retificacao') return 'ret';
+    if (t === 'pre1976') return 'orig';
+    if (!LEIS[t]) return 'unk';
+    var ps = registo(ref, id).quem.proponentes || [];
+    if (!ps.length) return 'unk';
+    var g = ps.some(function (p) { return p.tipo === 'governo'; }), d = ps.some(function (p) { return p.tipo !== 'governo'; });
+    return g && d ? 'mix' : g ? 'gov' : 'dep';
+  }
+  function designacaoDe(ref, id) {
+    var a = (ref.atos || {})[id];
+    if (a) return a.designacao;
+    var m = /^decreto-lei-(\d+)-(\d+)/.exec(id || '');
+    if (m) return 'Decreto-Lei n.º ' + m[1] + '/' + m[2];
+    m = /^lei-(\d+)-(\d+)/.exec(id || '');
+    return m ? 'Lei n.º ' + m[1] + '/' + m[2] : null;
+  }
+  // The groups of an act's initiatives, in the AR order of the legislatura (the order of the vote rows).
+  function gruposIniciativa(ref, id) {
+    var q = registo(ref, id).quem, p = (ref.passagem || {})[id], ordem = (p && p.ordem_grupos) || [], gs = [];
+    (q.proponentes || []).forEach(function (x) { (x.grupos || []).forEach(function (g) { if (gs.indexOf(g.sigla) < 0) gs.push(g.sigla); }); });
+    return gs.sort(function (a, b) { var i = ordem.indexOf(a), k = ordem.indexOf(b); return (i < 0 ? 99 : i) - (k < 0 ? 99 : k); });
+  }
+  // "do PS", "da ASDI": the article goes with the group's name in that legislatura.
+  function doSigla(s, leg, ref) { var n = nomeGrupo(s, leg, ref.governos); return (n && GRUPO_F.test(n.nome) ? 'da ' : 'do ') + s; }
+  // «XXV Governo (Luís Montenegro)»: the Prime Minister only when asked (the Government alone).
+  function governoCurto(ref, n, pm) {
+    if (n == null) return 'Governo';
+    var g = governoDe(ref, n);
+    return romano(n) + ' Governo' + (pm && g && g.primeiro_ministro ? ' (' + g.primeiro_ministro + ')' : '');
+  }
+  function nomePresidente(ref, q) { var pr = q.presidente; if (!pr) return null; var row = presidenteDe(ref, pr.id); return (row && row.nome) || pr.nome || null; }
+  // The note of a run (§2.2): {titulo, ano, l1, l2, aria, orig}. escopo: the run's lines, as people say them.
+  function notaOrigem(ref, id, original, escopo) {
+    var r = registo(ref, id), q = r.quem, a = (ref.atos || {})[id], t = tipoOrigem(ref, id), m = q.motivos || {};
+    var out = { titulo: designacaoDe(ref, id) || 'Diploma desconhecido', ano: a && a.publicacao ? a.publicacao.slice(0, 4) : '', l1: '', l2: '', orig: !!original };
+    if (LEIS[t]) {
+      var ps = q.proponentes || [], pr = nomePresidente(ref, q);
+      if (!ps.length) { out.l1 = 'Não temos os dados do Parlamento.'; out.l2 = pr ? 'Promulgada por ' + pr : ''; }
+      else {
+        var govs = ps.filter(function (x) { return x.tipo === 'governo'; }), deps = ps.filter(function (x) { return x.tipo === 'grupos' || x.tipo === 'deputados'; });
+        var outros = ps.filter(function (x) { return govs.indexOf(x) < 0 && deps.indexOf(x) < 0; });
+        var gs = gruposIniciativa(ref, id), quem = [];
+        if (govs.length) quem.push('do ' + governoCurto(ref, govs[0].governo, !deps.length && !outros.length));
+        if (deps.length) quem.push(gs.length > 4 ? 'de deputados de ' + gs.length + ' grupos' : gs.length ? 'de deputados ' + lista(gs.map(function (s) { return doSigla(s, q.legislatura, ref); })) : textoDe(autorIni(deps[0], ref, q.legislatura).de));
+        outros.forEach(function (x) { quem.push(textoDe(autorIni(x, ref, q.legislatura).de)); });
+        out.l1 = (ps.length === 1 ? 'Iniciativa ' : 'Iniciativas ') + lista(quem) + (q.texto_comissao ? ' · texto da comissão' : '');
+        var res = q.vfg ? (q.vfg.resultado === 'Rejeitado' ? 'rejeitada' : 'aprovada') + ' a ' + curta(q.vfg.data) + (q.vfg.unanime ? ' por unanimidade' : '') : 'sem registo da votação final';
+        if ((q.eventos || []).some(function (e) { return e.tipo === 'veto'; })) res += ', veto e novo decreto';
+        out.l2 = res + (pr ? ' · promulgada por ' + pr : '');
+        out.l2 = out.l2.charAt(0).toUpperCase() + out.l2.slice(1);
+      }
+    } else if (t === 'decreto-lei') {
+      out.l1 = q.governo && q.governo.numero != null ? 'Decreto-lei do ' + governoCurto(ref, q.governo.numero, true) : 'Decreto-lei. Não sabemos que Governo o aprovou.';
+      out.l2 = 'O Parlamento não votou este texto.';
+    } else if (t === 'pre1976') { out.l1 = 'Antes da Constituição de 1976.'; out.l2 = 'O Parlamento não votou este texto.'; }
+    else if (t === 'retificacao') {
+      var c = q.retifica && designacaoDe(ref, q.retifica);
+      out.l1 = 'Corrigiu o texto publicado ' + (c ? daDe(c) + ' ' + c : 'de outro diploma') + '.';
+      out.l2 = 'Não tem votação.';
+    } else if (t === 'acordao-tc') { out.l1 = 'Acórdão do Tribunal Constitucional.'; out.l2 = 'O Parlamento não votou este texto.'; }
+    else if (t === 'desconhecido') { out.l1 = 'Quem fez: desconhecido.'; out.l2 = 'Não temos os dados deste diploma.'; }
+    else out.l1 = textoDe(linhaPessoas(q, ref, id));
+    // The accessible name says the year once: «Lei Orgânica n.º 1/2026, de 2026. Iniciativa …, texto da comissão. N.º 1 a n.º 10. Abrir quem fez.»
+    out.aria = out.titulo + (original ? ' (texto original)' : '') + (out.ano ? ', de ' + out.ano : '') + '. ' + out.l1.replace(/ · /g, ', ').replace(/\.$/, '') + '. ' + (escopo ? escopo + '. ' : '') + 'Abrir quem fez.';
+    return out;
+  }
+  // The lines of a run, as people say them (§2.2): «N.º 1 a n.º 10», «N.º 11, alíneas a) e b)».
+  function rotuloOrigem(L, minuscula) {
+    var s = L.kind === 'n' ? 'n.º ' + L.n : L.kind === 'al' ? (L.n ? 'n.º ' + L.n + ', alínea ' + L.al + ')' : 'alínea ' + L.al + ')') : 'corpo do artigo';
+    return minuscula ? s : s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function escopoLinhas(ls) {
+    var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+    if (ls.length === 1) return rotuloOrigem(ls[0]);
+    var a = ls[0], b = ls[ls.length - 1], als = ls.filter(function (L) { return L.kind === 'al'; });
+    var de = function (xs) { return xs.length === 1 ? 'alínea ' + xs[0].al + ')' : 'alíneas ' + xs[0].al + ')' + (xs.length === 2 ? ' e ' : ' a ') + xs[xs.length - 1].al + ')'; };
+    if (ls.every(function (L) { return L.kind === 'al' && L.n === a.n; })) return cap((a.n ? 'n.º ' + a.n + ', ' : '') + de(ls));
+    if (als.length === ls.length - 1 && als.every(function (L) { return L.n === (a.kind === 'n' ? a.n : null); }) && (a.kind === 'n' || a.kind === ''))
+      return rotuloOrigem(a) + ' e ' + de(als);
+    var fim = b.n && b.n !== a.n ? 'n.º ' + b.n : rotuloOrigem(b, true);
+    return rotuloOrigem(a) + (a.kind === 'al' ? ', a ' : ' a ') + fim;
+  }
+  // The summary line above the text (§2.1), with no counts.
+  function resumoOrigem(model, art, ref, nomeOriginal) {
+    var orig = model.linhas.some(function (L) { return L.acts.some(function (o) { return art.versoes[o].tipo === 'original'; }); });
+    if (!model.ordem.length) return ['Todo este texto vem do texto original (' + (designacaoDe(ref, art.versoes[0].ato) || nomeOriginal || 'texto original') + ').'];
+    var anos = model.ordem.map(function (o) { return art.versoes[o].publicacao.slice(0, 4); });
+    if (orig) anos.push(art.versoes[0].publicacao.slice(0, 4));
+    anos.sort();
+    var des = designacaoDe(ref, art.versoes[model.ordem[0]].ato) || 'diploma desconhecido';
+    return [(anos[0] === anos[anos.length - 1] ? 'Este texto vem de diplomas publicados em ' + anos[0] : 'Este texto vem de diplomas publicados entre ' + anos[0] + ' e ' + anos[anos.length - 1]) +
+      '. O diploma mais recente é ' + aDe(des) + ' ' + des + '.'];
+  }
+  // «Votou de forma diferente da generalidade: JPP (abstenção, depois a favor).» null: nothing to compare.
+  var PALAVRA_VOTO = { favor: 'a favor', contra: 'contra', abstencao: 'abstenção' };
+  function linhaDiferencas(a, b, rotulo) {
+    if (!a || !b || b.unanime) return null;
+    var out = [];
+    Object.keys(b.grupos || {}).forEach(function (g) { var x = (a.grupos || {})[g], y = b.grupos[g]; if (x && y && x !== y) out.push(g + ' (' + PALAVRA_VOTO[x] + ', depois ' + PALAVRA_VOTO[y] + ')'); });
+    var da = rotulo === 'generalidade' ? 'da generalidade' : 'da votação final global';
+    if (!out.length) return ['Cada grupo votou como na ' + (rotulo === 'generalidade' ? 'generalidade' : 'votação final global') + '.'];
+    return [(out.length === 1 ? 'Votou de forma diferente ' : 'Votaram de forma diferente ') + da + ': ' + lista(out) + '.' +
+      (rotulo === 'generalidade' ? ' O texto final pode ser diferente do texto da generalidade.' : '')];
+  }
+  function votoNovoDecreto(p) { var e = ((p && p.eventos) || []).filter(function (x) { return x.tipo === 'novo_decreto' && x.voto; })[0]; return e ? e.voto : null; }
+  // A vote as rows of every group, in AR order (§2.3): {t:'votacao'} renders R.Votacao.
+  function votacao(v, p, destaque) { return { t: 'votacao', v: v, ordem: (p && p.ordem_grupos) || [], destaque: destaque || [] }; }
+  var RESULTADO = { Aprovado: 'aprovado', Rejeitado: 'rejeitado', Prejudicado: 'prejudicado', Confirmado: 'confirmado' };
+  function resultado(v) { return RESULTADO[v.resultado] || String(v.resultado || '').toLowerCase(); }
+  // The sheet's account of one act (§2.3): {honesta, seccoes: [{titulo, glossa, termos, frases}]}.
+  // o: {porque: the address of «Como lemos a origem», troca: for a retificação's button}
+  function contaOrigem(ref, id, o) {
+    o = o || {};
+    var r = registo(ref, id), q = r.quem, a = r.ato, p = r.p, t = tipoOrigem(ref, id), m = q.motivos || {}, seccoes = [];
+    var sec = function (titulo, frases, g, termos) { seccoes.push({ titulo: titulo, frases: frases, glossa: g ? glossa(g) : null, termos: termos || [] }); };
+    if (LEIS[t]) {
+      var ps = q.proponentes || [], tc = q.texto_comissao, leg = q.legislatura, porId = {};
+      ps.forEach(function (x) { porId[x.iniciativa] = x; });
+      if (!ps.length) {
+        var f0 = (m.passagem && MOTIVOS[m.passagem] ? [MOTIVOS[m.passagem]] : ['Não temos os dados da passagem desta lei no Parlamento.']).concat([' ', lig('#/sobre/limites', 'Porquê?')]);
+        sec('Quem apresentou a iniciativa', [f0].concat(q.ar_url ? [[lig(q.ar_url, 'Ver na Assembleia da República ↗')]] : []));
+      } else {
+        var fs = [], inis = tc && (tc.iniciativas || []).length ? tc.iniciativas : [];
+        var item = function (i) {
+          var x = porId[i.iniciativa], des = ligIni(i.iniciativa, i.designacao, p), antes = i.parte ? ['o ' + i.parte + ' ' + daDe(i.designacao) + ' ', des] : [des];
+          if (!x) return antes;
+          if (x.tipo === 'governo' && x.governo != null) { var g = governoDe(ref, x.governo); return antes.concat([', do ', gov(x.governo)]).concat(g && g.primeiro_ministro ? [' (Primeiro-Ministro: ' + g.primeiro_ministro + ')'] : []); }
+          return antes.concat([', ']).concat(autorIni(x, ref, leg).de);
+        };
+        if (inis.length > 1) {
+          fs.push(['Uma comissão do Parlamento juntou ' + (tc.n_iniciativas || inis.length) + ' iniciativas num só texto' + (tc.tipo === 'texto_substituicao' ? ' (texto de substituição):' : ':'),
+            { t: 'lista', itens: inis.map(item), mostrar: 3, mais: 'Ver as outras ' + (inis.length - 3) + ' iniciativas' }]);
+        } else {
+          ps.forEach(function (x) {
+            var au = autorIni(x, ref, leg), plural = x.tipo === 'grupos' && !au.singular;
+            var f = au.sujeito.concat([' ' + (plural ? 'apresentaram ' : 'apresentou ') + aDe(x.designacao) + ' ', ligIni(x.iniciativa, x.designacao, p), '.']);
+            var g = x.tipo === 'governo' ? governoDe(ref, x.governo) : null;
+            if (g && g.primeiro_ministro) f = f.concat([' Primeiro-Ministro: ' + g.primeiro_ministro + '.']);
+            fs.push(f);
+          });
+          if (tc) fs.push([tc.tipo === 'texto_substituicao' ? 'Uma comissão do Parlamento escreveu um texto de substituição a partir desta iniciativa.' : 'Uma comissão do Parlamento escreveu o texto final a partir desta iniciativa.']);
+        }
+        sec('Quem apresentou a iniciativa', fs, tc ? 'comissao' : null, ['texto-de-substituicao']);
+        // Generalidade: the committee text the act came from, or each initiative's own vote.
+        var itens = itensGeneralidade(p), blocos = [];
+        itens.forEach(function (x) {
+          var nome = x.comissao ? 'Texto da comissão' : x.titulo;
+          blocos.push([nome + ', ' + extenso(x.voto.data) + ': ' + resultado(x.voto) + '.', votacao(x.voto, p, x.ini ? gruposDe(x.ini) : [])]);
+        });
+        var gf = [];
+        if (!blocos.length) gf.push([MOTIVOS[m.generalidade] || MOTIVOS.sem_generalidade]);
+        else if (blocos.length > 2) {
+          gf.push(['O Parlamento votou cada iniciativa em separado, sobre o seu próprio texto. O grupo que apresentou a iniciativa está a negro.']);
+          gf = gf.concat(blocos.slice(0, 2));
+          gf.push([{ t: 'dobra', rotulo: 'Ver as outras ' + (blocos.length - 2) + ' votações', frases: blocos.slice(2) }]);
+        } else gf = gf.concat(blocos);
+        var semV = p ? p.iniciativas.filter(function (i) { return i.baixa_sem_votacao; }) : [];
+        if (semV.length) gf.push([lista(semV.map(function (i) { return i.designacao; })) + (semV.length > 1 ? ' foram' : ' foi') + ' para a comissão sem votação na generalidade.']);
+        sec('Primeira votação, na generalidade', gf, 'generalidade', ['votacao-na-generalidade']);
+        // The final vote, with every group, and how it differs from a single generalidade vote.
+        var vfg = p && p.vfg, vf = [];
+        if (vfg) {
+          vf.push(['O Parlamento ' + (vfg.resultado === 'Rejeitado' ? 'rejeitou' : 'aprovou') + ' o texto a ' + extenso(vfg.data) + '.', votacao(vfg, p)]);
+          if (itens.length === 1) { var d1 = linhaDiferencas(itens[0].voto, vfg, 'generalidade'); if (d1) vf.push(d1); }
+        } else if (q.vfg) vf.push(['O Parlamento ' + (q.vfg.resultado === 'Rejeitado' ? 'rejeitou' : 'aprovou') + ' o texto a ' + extenso(q.vfg.data) + '. Não temos os votos por grupo.']);
+        else vf.push([(m.vfg && MOTIVOS[m.vfg]) || MOTIVOS.sem_registo_vfg, ' ', lig('#/sobre/limites', 'Porquê?')]);
+        sec('Votação final global', vf, 'vfg', ['votacao-final-global']);
+        // Veto, Constitutional Court, new decree (with its vote), confirmation.
+        var ef = [];
+        (q.eventos || []).slice().sort(function (x, y) { return x.data < y.data ? -1 : x.data > y.data ? 1 : 0; }).forEach(function (e) {
+          if (e.tipo === 'veto') {
+            if (e.acordao_tc) ef.push(['O Tribunal Constitucional decidiu sobre o decreto (Acórdão n.º ' + e.acordao_tc + ').']);
+            var pr = presidenteDe(ref, e.presidente);
+            ef.push(['O Parlamento recebeu o veto do Presidente da República' + (pr ? ', ' + pr.nome + ',' : '') + ' a ' + extenso(e.data) + '.']);
+          } else if (e.tipo === 'tribunal') ef.push(['O Tribunal Constitucional decidiu sobre o decreto a ' + extenso(e.data) + '.']);
+          else if (e.tipo === 'confirmacao') ef.push(['O Parlamento confirmou o decreto a ' + extenso(e.data) + '.']);
+          else if (e.tipo === 'novo_decreto') {
+            var nv = votoNovoDecreto(p);
+            ef.push(['O Parlamento aprovou um novo decreto a ' + extenso(e.data) + '.'].concat(nv ? [votacao(nv, p)] : []));
+            if (nv && vfg) ef.push(linhaDiferencas(vfg, nv, 'vfg'));
+          }
+        });
+        if (ef.length) sec('Veto e novo decreto', ef, 'veto', ['veto']);
+        // Touch screens have no <abbr title>: the full names of the groups, in a fold.
+        if (vfg || itens.length) {
+          var ordem = ((p && p.ordem_grupos) || []).slice(), legv = (vfg || itens[0].voto).legislatura || (p && p.legislatura);
+          [vfg].concat(itens.map(function (x) { return x.voto; })).forEach(function (v) { Object.keys((v && v.grupos) || {}).forEach(function (g) { if (ordem.indexOf(g) < 0) ordem.push(g); }); });
+          seccoes.push({ nomes: ordem.map(function (g) { var n = nomeGrupo(g, legv, ref.governos); return g + ': ' + (n ? n.nome : g); }) });
+        }
+      }
+      sec('Promulgação', [linhaPresidente(q, ref, a, 'a lei')], 'promulgacao', ['promulgacao']);
+      return { honesta: linhaHonesta(o.porque), seccoes: seccoes };
+    }
+    if (t === 'decreto-lei') {
+      var qa = [];
+      if (q.governo && q.governo.numero != null && q.d_cm) {
+        var g2 = governoDe(ref, q.governo.numero);
+        qa.push(['O ', gov(q.governo.numero), ' aprovou este decreto-lei em Conselho de Ministros a ' + extenso(q.d_cm) + '.']);
+        if (g2 && g2.primeiro_ministro) qa.push(['Primeiro-Ministro: ' + g2.primeiro_ministro + '.']);
+      } else {
+        var c = m.governo || m.d_cm || 'sem_d_cm';
+        qa.push(['Não sabemos que Governo aprovou este decreto-lei. '].concat(motivo(c)).concat(q.governo_publicacao != null ? [' Publicado durante o ', gov(q.governo_publicacao), '.'] : []));
+      }
+      sec('Quem aprovou', qa);
+      var aut = /autoriza[çc][ãa]o legislativa concedida pela (Lei n\.º [\d\-A-Z]+\/\d+)/.exec(a.sumario || '');
+      sec('No Parlamento', [['O Parlamento não votou este texto.' + (aut ? ' Antes, o Parlamento autorizou o Governo a legislar nesta matéria (' + aut[1] + ').' : '')]]);
+      sec('Promulgação', [linhaPresidente(q, ref, a, 'o decreto-lei')]);
+    } else if (t === 'pre1976') {
+      var ss = (q.pre1976 || {}).signatarios || [];
+      sec('Quem fez', [['Antes da Constituição de 1976. O Parlamento não votou este texto.'],
+        ss.length ? [{ t: 'dobra', rotulo: 'Ver as ' + ss.length + ' pessoas que assinaram', frases: [[{ t: 'lista', itens: ss.map(function (s) { return [s]; }) }]] }] : ['Não lemos as assinaturas deste diploma.']]);
+    } else if (t === 'retificacao') {
+      var cr = q.retifica, dc = cr && designacaoDe(ref, cr);
+      sec('O que fez', [['Esta declaração corrigiu erros do texto publicado ' + (dc ? daDe(dc) + ' ' + dc : 'de outro diploma') + '. Não tem votação.']]
+        .concat(dc ? [[{ t: 'troca', ato: cr, texto: 'Ver quem fez ' + aDe(dc) + ' ' + dc }]] : []));
+    } else if (t === 'acordao-tc' || t === 'acordao-outro') sec('Quem decidiu', frasesAcordao(q, ref, a));
+    else if (t === 'desconhecido') {
+      var dd = designacaoDe(ref, id);
+      sec('Quem fez', [['Quem fez: desconhecido. ' + (dd ? 'O Diário da República indica ' + aDe(dd) + ' ' + dd + ', mas não temos os dados deste diploma.' : 'Não sabemos que diploma escreveu este texto.')]]);
+    } else sec('Quem fez', frasesQuem(q, p, a, ref));
+    return { honesta: null, seccoes: seccoes };
+  }
+  // The foot of the sheet: how sure we are (§2.3).
+  function confiancaOrigem(ref, id) {
+    var t = tipoOrigem(ref, id);
+    if (LEIS[t]) return (registo(ref, id).quem.proponentes || []).length ? 'Origem verificada ao nível do diploma. Ainda não sabemos que proposta de alteração escreveu cada frase.' : 'Origem não identificada no Parlamento.';
+    if (t === 'desconhecido') return 'Origem não identificada.';
+    return 'Origem verificada: o Diário da República publica este diploma.';
+  }
+  // «Copiar ligação» (§8). ctx: {diploma, artigo (rotulo), escopo, id, consultado, url}
+  function textoCopiar(ref, ctx) {
+    var temAR = !!((ref.passagem || {})[ctx.id] || registo(ref, ctx.id).quem.ar_url);
+    var esc = ctx.escopo ? ctx.escopo.charAt(0).toLowerCase() + ctx.escopo.slice(1) : '';
+    return ctx.diploma + ', ' + ctx.artigo.replace(/^Artigo\s*/, 'art. ') + (esc ? ', ' + esc : '') + ' · Origem do texto: ' + (designacaoDe(ref, ctx.id) || 'diploma desconhecido') +
+      '. Fonte: Diário da República' + (temAR ? ' e Assembleia da República' : '') + '. Consultado a ' + curta(ctx.consultado) + '. ' + ctx.url;
+  }
   // R-31: «296 artigos · alterado 7 vezes».
   function metaDiploma(d) {
     var n = d.n_atos || 0;
@@ -684,8 +954,8 @@
     return { kind: '', nr: '', resto: t };
   }
   function revogada(t) { return /^\(Revogad[oa]\.?\)$/.test(t.trim()); }
-  // Origin legend and paragraphs for one redação.
-  // hrefOf(o): link to redação o, or null. The popover under a phrase links to it.
+  // Origin legend and paragraphs for one redação, and the lines, runs, phrases and colours of the
+  // «Origem do texto» view (origemLinhas). hrefOf(o): link to redação o, or null.
   function originModel(art, vi, atos, hrefOf, nomeOriginal) {
     var v = art.versoes[vi], used = {}, acts = [];
     var n7 = art.versoes.filter(function (x, o) { return corDe(art, o) === 7; }).length;
@@ -711,7 +981,72 @@
       // A revoked alínea keeps its alínea hang: kind "al rd-p-rev" gives both classes.
       return { number: p.nr || null, kind: revogada(p.resto) ? (p.kind ? p.kind + ' rd-p-rev' : 'rev') : p.kind || null, spans: spans };
     });
-    return { acts: acts, paragraphs: paragraphs };
+    // acts and paragraphs: the story figures (FigOrigem, R.TextOrigin). The rest: the view.
+    return Object.assign({ acts: acts, paragraphs: paragraphs }, origemLinhas(art, vi));
+  }
+  // ---- Origem do texto: lines, runs, phrases and colours (FINAL-SPEC §5) ---------------------
+  // A letter or a digit: what makes a span a phrase (R4) and an act the author of a line (R1).
+  var LETRA = /[\p{L}\p{N}]/u;
+  // The label of a número, as the DR writes it ("1 — ", "2- ") or of an alínea ("a) "). A change
+  // to the label alone does not move the note (R1).
+  var NUM_O = /^(\d+(?:\.\d+)*(?:-[A-Z])?) ?[—-] ?/;
+  // Colour of each amending act in the text on screen, newest first (R5): act-1..act-7 solid, the
+  // same hues dashed for the 8th to 14th act, act-7 dotted after that. The original text has none.
+  function coresOrigem(art, ordem) {
+    var cor = {};
+    ordem.forEach(function (o, k) { cor[o] = { c: k < 14 ? (k % 7) + 1 : 7, padrao: k < 7 ? '' : k < 14 ? 'tracejado' : 'pontilhado' }; });
+    return cor;
+  }
+  // linhas: one per line of the redação, with its label cut off and the act that takes its note
+  // (key, R1). runs: consecutive lines with the same key (R2), with the other acts that wrote in
+  // them (older, R3) and those that changed only punctuation (pont). frases: the spans with a
+  // letter or digit, in reading order (R4). cor: R5.
+  function origemLinhas(art, vi) {
+    var v = art.versoes[vi], n = null;
+    var usados = {};
+    v.linhas.forEach(function (l) { l.forEach(function (s) { usados[s[0]] = true; }); });
+    var ordem = Object.keys(usados).map(Number).filter(function (o) { return art.versoes[o].tipo !== 'original'; }).sort(function (a, b) { return b - a; });
+    var linhas = v.linhas.map(function (l, i) {
+      var t = l.map(function (s) { return s[1]; }).join(''), m = NUM_O.exec(t), kind = '', nr = '', cut = 0, al = null;
+      if (TABELA.test(t)) { kind = 'tab'; cut = t.length - t.replace(/^│\s?/, '').length; }
+      else if (m) { kind = 'n'; nr = m[1] + ' —'; cut = m[0].length; n = m[1]; }
+      else if ((m = ALI.exec(t))) { kind = 'al'; nr = m[1] + ')'; cut = m[0].length; al = m[1]; }
+      var spans = l.map(function (s) { return { o: s[0], text: s[1] }; });
+      while (cut > 0 && spans.length) {
+        var f = spans[0];
+        if (f.text.length <= cut) { cut -= f.text.length; spans.shift(); } else { spans[0] = { o: f.o, text: f.text.slice(cut) }; cut = 0; }
+      }
+      var porAto = {};
+      spans.forEach(function (s) { porAto[s.o] = (porAto[s.o] || '') + s.text; });
+      var reais = Object.keys(porAto).map(Number).filter(function (o) { return LETRA.test(porAto[o]); });
+      var acts = [];
+      l.forEach(function (s) { if (acts.indexOf(s[0]) < 0) acts.push(s[0]); });
+      acts.sort(function (a, b) { return b - a; });
+      var key = reais.length ? Math.max.apply(null, reais) : acts.length ? acts[acts.length - 1] : 0;
+      var resto = spans.map(function (s) { return s.text; }).join('');
+      return { i: i, kind: kind, n: kind === 'n' || kind === 'al' ? n : null, al: al, nr: nr, spans: spans, key: key, acts: acts,
+        pont: acts.filter(function (o) { return o > key && !LETRA.test(porAto[o] || ''); }), rev: revogada(resto) || /^\[?\(?Revogad[oa]\.?\)?\]?$/.test(resto.trim()) };
+    });
+    var runs = [], frases = [];
+    linhas.forEach(function (L) {
+      var r = runs[runs.length - 1];
+      if (r && r.key === L.key) r.linhas.push(L); else runs.push({ k: runs.length, key: L.key, ato: art.versoes[L.key].ato, linhas: [L], frases: [], older: [], pont: [] });
+    });
+    runs.forEach(function (r) {
+      r.linhas.forEach(function (L) {
+        L.run = r.k;
+        L.spans.forEach(function (s, si) {
+          if (!LETRA.test(s.text)) return;
+          s.frase = frases.length;
+          r.frases.push(frases.length);
+          frases.push({ idx: frases.length, run: r.k, linha: L.i, si: si, o: s.o, text: s.text });
+        });
+        L.acts.forEach(function (o) { if (o !== r.key && r.older.indexOf(o) < 0) r.older.push(o); });
+        L.pont.forEach(function (o) { if (r.pont.indexOf(o) < 0) r.pont.push(o); });
+      });
+      r.older.sort(function (a, b) { return b - a; });
+    });
+    return { linhas: linhas, runs: runs, frases: frases, cor: coresOrigem(art, ordem), ordem: ordem };
   }
 
   // ---- Word diff (Myers) for comparing any two versions -------------------------------------
@@ -991,7 +1326,16 @@
       if (x.t === 'sigla') return h(Sigla, { key: k, sigla: x.sigla, nome: x.nome });
       if (x.t === 'forte') return h('strong', { key: k }, x.texto);
       if (x.t === 'votos') return ctx.votos ? h(React.Fragment, { key: k }, ctx.votos(x.ato)) : null;
-      if (x.t === 'lista') return h('ul', { key: k, className: 'quem-lista' }, x.itens.map(function (it, j) { return h('li', { key: j }, render(it, ctx)); }));
+      if (x.t === 'lista') {
+        var li = function (it, j) { return h('li', { key: j }, render(it, ctx)); };
+        // mostrar: the first items, and the rest in a fold («Ver as outras 3 iniciativas»).
+        if (x.mostrar && x.itens.length > x.mostrar) return h(React.Fragment, { key: k }, h('ul', { className: 'quem-lista' }, x.itens.slice(0, x.mostrar).map(li)),
+          h('details', { className: 'dobra-o' }, h('summary', null, x.mais), h('ul', { className: 'quem-lista' }, x.itens.slice(x.mostrar).map(li))));
+        return h('ul', { key: k, className: 'quem-lista' }, x.itens.map(li));
+      }
+      if (x.t === 'votacao') return ctx.votacao ? h(React.Fragment, { key: k }, ctx.votacao(x)) : null;
+      if (x.t === 'dobra') return h('details', { key: k, className: 'dobra-o' }, h('summary', null, x.rotulo), h(Frases, { frases: x.frases, ctx: ctx }));
+      if (x.t === 'troca') return ctx.troca ? h('button', { key: k, type: 'button', className: 'rd-btn', onClick: function () { ctx.troca(x.ato); } }, x.texto) : null;
       if (x.t === 'citacao') return h('a', { key: k, href: x.href }, h('span', { 'data-citacao': '' }, /^«/.test(x.texto) ? x.texto : '«' + x.texto + '»'));
       if (x.t === 'em') return h('em', { key: k }, x.texto);
       // A story's note marker (pipeline/historias.py): the first marker of a note takes the id «↩» returns to.
@@ -1008,7 +1352,7 @@
     var ctx = props.ctx || {};
     return h(React.Fragment, null, (props.frases || []).map(function (f, k) {
       if (f.classe === 'aviso') return h('aside', { key: k, className: 'regra regra-aviso' }, h('p', null, render(f, ctx)));
-      var bloco = f.filter(function (x) { return x && (x.t === 'lista' || x.t === 'votos'); })[0];
+      var bloco = f.filter(function (x) { return x && (x.t === 'lista' || x.t === 'votos' || x.t === 'votacao' || x.t === 'dobra'); })[0];
       if (!bloco) return h('p', { key: k, className: k === 0 && props.primeira ? props.primeira : props.classe || null }, render(f, ctx));
       var i = f.indexOf(bloco), antes = f.slice(0, i);
       var corpo = render([bloco], ctx);
@@ -1367,7 +1711,8 @@
 
   // ---- Article --------------------------------------------------------------------------------
   // What the text shows. The choice stays in the URL (ver=) and in this browser.
-  var VER = [['texto', 'Texto'], ['mudou', 'Alterações'], ['origem', 'Origem do texto']];
+  // «Origem do texto» is «Origem» at ≤ 720 px, so the row of tabs fits a phone.
+  var VER = [['texto', 'Texto'], ['mudou', 'Alterações'], ['origem', h(React.Fragment, null, h('span', { className: 'so-largo-t' }, 'Origem do texto'), h('span', { className: 'so-tel-t' }, 'Origem'))]];
   function verGuardado() { try { return localStorage.getItem('redacao-ver'); } catch (e) { return null; } }
   function guardarVer(v) { try { localStorage.setItem('redacao-ver', v); } catch (e) { /* private window */ } }
   // Another state of the same page, without a new entry in the browser history.
@@ -1608,6 +1953,165 @@
       }),
       h('span', { className: 'tabs-linha', ref: linha, 'aria-hidden': 'true' }));
   }
+  // ---- «Origem do texto» (FINAL-SPEC) ------------------------------------------------------------
+  // The head (the question, the summary, the lens), the law in runs with one note each, «Como lemos
+  // a origem», and the sheet. The state lives in the URL (§8): abrir=<linha> or frase=<linha>:<n>,
+  // and marcar=iniciativa. Each write replaces the history entry, so Back still leaves the article.
+  var COMO_LEMOS = [
+    'Comparamos cada redação com a anterior, palavra a palavra. A nota de cada grupo de linhas nomeia o diploma que mudou essas linhas por último. Uma mudança só de pontuação não muda a nota.',
+    'Para uma lei, mostramos quem apresentou a iniciativa. Na especialidade, os grupos parlamentares propõem alterações ao texto. Ainda não sabemos que alteração escreveu cada frase.'
+  ];
+  var POR_PARTIDO = 'Nenhuma votação do Parlamento é sobre uma frase. A votação na generalidade é sobre o texto inicial de cada iniciativa. A votação final global é sobre a lei inteira. Por isso, mostramos como cada grupo votou em cada diploma, com todos os grupos.';
+  // What takes focus after the next render: the sheet's heading, a walk button or a note. Never BODY.
+  var origemFoco = { alvo: null };
+  function OrigemVista(props) {
+    var art = props.art, vi = props.vi, d = props.d, q = props.q, ref = props.dados, M = props.model;
+    var esc = useState(null);   // an act chosen in the sheet's list: {chave, o, id}
+    var cop = useState(null);   // the address «Copiar ligação» copied
+    var antes = React.useRef(null);
+    var lente = q.marcar === 'iniciativa' ? 'iniciativa' : 'diploma';
+    // The run or phrase on show, from the URL. A frase= that names no phrase opens nothing.
+    var aberta = null, chave = null;
+    if (q.frase) {
+      var fp = String(q.frase).split(':').map(Number);
+      var fr = M.frases.filter(function (x) { return x.linha === fp[0] && x.si === fp[1]; })[0];
+      if (fr) { aberta = { run: fr.run, o: fr.o, frase: fr.idx }; chave = 'f' + q.frase; }
+    } else if (q.abrir != null && q.abrir !== '' && M.linhas[Number(q.abrir)]) {
+      var L0 = M.linhas[Number(q.abrir)];
+      aberta = { run: L0.run, o: M.runs[L0.run].key, frase: null }; chave = 'a' + q.abrir;
+    }
+    var escolhido = aberta && esc[0] && esc[0].chave === chave ? esc[0] : null;
+    if (escolhido) aberta.o = escolhido.o;
+    var cat = {};
+    art.versoes.forEach(function (v, o) { cat[o] = catOrigem(ref, v.ato, v.tipo === 'original'); });
+    var notas = M.runs.map(function (r) { return notaOrigem(ref, r.ato, art.versoes[r.key].tipo === 'original', escopoLinhas(r.linhas)); });
+    var porque = link(['d', d.slug, art.id], Object.assign({}, q, { ir: 'origem-como' }));
+    function ir(extra, foco) {
+      origemFoco.alvo = foco || null;
+      esc[1](null);
+      substituir(link(['d', d.slug, art.id], Object.assign({}, q, { ir: null, ver: 'origem' }, extra)));
+    }
+    function fechar() { ir({ abrir: null, frase: null }, aberta ? 'onota-' + aberta.run : null); }
+    function abrirNota(k) {
+      if (aberta && aberta.run === k && aberta.frase == null && !escolhido) { fechar(); return; }
+      ir({ abrir: M.runs[k].linhas[0].i, frase: null }, 'folha-origem-t');
+    }
+    function abrirFrase(idx, foco) { var f = M.frases[idx]; ir({ frase: f.linha + ':' + f.si, abrir: null }, foco || 'folha-origem-t'); }
+    // The phrase walk: the phrases of the run in reading order, then the first phrase of the next note.
+    var andar = { ant: null, seg: null, segRotulo: 'Frase seguinte ›' };
+    if (aberta) {
+      var fsr = M.runs[aberta.run].frases, pos = aberta.frase != null ? fsr.indexOf(aberta.frase) : -1;
+      var proxRun = M.runs.slice(aberta.run + 1).filter(function (r) { return r.frases.length; })[0];
+      if (pos > 0) andar.ant = function () { abrirFrase(fsr[pos - 1], 'folha-origem-ant'); };
+      if (pos + 1 < fsr.length) andar.seg = function () { abrirFrase(fsr[pos + 1], 'folha-origem-seg'); };
+      else if (proxRun) { andar.seg = function () { abrirFrase(proxRun.frases[0], 'folha-origem-seg'); }; andar.segRotulo = 'Nota seguinte ›'; }
+    }
+    // Focus after the render that follows a choice; the page then scrolls the run or the word into
+    // the free part of the screen (64 px from the top; above the sheet on a phone).
+    useEffect(function () {
+      var alvo = origemFoco.alvo;
+      origemFoco.alvo = null;
+      if (!alvo) return;
+      var el = document.getElementById(alvo);
+      if (el && el.disabled) el = document.getElementById('folha-origem-t');
+      if (el) el.focus({ preventScroll: true });
+    });
+    React.useLayoutEffect(function () {
+      document.body.classList.toggle('com-folha-origem', !!aberta);
+      var ch = aberta ? chave : null;
+      if (ch && ch !== antes.current) {
+        var el = aberta.frase != null ? document.querySelector('.rd-ofr[data-f="' + aberta.frase + '"]') : document.querySelector('.rd-orun[data-run="' + aberta.run + '"]');
+        var estreita = window.matchMedia && window.matchMedia('(max-width: 1099px)').matches;
+        if (el) {
+          var b = el.getBoundingClientRect();
+          if (b.top < 64 || b.bottom > (estreita ? window.innerHeight * 0.36 : window.innerHeight - 40)) window.scrollTo({ top: window.scrollY + b.top - 64, behavior: 'instant' });
+        }
+      }
+      antes.current = ch;
+    });
+    useEffect(function () { return function () { document.body.classList.remove('com-folha-origem'); }; }, []);
+    // The lens legend lists the categories present in this text.
+    var cats = [];
+    M.frases.forEach(function (f) { if (cats.indexOf(cat[f.o]) < 0) cats.push(cat[f.o]); });
+    var categorias = CATEGORIAS.filter(function (c) { return cats.indexOf(c[0]) >= 0; });
+    var folha = null, titulo = '', vivo = '';
+    if (aberta) {
+      var r = M.runs[aberta.run], o = aberta.o, id = escolhido && escolhido.id ? escolhido.id : art.versoes[o] ? art.versoes[o].ato : null;
+      var f = aberta.frase != null ? M.frases[aberta.frase] : null, des = designacaoDe(ref, id) || 'diploma desconhecido';
+      var orig = o >= 0 && art.versoes[o].tipo === 'original', c = M.cor[o];
+      var desNota = designacaoDe(ref, r.ato) || 'diploma desconhecido';
+      var escopo = f ? rotuloOrigem(M.linhas[f.linha]) : escopoLinhas(r.linhas);
+      var conta = contaOrigem(ref, id, { porque: porque });
+      titulo = 'Quem fez ' + aDe(des) + ' ' + des;
+      if (f) vivo = f.text.trim() + ': ' + designacaoDe(ref, art.versoes[f.o].ato);
+      var ato = (ref.atos || {})[id];
+      var ctx = {
+        votacao: function (x) {
+          var v = x.v, leg = v.legislatura || (registo(ref, id).p || {}).legislatura, aus = v.ausentes || [], sem = (v.sem_registo || []).slice();
+          // Every group of the legislatura, in AR order (R8): a group of that legislatura with no row has «Sem registo».
+          var mesma = !v.legislatura || v.legislatura === (registo(ref, id).p || {}).legislatura;
+          if (mesma) x.ordem.forEach(function (g) { if (!(v.grupos || {})[g] && aus.indexOf(g) < 0 && sem.indexOf(g) < 0) sem.push(g); });
+          return h(R.Votacao, { grupos: v.grupos, ordem: x.ordem, contagens: v.contagens, dissidencia: v.dissidencia, foraDeGrupo: v.fora_de_grupo, nomes: nomesDe(ref, leg),
+            ausentes: aus, semRegisto: sem, unanime: v.unanime, resultado: v.resultado, verificacao: v.verificacao, mostrarConta: false, destaque: x.destaque });
+        },
+        troca: function (aid) {
+          var k = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(aid);
+          origemFoco.alvo = 'folha-origem-t';
+          esc[1]({ chave: chave, o: k, id: aid });
+        }
+      };
+      var outros = [r.key].concat(r.older).filter(function (x) { return x !== o; });
+      var url = location.href.split('#')[0] + link(['d', d.slug, art.id], { redacao: versionKey(art, vi), ver: 'origem', abrir: q.abrir, frase: q.frase, marcar: q.marcar });
+      var copiarTxt = textoCopiar(ref, { diploma: d.titulo, artigo: art.rotulo, escopo: escopo, id: id, consultado: (ref.index || {}).consultado_em, url: url });
+      folha = [
+        h('p', { key: 'onde', className: 'oc-onde' }, escopo),
+        f ? h('p', { key: 'cit', className: 'oc-citacao' }, h('span', { className: 'oc-cit' }, '«' + f.text.trim() + '»'), ' ',
+          orig ? 'Esta frase vem do texto original (' + des + ').' : 'Esta frase vem ' + daDe(des) + ' ' + des + '.') : null,
+        h('p', { key: 'ato', className: 'oc-ato' }, h('span', { className: 'oc-band' + (c && c.padrao ? ' oc-band-' + c.padrao : ''), style: { '--c': c ? 'var(--act-' + c.c + ')' : 'var(--act-0)' }, 'aria-hidden': 'true' }),
+          ato ? h('a', { href: link(['ato', id]) }, nomeCompleto(ato)) : des),
+        h('p', { key: 'papel', className: 'oc-papel' }, o === r.key ? (orig ? 'Escreveu estas linhas no texto original.' : art.versoes[o].tipo === 'retificado' ? 'Corrigiu estas linhas por último.' : 'Mudou estas linhas por último.')
+          : 'Escreveu parte destas linhas. A nota nomeia ' + aDe(desNota) + ' ' + desNota + ', que as mudou por último.'),
+        !orig && o > 0 ? h('p', { key: 'lig', className: 'oc-links' }, h('a', { href: props.versionHref(o - 1) }, 'Ver como estava antes'), h('a', { href: props.versionHref(o, { ver: 'mudou' }) }, 'Ver a alteração')) : null,
+        conta.honesta ? h('p', { key: 'hon', className: 'oc-honesta' }, render(conta.honesta)) : null,
+        conta.seccoes.map(function (s, k) {
+          if (s.nomes) return h('details', { key: 's' + k, className: 'dobra-o oc-nomes' }, h('summary', null, 'Ver os nomes dos grupos'), h('ul', { className: 'quem-lista' }, s.nomes.map(function (x, j) { return h('li', { key: j }, x); })));
+          var ids = termosPara(glossarioAtual, s.termos), vistos = new Set();
+          return h('section', { key: 's' + k, className: 'oc-sec' }, h('h3', null, s.titulo),
+            s.glossa ? h('p', { className: 'oc-glossa' }, render(marcarTermos(s.glossa, vistos, ids))) : null,
+            h(Frases, { frases: s.frases.map(function (x) { return marcarTermos(x, vistos, ids); }), ctx: ctx }));
+        }),
+        outros.length ? h('section', { key: 'velhos', className: 'oc-sec' }, h('h3', null, 'Também escreveram partes destas linhas'),
+          h('ul', { className: 'oc-velhos' }, outros.map(function (x) {
+            var n = notaOrigem(ref, art.versoes[x].ato, art.versoes[x].tipo === 'original'), cx0 = M.cor[x];
+            return h('li', { key: x }, h('button', { type: 'button', className: 'oc-velho', onClick: function () { origemFoco.alvo = 'folha-origem-t'; esc[1]({ chave: chave, o: x }); } },
+              h('span', { className: 'oc-band' + (cx0 && cx0.padrao ? ' oc-band-' + cx0.padrao : ''), style: { '--c': cx0 ? 'var(--act-' + cx0.c + ')' : 'var(--act-0)' }, 'aria-hidden': 'true' }),
+              h('span', { className: 'oc-velho-nome' }, n.titulo, n.orig ? h('span', { className: 'oc-ano' }, ' (texto original)') : null, r.pont.indexOf(x) >= 0 ? h('span', { className: 'oc-ano' }, ' (só pontuação)') : null),
+              h('span', { className: 'oc-ano' }, n.ano), h('small', null, n.l1)));
+          }))) : null,
+        h('div', { key: 'pe', className: 'oc-pe' },
+          h('p', { className: 'oc-conf' }, confiancaOrigem(ref, id) + ' ', h('a', { href: porque }, 'Como sabemos isto')),
+          h('p', { className: 'oc-fonte' }, 'Fonte: ' + ((ref.passagem || {})[id] || registo(ref, id).quem.ar_url ? 'Assembleia da República, dados abertos, e Diário da República' : 'Diário da República') +
+            '. Consultado a ' + curta((ref.index || {}).consultado_em) + '.'),
+          h('p', { className: 'oc-links' },
+            (ref.passagem || {})[id] ? h('a', { href: link(['ato', id], { ir: 'generalidade' }) }, 'Ver a passagem no Parlamento') : null,
+            h('button', { type: 'button', className: 'oc-copiar', onClick: function () { copiar(copiarTxt, function () { cop[1](copiarTxt); }); } },
+              h('span', { key: cop[0] === copiarTxt ? 'c' : 'n', className: 'troca' }, cop[0] === copiarTxt ? 'Ligação copiada' : 'Copiar ligação')),
+            h('a', { href: 'https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro na origem do texto: ' + art.rotulo + ' ' + (d.genitivo || 'de ' + d.titulo) + ' (' + des + ')'), target: '_blank', rel: 'noopener' }, 'Reportar um erro ↗')))
+      ];
+    }
+    return h('div', { className: 'origem' },
+      h('div', { className: 'oc-cabeca' },
+        h('p', { className: 'oc-intro' }, h('strong', null, 'Quem fez este texto?'), ' Cada nota diz que diploma mudou estas linhas por último e quem o propôs.'),
+        h('p', { className: 'oc-resumo' }, render(resumoOrigem(M, art, ref, props.nomeOriginal))),
+        h(R.LenteOrigem, { valor: lente, categorias: categorias, honesta: LENTE_HONESTA, onEscolher: function (v) { if (v !== lente) ir({ marcar: v === 'iniciativa' ? 'iniciativa' : null }); } })),
+      h('div', { className: 'lei lei-o' },
+        h(R.OrigemTexto, { runs: M.runs, notas: notas, cor: M.cor, cat: cat, lente: lente, aberta: aberta, onNota: abrirNota, onFrase: function (idx) { abrirFrase(idx); } })),
+      h('section', { className: 'oc-como', id: 'origem-como', 'aria-labelledby': 'origem-como-t' },
+        h('h2', { id: 'origem-como-t', tabIndex: -1 }, 'Como lemos a origem'),
+        COMO_LEMOS.map(function (t, k) { return h('p', { key: k }, t); }),
+        h('details', { className: 'dobra-o' }, h('summary', null, 'Porque não marcamos o texto por partido'), h('p', null, POR_PARTIDO))),
+      h(R.FolhaOrigem, { aberta: !!aberta, titulo: titulo, andar: andar, onFechar: fechar, vivo: vivo }, folha));
+  }
   function Artigo(props) {
     // The diploma's index first; the article's own file only when the index lists it.
     var ri = useData(['d/' + props.slug + '.json']);
@@ -1697,16 +2201,9 @@
     }
     var corpo, resumo = null;
     if (cur && ver === 'origem') {
-      var model = originModel(art, sel.i, atos, function (o) { return versionHref(o); }, nomeOriginal);
-      model.acts.forEach(function (a) {
-        var o = a.versao;
-        if (o > 0) { a.diffHref = versionHref(o, { ver: 'mudou' }); a.beforeHref = versionHref(o - 1); }
-        var v = o != null ? art.versoes[o] : null;
-        if (v && v.tipo !== 'original' && atos[v.ato]) a.nota = textoDe(pessoas(v));
-      });
-      corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts, margem: true }),
-        // R-30: what the colours mean.
-        h('p', { className: 'legenda' }, 'Cada cor é um diploma que escreveu parte do texto.' + (model.acts.some(function (x) { return x.index === 7 && x.versao == null; }) ? ' Os diplomas mais antigos têm a mesma cor.' : '')));
+      // Who wrote each part of the text, and the people behind each act (OrigemVista).
+      corpo = h(OrigemVista, { key: art.id + sel.i, art: art, vi: sel.i, d: d, q: q, dados: ref, nomeOriginal: nomeOriginal, versionHref: versionHref,
+        model: originModel(art, sel.i, atos, function (o) { return versionHref(o); }, nomeOriginal) });
     } else if (cur && ver === 'mudou' && n > 1 && (sel.i > 0 || q.com)) {
       // Compare with the redação before, or with the one the reader chose ("Comparar com").
       var com = q.com ? resolve(art, q.com, base) : -1;
@@ -2982,7 +3479,10 @@
         return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · Conselho de Ministros a ' + curta(x.d_cm) + ' · ' + (x.governos || []).map(function (n) { return romano(n); }).join(' e ') + ' Governos Constitucionais')];
       }),
       lista0('Datas do Parlamento que não mostramos', q.passos_descartados, function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + x.motivo)]; }),
-      lista0('Votos que não ligámos a esta lei', q.votos_descartados, function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + x.fase + ', ' + curta(x.data))]; }));
+      lista0('Votos que não ligámos a esta lei', q.votos_descartados, function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + x.fase + ', ' + curta(x.data))]; }),
+      // F4: a redação whose act is not in atos.json shows as «Quem fez: desconhecido».
+      q.atos_em_falta ? h('p', { className: 'muted small' }, q.atos_em_falta.length ? q.atos_em_falta.length + (q.atos_em_falta.length === 1 ? ' redação tem' : ' redações têm') + ' um ato que não está na lista de atos.' : 'Todas as redações têm o seu ato na lista de atos.') : null,
+      lista0('Redações com um ato que não está na lista de atos', q.atos_em_falta, function (x) { return [h('a', { key: 'a', href: link(['d', x.diploma, x.artigo]) }, x.diploma + ' · ' + x.artigo), h('span', { key: 'd', className: 'muted' }, ' · ' + x.ato)]; }));
   }
 
   // ---- About -------------------------------------------------------------------------------------
@@ -2997,9 +3497,11 @@
       h('p', null, 'O texto que mostramos é o consolidado do Diário da República. O Diário da República atualiza este texto depois de cada alteração e guarda todas as redações de cada artigo. O consolidado não tem valor legal e pode ter erros.'),
       h('p', null, 'Uma republicação tem valor legal: é o texto completo de um diploma, publicado em anexo a uma lei que o alterou. Mas só existe quando a lei o exige (Lei n.º 74/98, artigo 6.º). Por isso, há poucas: a Constituição tem uma em cada revisão; o Código do IRC não tem nenhuma desde 2014.'),
       h('p', null, 'Usamos o consolidado porque é o único texto com todas as redações e as suas datas. Na Constituição, comparamos cada redação com as republicações e mostramos o resultado em cada artigo (', h('a', { href: '#/verificacao' }, 'Verificação'), '). Para aplicar a lei, confirme sempre o texto no Diário da República.'),
-      h('h2', { className: 'h2' }, 'Como calculamos a origem do texto'),
-      h('p', null, 'Comparamos cada redação com a redação anterior, palavra a palavra. Cada palavra que uma alteração acrescentou fica com a cor dessa alteração. As palavras que não mudaram mantêm a origem anterior.'),
+      // The same words as «Como lemos a origem» under the text of each article (OrigemVista).
+      h('h2', { className: 'h2', id: 'origem', tabIndex: -1 }, 'Como lemos a origem do texto'),
+      COMO_LEMOS.map(function (t, k) { return h('p', { key: k }, t); }),
       h('p', null, 'Quando uma alteração escreve de novo uma frase, marcamos a frase toda como alterada. Uma palavra curta que fica igual no meio da frase não divide a alteração em duas.'),
+      h('p', null, h('strong', null, 'Porque não marcamos o texto por partido. '), POR_PARTIDO),
       h('h2', { className: 'h2' }, 'As três datas'),
       h('ul', null,
         h('li', null, h('strong', null, 'Publicação: '), 'o dia em que o ato saiu no Diário da República.'),
@@ -3098,7 +3600,9 @@
     frasesQuem: frasesQuem, frasesProponentes: frasesProponentes, linhaPessoas: linhaPessoas, linhaVfg: linhaVfg, linhasEventos: linhasEventos, linhaAto: linhaAto,
     nomeGrupo: nomeGrupo, ordinalExtenso: ordinalExtenso, marcarTermos: marcarTermos, termosPara: termosPara, chavePartilha: chavePartilha, partilhaUrl: partilhaUrl,
     metaDiploma: metaDiploma, tituloDe: tituloDe, textoDe: textoDe, fraseOE: fraseOE, avisoTransitorias: avisoTransitorias, faixasLegislaturas: faixasLegislaturas,
-    ledeGeneralidade: ledeGeneralidade, registo: registo, rotular: rotular, escolhida: escolhida, linhaFalta: linhaFalta, curtoAto: curtoAto };
+    ledeGeneralidade: ledeGeneralidade, registo: registo, rotular: rotular, escolhida: escolhida, linhaFalta: linhaFalta, curtoAto: curtoAto,
+    origemLinhas: origemLinhas, notaOrigem: notaOrigem, escopoLinhas: escopoLinhas, rotuloOrigem: rotuloOrigem, resumoOrigem: resumoOrigem, contaOrigem: contaOrigem, linhaHonesta: linhaHonesta,
+    glossa: glossa, linhaDiferencas: linhaDiferencas, votoNovoDecreto: votoNovoDecreto, confiancaOrigem: confiancaOrigem, textoCopiar: textoCopiar, catOrigem: catOrigem };
   if (!window.Redacao) return;  // node tests load this file without the design system or a page
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();

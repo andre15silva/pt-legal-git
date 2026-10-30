@@ -365,15 +365,26 @@ def registo(aid: str, a: dict, p: dict | None, sig: dict | None, t: Tabelas, gru
                                 "resultado_generalidade": (i.get("generalidade") or {}).get("resultado")})
         proponentes.sort(key=lambda x: (x["entrada"] or "", x["designacao"]))
         tcs = [g for g in p.get("generalidade", []) if g["origem"] == "texto_comissao"]
-        if tcs:
-            v = p["texto_comissao"][tcs[0]["indice"]]
-            idx = ctx.get("indice", {})
-            inis = []
+        idx = ctx.get("indice", {})
+
+        def citadas(v):
+            out = []
             for c in v.get("citadas_todas") or []:
                 iid = idx.get((c["tipo"], c["numero"], c["legislatura"])) or idx.get((c["tipo"], c["numero"], "I" if c["legislatura"] in ("IA", "IB") else c["legislatura"]))
-                inis.append({"iniciativa": iid, "designacao": f"{c['tipo']} n.º {c['numero']}/{c['legislatura']}", "parte": c.get("parte")})
+                out.append({"iniciativa": iid, "designacao": f"{c['tipo']} n.º {c['numero']}/{c['legislatura']}", "parte": c.get("parte")})
+            return out
+        vfg_p = p.get("vfg") or {}
+        if tcs:
+            v = p["texto_comissao"][tcs[0]["indice"]]
+            inis = citadas(v)
             texto_comissao = {"tipo": "texto_substituicao" if re.match(r"\s*Texto de substitui", v.get("descricao") or "", re.I) else "texto_final",
                               "n_iniciativas": len(inis), "iniciativas": inis}
+        elif re.match(r"\s*Texto de substitui", vfg_p.get("descricao") or "", re.I):
+            # F1: no generalidade vote on the committee text (each initiative was voted apart, LO 2/2006),
+            # but the final vote is on a texto de substituição: its description names the initiatives.
+            # Only «Texto de substituição»: nearly every final vote is on the committee's «texto final».
+            inis = citadas(vfg_p) or [{"iniciativa": x["iniciativa"], "designacao": x["designacao"], "parte": None} for x in proponentes]
+            texto_comissao = {"tipo": "texto_substituicao", "n_iniciativas": len(inis), "iniciativas": inis}
         if p.get("vfg"):
             vfg = {"data": p["vfg"]["data"], "unanime": p["vfg"]["unanime"], "resultado": p["vfg"]["resultado"]}
         else:

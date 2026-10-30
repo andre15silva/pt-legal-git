@@ -182,8 +182,9 @@ def verificar(voto: dict, resultado: str | None, assentos: dict[str, int] | None
 
 # "Proposta 30P, apresentada pelo PS, de emenda do n.º 1 ao artigo 112.º (Anexo)"
 # "Proposta de alteração do PSD – Eliminação da alínea c) do n.º 2 do artigo 1.º do texto final"
+# "Proposta, do PSD, de substituição do n.º 3 do artigo 1.º" (LO 1/2024: a comma after "Proposta")
 _SIGLA = r"[A-Z]{1,6}(?:[-/][A-Z]{1,6})?"
-_PROPONENTE = re.compile(r"(?:apresentad[ao]s? pel[oa]s?|[Pp]ropostas? (?:de alteração )?(?:d[oa]s?|apresentada pel[oa]))\s+(?:GP d[oa] |Grupo Parlamentar d[oa] )?"
+_PROPONENTE = re.compile(r"(?:apresentad[ao]s? pel[oa]s?|[Pp]ropostas?,? (?:de alteração,? )?(?:d[oa]s?|apresentada pel[oa]))\s+(?:GP d[oa] |Grupo Parlamentar d[oa] )?"
                          r"(%s(?:, %s)*(?: e %s)?)\b" % (_SIGLA, _SIGLA, _SIGLA))
 # "Proposta de alteração" names the document, not the operation, so it is not an operation here.
 _OPERACAO = re.compile(r"\b(emenda|substituição|aditamento|eliminação)\b", re.I)
@@ -418,10 +419,13 @@ def passagem(inis: list[tuple[dict, object]], ato_id: str, comps: dict[str, Comp
     grupos = ctx.get("grupos")
     pub = ctx.get("publicacao")
     ate = _mais(pub, 1) if pub else None
+    # Initiatives the act's committee text joined that the AR links to another law (PJL 847/XIII in
+    # Lei n.º 13/2019): they are listed with their authors and own vote, never as the main one.
+    juntas = set(ctx.get("juntas") or ())
 
     def principal_de(x):
-        return any(p == "Lei (Publicação DR)" for _, p in x[1].events)
-    inis = sorted(inis, key=lambda x: (not principal_de(x), x[1].events[0][0] if x[1].events else ""))
+        return str(x[1].id) not in juntas and any(p == "Lei (Publicação DR)" for _, p in x[1].events)
+    inis = sorted(inis, key=lambda x: (str(x[1].id) in juntas, not principal_de(x), x[1].events[0][0] if x[1].events else ""))
     raw, ini = inis[0]
     if not isinstance(comps, dict):
         comps = {ini.legislature: comps} if comps else {}
@@ -539,6 +543,10 @@ def passagem(inis: list[tuple[dict, object]], ato_id: str, comps: dict[str, Comp
         if cand:
             v = cand[0]
             vfg = _voto(v, comp, grupos, comps)
+            # A final vote on a committee text names the initiatives it joined (LO 2/2006 has no
+            # generalidade vote on that text: quem.py reads the committee text from here).
+            if _TEXTO_COMISSAO.match(v.description or ""):
+                vfg["citadas_todas"] = [{"tipo": t, "numero": n, "legislatura": l, "parte": p} for t, n, l, p in citadas_partes(v.description)]
             passos.setdefault("votacao-final", {"passo": "votacao-final", "data": v.date, "votacoes": []})
             passos["votacao-final"]["votacoes"] = [vfg]
             passos["votacao-final"]["data"] = v.date

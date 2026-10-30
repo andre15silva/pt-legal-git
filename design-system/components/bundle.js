@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Votacao"},{"name":"Termo"},{"name":"TermoConteudo"},{"name":"Citation"},{"name":"SourceNote"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Votacao"},{"name":"Termo"},{"name":"TermoConteudo"},{"name":"Citation"},{"name":"SourceNote"},{"name":"OrigemTexto"},{"name":"NotaOrigem"},{"name":"FolhaOrigem"},{"name":"LenteOrigem"}]} */
 (function () {
   var React = window.React;
   var h = React.createElement;
@@ -424,7 +424,8 @@
   // record lists as absent say "Ausente". Groups missing from the record say "sem registo".
   // props: {grupos: {GP: sentido}, ordem: [GP], contagens?, dissidencia?, foraDeGrupo?,
   //   ausentes?, semRegisto? (groups with seats that day and no record), unanime?, resultado?, verificacao?,
-  //   nomes? ({GP: name in the Assembleia's records}: each sigla then reads as the group's name)}
+  //   nomes? ({GP: name in the Assembleia's records}: each sigla then reads as the group's name),
+  //   destaque? ([GP]: the groups that proposed the text, in bold)}
   var SENTIDOS = [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']];
   var PALAVRA = { favor: 'a favor', contra: 'contra', abstencao: 'abstenção' };
   // "PS, PSD e CDS" as elements: items joined by commas.
@@ -440,8 +441,10 @@
     Object.keys(g).forEach(function (k) { if (ordem.indexOf(k) < 0) ordem.push(k); });
     var ausentes = props.ausentes || [];
     // A sigla with its name: seen as the sigla, heard as the name.
+    var destaque = props.destaque || [];
     function sigla(k) {
-      return nomes[k] ? h('abbr', { title: nomes[k] }, h('span', { 'aria-hidden': 'true' }, k), h('span', { className: 'rd-sr' }, nomes[k])) : k;
+      var s = nomes[k] ? h('abbr', { title: nomes[k] }, h('span', { 'aria-hidden': 'true' }, k), h('span', { className: 'rd-sr' }, nomes[k])) : k;
+      return destaque.indexOf(k) >= 0 ? h('strong', { className: 'rd-votos-destaque' }, s) : s;
     }
     function grupo(k) {
       var n = cont[k] && cont[k][g[k]];
@@ -582,6 +585,173 @@
         props.verification ? h(StatusPill, { status: props.verification }) : null));
   }
 
-  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Termo: Termo, TermoConteudo: TermoConteudo, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
+  // ---- Origem do texto -------------------------------------------------------
+  // The law as plain text, in runs of lines that one act changed last (app.js originModel), each
+  // run with its note. The note is the only control of a run. The words are not buttons and not
+  // tab stops: a click on a word opens the sheet at that word's act, and keyboard users reach the
+  // same through the note and the phrase walk (WCAG 2.5.8: inline targets, with a large alternative).
+  // props: {runs: [{k, key, linhas: [{i, kind: 'n'|'al'|'tab'|'', nr, rev, spans: [{o, text, frase?}]}]}],
+  //   notas: [{titulo, ano, l1, l2, aria, orig}] (one per run), cor: {o: {c: 1..7, padrao: ''|'tracejado'|'pontilhado'}},
+  //   cat: {o: 'gov'|'dep'|'mix'|'dl'|'ret'|'unk'|'orig'}, lente: 'diploma'|'iniciativa',
+  //   aberta: {run, o, frase} or null, onNota(k), onFrase(idx)}
+  function OrigemTexto(props) {
+    var runs = props.runs || [], notas = props.notas || [], cor = props.cor || {}, cat = props.cat || {}, aberta = props.aberta;
+    var hv = React.useState(null), hover = hv[0], setHover = hv[1];
+    var raiz = React.useRef(null);
+    // At ≥ 1100 px a note never makes its run taller than its text: it drops l2, then l1.
+    function compactar() {
+      var el = raiz.current;
+      if (!el) return;
+      var largo = !window.matchMedia || window.matchMedia('(min-width: 1100px)').matches;
+      Array.prototype.forEach.call(el.querySelectorAll('.rd-orun'), function (r) {
+        r.classList.remove('is-c1', 'is-c2');
+        if (!largo) return;
+        var b = r.querySelector('.rd-onota'), t = r.querySelector('.rd-otxt');
+        if (b && t && b.offsetHeight > t.offsetHeight + 1) r.classList.add('is-c1');
+        if (b && t && b.offsetHeight > t.offsetHeight + 1) r.classList.add('is-c2');
+      });
+    }
+    React.useLayoutEffect(compactar);
+    React.useEffect(function () {
+      window.addEventListener('resize', compactar);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(compactar);
+      return function () { window.removeEventListener('resize', compactar); };
+    }, []);
+    // One word (a span of one act). Punctuation alone is not a phrase: no mark, no click (R4).
+    function palavra(s, j, r) {
+      if (s.frase == null) return s.text;
+      var c = cor[s.o];
+      var foco = aberta ? aberta.run === r.k && aberta.o === s.o : hover === r.k && s.o === r.key;
+      return h('span', { key: j, className: cx('rd-ofr', c ? 'rd-ofr-c' + c.c : 'rd-ofr-orig', c && c.padrao && 'rd-ofr-' + c.padrao, 'rd-ok-' + (cat[s.o] || 'orig'),
+        foco && 'is-foco', aberta && aberta.frase === s.frase && 'is-atual'), 'data-f': s.frase, 'data-o': s.o,
+        // Selecting text is not a choice.
+        onClick: function () { if (window.getSelection && String(window.getSelection())) return; if (props.onFrase) props.onFrase(s.frase); } }, s.text);
+    }
+    // A table row: the spans hold "cell │ cell │ cell"; each cell is a grid column.
+    function linhaTabela(L, r) {
+      var cels = [[]];
+      L.spans.forEach(function (s) {
+        s.text.split(/\s*│\s*/).forEach(function (t, k) { if (k) cels.push([]); if (t) cels[cels.length - 1].push(Object.assign({}, s, { text: t })); });
+      });
+      var txt = cels.map(function (c) { return c.map(function (x) { return x.text; }).join(''); });
+      var cab = !txt.some(function (c) { return /\d/.test(c); });
+      return h('p', { key: L.i, className: cx('rd-statute', 'rd-p-tab', cab && 'rd-p-tab-cab'), style: { gridTemplateColumns: 'minmax(0, 2fr) repeat(' + Math.max(1, cels.length - 1) + ', minmax(0, 1fr))' } },
+        cels.map(function (c, k) {
+          return h('span', { key: k, className: cx('rd-cel', /^[\d\s,.%€−-]+$/.test(txt[k]) && txt[k] && 'rd-cel-num') },
+            k ? h('span', { className: 'rd-sr' }, '; ') : null, c.map(function (s, j) { return palavra(s, j, r); }));
+        }));
+    }
+    function texto(r) {
+      var out = [], tab = null;
+      r.linhas.forEach(function (L) {
+        if (L.kind === 'tab') {
+          if (!tab) { tab = []; out.push(h('div', { key: 't' + L.i, className: 'rd-tabela' }, tab)); }
+          tab.push(linhaTabela(L, r));
+          return;
+        }
+        tab = null;
+        out.push(h('p', { key: L.i, className: cx('rd-statute', L.kind && 'rd-p-' + L.kind, L.rev && 'rd-p-rev') },
+          L.nr ? h('span', { className: 'rd-num' }, L.nr + ' ') : null, L.spans.map(function (s, j) { return palavra(s, j, r); })));
+      });
+      return out;
+    }
+    // ↑ and ↓ on a note move to the previous or next note.
+    function tecla(e) {
+      if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !e.target.classList || !e.target.classList.contains('rd-onota')) return;
+      var bs = Array.prototype.slice.call(raiz.current.querySelectorAll('.rd-onota')), i = bs.indexOf(e.target);
+      var n = bs[i + (e.key === 'ArrowDown' ? 1 : -1)];
+      if (n) { e.preventDefault(); n.focus(); }
+    }
+    return h('div', { className: cx('rd-origem', props.lente === 'iniciativa' && 'is-lente-ini'), ref: raiz, onKeyDown: tecla },
+      runs.map(function (r) {
+        var aqui = !!aberta && aberta.run === r.k;
+        return h('div', { key: r.k, className: cx('rd-orun', aqui && 'is-open', hover === r.k && 'is-hover'), role: 'group', 'aria-labelledby': 'onota-' + r.k, 'data-run': r.k,
+          onMouseEnter: function () { setHover(r.k); }, onMouseLeave: function () { setHover(null); } },
+          h(NotaOrigem, { id: 'onota-' + r.k, nota: notas[r.k], cor: cor[r.key], cat: cat[r.key], expandida: aqui,
+            onClick: function () { if (props.onNota) props.onNota(r.k); },
+            onFocus: function () { setHover(r.k); }, onBlur: function () { setHover(null); } }),
+          h('div', { className: 'rd-otxt' }, texto(r)));
+      }));
+  }
+  // The note of one run: the band in the act's colour, the act and its year, who started it (l1)
+  // and what happened to it (l2). The whole note is one button; it opens the sheet.
+  // props: {id, nota: {titulo, ano, l1, l2, aria, orig}, cor: {c, padrao}, cat, expandida, onClick, onFocus?, onBlur?}
+  function NotaOrigem(props) {
+    var n = props.nota || {}, c = props.cor;
+    return h('div', { className: cx('rd-onota-col', c && c.padrao && 'rd-onota-' + c.padrao), style: { '--c': c ? 'var(--act-' + c.c + ')' : 'var(--act-0)' } },
+      h('span', { className: 'rd-onota-band', 'aria-hidden': 'true' }),
+      h('button', { type: 'button', id: props.id, className: 'rd-onota', 'aria-expanded': !!props.expandida, 'aria-controls': 'folha-origem', 'aria-label': n.aria,
+        onClick: props.onClick, onFocus: props.onFocus, onBlur: props.onBlur },
+        h('span', { className: 'rd-onota-tit' },
+          h('span', { className: 'rd-osw rd-ok-' + (props.cat || 'orig'), 'aria-hidden': 'true' }),
+          h('span', { className: 'rd-onota-nome' }, n.titulo, n.orig ? h('span', { className: 'rd-onota-ano' }, ' (texto original)') : null),
+          h('span', { className: 'rd-onota-ano' }, n.ano)),
+        n.l1 ? h('span', { className: 'rd-onota-l1' }, n.l1) : null,
+        n.l2 ? h('span', { className: 'rd-onota-l2' }, n.l2) : null));
+  }
+  // The sheet: a non-modal dialog at the side (≥ 1100 px) or the bottom of the screen. It stays in
+  // the page while closed (hidden), so its live region is there before it speaks. Esc anywhere
+  // closes it; ← and → inside it walk the phrases. The page moves focus (heading, walk, note).
+  // props: {aberta, titulo, andar: {ant: fn|null, seg: fn|null, segRotulo}, onFechar, vivo, children}
+  function FolhaOrigem(props) {
+    var andar = props.andar || {};
+    var fechar = React.useRef(props.onFechar);
+    fechar.current = props.onFechar;
+    React.useEffect(function () {
+      if (!props.aberta) return;
+      function tecla(e) { if (e.key === 'Escape' && !e.defaultPrevented) { e.preventDefault(); fechar.current(); } }
+      document.addEventListener('keydown', tecla);
+      return function () { document.removeEventListener('keydown', tecla); };
+    }, [props.aberta]);
+    function seta(e) {
+      if ((e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+      var f = e.key === 'ArrowRight' ? andar.seg : andar.ant;
+      e.preventDefault();
+      if (f) f();
+    }
+    return h(React.Fragment, null,
+      h('div', { className: 'rd-sr', 'aria-live': 'polite' }, props.aberta ? props.vivo || '' : ''),
+      h('div', { id: 'folha-origem', className: 'rd-folha', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'folha-origem-t', hidden: !props.aberta, onKeyDown: seta },
+        props.aberta ? [
+          // The bar stays at the top while the sheet scrolls: heading and «Fechar», then the walk.
+          h('div', { key: 'b', className: 'rd-folha-topo' },
+            h('div', { className: 'rd-folha-barra' },
+              h('h2', { id: 'folha-origem-t', tabIndex: -1 }, props.titulo),
+              h('button', { type: 'button', className: 'rd-folha-fechar', onClick: props.onFechar }, 'Fechar')),
+            h('div', { className: 'rd-folha-andar' },
+              h('button', { type: 'button', id: 'folha-origem-ant', disabled: !andar.ant, onClick: andar.ant || undefined }, '‹ Frase anterior'),
+              h('button', { type: 'button', id: 'folha-origem-seg', disabled: !andar.seg, onClick: andar.seg || undefined }, andar.segRotulo || 'Frase seguinte ›'))),
+          h('div', { key: 'c', className: 'rd-folha-corpo' }, props.children)] : null));
+  }
+  // «Marcar o texto por:» Diploma (default) or Iniciativa da lei: a radiogroup with one tab stop;
+  // the arrows move and choose. The initiative lens uses shapes, never a hue, and never a party.
+  // props: {valor, onEscolher(v), categorias: [[k, rotulo]], honesta}
+  function LenteOrigem(props) {
+    var ops = [['diploma', 'Diploma'], ['iniciativa', 'Iniciativa da lei']];
+    var refs = React.useRef({});
+    function tecla(e, i) {
+      if (!/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
+      e.preventDefault();
+      var n = ops[(i + (/Right|Down/.test(e.key) ? 1 : ops.length - 1)) % ops.length];
+      props.onEscolher(n[0]);
+      if (refs.current[n[0]]) refs.current[n[0]].focus();
+    }
+    return h('div', { className: 'rd-olente' },
+      h('div', { className: 'rd-olente-linha' },
+        h('span', { id: 'olente-r' }, 'Marcar o texto por:'),
+        h('span', { role: 'radiogroup', 'aria-labelledby': 'olente-r', className: 'rd-olente-g' }, ops.map(function (o, i) {
+          var on = props.valor === o[0];
+          return h('button', { key: o[0], type: 'button', role: 'radio', 'aria-checked': on, tabIndex: on ? 0 : -1,
+            ref: function (el) { refs.current[o[0]] = el; },
+            onClick: function () { props.onEscolher(o[0]); }, onKeyDown: function (e) { tecla(e, i); } }, o[1]);
+        }))),
+      props.valor === 'iniciativa' ? h('div', { className: 'rd-olente-leg' },
+        h('p', { className: 'rd-olente-honesta' }, props.honesta),
+        h('ul', null, (props.categorias || []).map(function (c) {
+          return h('li', { key: c[0] }, h('span', { className: 'rd-osw rd-ok-' + c[0], 'aria-hidden': 'true' }), c[1]);
+        }))) : null);
+  }
+
+  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Termo: Termo, TermoConteudo: TermoConteudo, Citation: Citation, SourceNote: SourceNote, OrigemTexto: OrigemTexto, NotaOrigem: NotaOrigem, FolhaOrigem: FolhaOrigem, LenteOrigem: LenteOrigem, dataPorExtenso: dataPorExtenso };
   window.Redacao = Object.assign(window.Redacao || {}, api);
 })();

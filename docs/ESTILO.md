@@ -121,7 +121,7 @@ Cada termo tem um só significado. A coluna «Não use» mostra os sinónimos qu
 | acrescentado, eliminado | Texto que uma alteração pôs ou tirou. Só na comparação de redações. | adicionado, removido, apagado |
 | iniciativa | Um projeto de lei ou uma proposta de lei no Parlamento. | proposta (sozinha), PL |
 | votação · a favor · contra · abstenção | Uma votação no Parlamento e o sentido de voto de cada grupo. | sim, não, voto favorável |
-| origem do texto | O diploma que escreveu uma frase. | autoria, blame |
+| origem do texto | O diploma que escreveu uma frase, e as pessoas e órgãos que apresentaram, votaram e promulgaram esse diploma. | autoria, blame, culpa, «quem fez» (como nome da vista) |
 | comparar | Mostrar duas redações com as diferenças marcadas. | confrontar, diff |
 | verificar, verificado | Confirmar o nosso texto com uma fonte oficial. | validar, confirmar (neste sentido) |
 | pesquisar | Procurar texto ou diplomas. | procurar, buscar |

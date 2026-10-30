@@ -353,9 +353,171 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 
 /* Motion (tokens --dur-*, --ease*). A new page fades in and rises --shift. A new redação of the
    text comes from the side the reader moved to. Words a step forward added fade from ins-bg. */
-.vista > * { animation: rd-entrar var(--dur-3) var(--ease) both; }
-.art-lei { animation: rd-aparecer var(--dur-2) var(--ease) both; }
+/* backwards, not both: a transform kept after the animation would hold the fixed sheet of Origem do texto. */
+.vista > * { animation: rd-entrar var(--dur-3) var(--ease) backwards; }
+.art-lei { animation: rd-aparecer var(--dur-2) var(--ease) backwards; }
 .artigo[data-dir="seguinte"] .art-lei { animation-name: rd-de-direita; animation-duration: var(--dur-3); }
+
+/* ---- «Origem do texto» (FINAL-SPEC §3) ---------------------------------------------------------
+   Runs of lines, each with one note: beside the text at ≥ 1100 px, above it (a rubrica) below that.
+   The sheet: at the side, or at the bottom. Act colours are underlines (R5); the lens uses shapes (R7). */
+.so-tel-t { display: none; }
+.oc-cabeca { margin: 0 0 32px; max-width: 696px; display: flex; flex-direction: column; gap: 8px; }
+.oc-intro { margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.oc-intro strong { color: var(--ink); font-weight: 500; }
+.oc-resumo { margin: 0; font-family: var(--font-serif); font-size: 16px; line-height: 24px; font-variant-numeric: lining-nums tabular-nums; }
+.rd-olente-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.rd-olente-g { display: inline-flex; gap: 16px; }
+.rd-olente-g button { font: inherit; font-weight: 500; color: var(--ink-muted); background: none; border: 0; padding: 9px 0 7px; min-height: 38px; border-bottom: 2px solid transparent; cursor: pointer; }
+.rd-olente-g button:hover { color: var(--ink); }
+.rd-olente-g button[aria-checked="true"] { color: var(--ink); border-bottom-color: var(--verde); }
+.rd-olente-leg { margin-top: 4px; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.rd-olente-honesta { margin: 0 0 4px; color: var(--ink); }
+.rd-olente-leg ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.rd-olente-leg li { display: inline-flex; align-items: center; gap: 6px; }
+/* Swatches of the lens: solid, dashed or double ink; grey for decrees, retificações and missing data. */
+.rd-osw { display: inline-block; width: 22px; height: 8px; flex: none; }
+.rd-osw.rd-ok-gov { border-bottom: 2px solid var(--ink); }
+.rd-osw.rd-ok-dep { border-bottom: 2px dashed var(--ink); }
+.rd-osw.rd-ok-mix { border-bottom: 4px double var(--ink); }
+.rd-osw.rd-ok-dl { border-bottom: 2px solid var(--rule-strong); }
+.rd-osw.rd-ok-ret { border-bottom: 1px solid var(--rule-strong); }
+.rd-osw.rd-ok-unk { border-bottom: 2px dotted var(--rule-strong); }
+.rd-osw.rd-ok-orig { border-bottom: 1px solid transparent; }
+.rd-onota .rd-osw { display: none; }
+.is-lente-ini .rd-onota .rd-osw { display: inline-block; width: 16px; align-self: center; }
+
+/* The words: an underline in the act's colour (R5). The original text is never underlined. */
+.rd-ofr { text-decoration-line: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: transparent; cursor: pointer; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.rd-ofr-c1 { text-decoration-color: var(--act-1); }
+.rd-ofr-c2 { text-decoration-color: var(--act-2); }
+.rd-ofr-c3 { text-decoration-color: var(--act-3); }
+.rd-ofr-c4 { text-decoration-color: var(--act-4); }
+.rd-ofr-c5 { text-decoration-color: var(--act-5); }
+.rd-ofr-c6 { text-decoration-color: var(--act-6); }
+.rd-ofr-c7 { text-decoration-color: var(--act-7); }
+.rd-ofr-tracejado { text-decoration-style: dashed; }
+.rd-ofr-pontilhado { text-decoration-style: dotted; }
+.rd-ofr:hover { background: var(--paper-sunken); }
+.rd-ofr.is-foco { text-decoration-thickness: 3px; }
+.rd-ofr.is-atual { background: var(--paper-sunken); text-decoration-thickness: 3px; outline: 1px solid var(--rule-mid); outline-offset: 1px; }
+/* The initiative lens: shape only, never a hue (R7). */
+.is-lente-ini .rd-ofr { text-decoration-color: var(--ink); text-decoration-style: solid; text-decoration-thickness: 2px; }
+.is-lente-ini .rd-ofr.rd-ok-dep { text-decoration-style: dashed; }
+.is-lente-ini .rd-ofr.rd-ok-mix { text-decoration-style: double; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.is-lente-ini .rd-ofr.rd-ok-dl { text-decoration-color: var(--rule-strong); }
+.is-lente-ini .rd-ofr.rd-ok-ret { text-decoration-color: var(--rule-strong); text-decoration-thickness: 1px; }
+.is-lente-ini .rd-ofr.rd-ok-unk { text-decoration-color: var(--rule-strong); text-decoration-style: dotted; }
+.is-lente-ini .rd-ofr.rd-ok-orig { text-decoration-color: transparent; }
+.is-lente-ini .rd-ofr.is-foco, .is-lente-ini .rd-ofr.is-atual { text-decoration-thickness: 3px; }
+
+/* ≥ 1100 px: one grid row per run, the note first in the DOM and placed in the right column. */
+.rd-orun { display: grid; grid-template-columns: minmax(0, calc(650px + var(--hang))) 300px; justify-content: space-between; column-gap: 64px; align-items: start; }
+.rd-orun + .rd-orun { margin-top: 15px; }
+.rd-otxt { grid-column: 1; grid-row: 1; min-width: 0; }
+.lei .rd-otxt > :first-child { margin-top: 0; }
+.rd-onota-col { grid-column: 2; grid-row: 1; align-self: stretch; position: relative; border-left: 1px solid var(--rule-mid); padding: 0 0 2px 13px; min-width: 0; }
+.rd-onota-band { position: absolute; left: -2px; top: 0; width: 3px; height: 24px; background: var(--c); }
+.rd-onota-tracejado .rd-onota-band, .oc-band-tracejado { background: repeating-linear-gradient(var(--c) 0 4px, transparent 4px 7px); }
+.rd-onota-pontilhado .rd-onota-band, .oc-band-pontilhado { background: repeating-linear-gradient(var(--c) 0 2px, transparent 2px 4px); }
+.rd-onota { display: block; width: 100%; padding: 0 4px 2px 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.rd-onota:hover { background: var(--paper-sunken); }
+.rd-onota-tit { display: flex; gap: 8px; align-items: baseline; font-family: var(--font-serif); font-size: 15px; line-height: 22px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; color: var(--ink); }
+.rd-onota-nome { min-width: 0; }
+.rd-onota-ano, .oc-ano { font-family: var(--font-serif); font-size: 13px; line-height: 20px; font-weight: 400; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
+.rd-onota-l1 { display: block; font-size: 14px; line-height: 20px; color: var(--ink); }
+.rd-onota-l2 { display: block; margin-top: 1px; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+/* A note never makes its run taller than its text: it drops l2, then l1 (the sheet has everything). */
+.rd-orun.is-c1 .rd-onota-l2 { display: none; }
+.rd-orun.is-c1 .rd-onota-l1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rd-orun.is-c2 .rd-onota-l1 { display: none; }
+.rd-orun.is-hover .rd-onota-col, .rd-orun.is-open .rd-onota-col { border-left-color: var(--ink); }
+.rd-orun.is-open .rd-onota { background: var(--paper-sunken); }
+.oc-como { margin-top: 64px; max-width: 650px; border-top: 1px solid var(--rule); padding-top: 20px; font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.oc-como h2 { margin: 0 0 8px; font-family: var(--font-serif); font-size: 18px; line-height: 24px; font-weight: 600; color: var(--ink); }
+.oc-como p { margin: 0 0 8px; }
+.dobra-o > summary { cursor: pointer; width: fit-content; font-size: 14px; line-height: 24px; font-weight: 500; color: var(--ink); padding: 4px 0; }
+.dobra-o[open] > summary { margin-bottom: 6px; }
+
+/* The sheet: at the side (≥ 1100 px), over the notes; the text stays visible and usable. */
+.rd-folha { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0; box-sizing: border-box; width: 440px; overflow: auto; overscroll-behavior: contain; background: var(--paper); border-left: 1px solid var(--rule-strong); box-shadow: var(--shadow-sheet); animation: rd-folha-lado var(--dur-2) var(--ease) backwards; }
+.rd-folha[hidden] { display: none; }
+.rd-folha-topo { position: sticky; top: 0; z-index: 1; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.rd-folha-barra { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px 0; }
+.rd-folha-barra h2 { margin: 0; flex: 1; padding-top: 9px; font-family: var(--font-serif); font-size: 20px; line-height: 26px; font-weight: 600; font-variant-numeric: lining-nums; }
+.rd-folha-barra h2:focus { outline: none; }
+.rd-folha-barra h2:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.rd-folha-fechar { font: inherit; font-size: 15px; font-weight: 500; background: transparent; border: 0; min-height: 44px; padding: 0 4px; color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: .2em; }
+.rd-folha-andar { display: flex; justify-content: space-between; padding: 0 20px 4px; }
+.rd-folha-andar button { font: inherit; font-size: 15px; font-weight: 500; min-height: 44px; padding: 0 4px; background: transparent; border: 0; color: var(--ink); cursor: pointer; }
+.rd-folha-andar button:disabled { color: var(--ink-muted); cursor: default; opacity: .6; }
+.rd-folha-corpo { padding: 12px 20px 32px; font-size: 15px; line-height: 22px; }
+.oc-onde { margin: 0 0 4px; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.oc-citacao { margin: 6px 0 10px; font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.oc-cit { background: var(--paper-sunken); padding: 0 3px; }
+.oc-ato { margin: 0; display: flex; gap: 8px; align-items: stretch; font-family: var(--font-serif); font-size: 16px; line-height: 22px; font-weight: 600; font-variant-numeric: lining-nums; }
+.oc-band { display: inline-block; width: 3px; flex: none; background: var(--c); }
+.oc-papel { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.oc-links { margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; line-height: 22px; }
+.oc-honesta { margin: 14px 0 0; padding: 8px 0 8px 12px; border-left: 3px solid var(--rule-strong); font-size: 14px; line-height: 20px; color: var(--ink); }
+.oc-sec, .oc-nomes { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--rule); font-family: var(--font-serif); font-size: 15px; line-height: 22px; font-variant-numeric: lining-nums; }
+.oc-sec h3 { margin: 0 0 4px; font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink); }
+.oc-sec p, .oc-sec .quem-bloco-lista { margin: 0 0 6px; }
+.oc-glossa { font-family: var(--font-sans); font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.oc-sec .rd-votacao { margin: 4px 0 10px; font-family: var(--font-sans); }
+.oc-sec .rd-votos { font-size: 14px; line-height: 20px; }
+.oc-sec .rd-votos-destaque { font-weight: 700; }
+.oc-sec .quem-lista { margin: 4px 0 6px; font-size: 15px; line-height: 22px; }
+.oc-sec .quem-lista li { padding: 4px 0; }
+/* A vote's heading: «Texto da comissão, 28 de outubro de 2025: aprovado.» */
+.oc-sec .quem-bloco-lista > p { font-size: 15px; line-height: 22px; max-width: none; }
+.oc-sec .quem-bloco-lista > p:has(+ .rd-votacao) { font-weight: 600; }
+.oc-velhos { list-style: none; margin: 0; padding: 0; }
+.oc-velhos li + li { border-top: 1px solid var(--rule); }
+.oc-velho { width: 100%; min-height: 44px; display: grid; grid-template-columns: 3px minmax(0, 1fr) auto; column-gap: 8px; align-items: baseline; padding: 6px 4px 6px 0; border: 0; background: transparent; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+.oc-velho:hover { background: var(--paper-sunken); }
+.oc-velho .oc-band { height: 16px; align-self: center; }
+.oc-velho small { grid-column: 2 / -1; font-family: var(--font-sans); font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.oc-pe { margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--ink); }
+.oc-conf, .oc-fonte { margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.oc-fonte { margin-top: 8px; }
+.oc-copiar { font: inherit; color: var(--verde); background: none; border: 0; padding: 0; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--verde) 45%, transparent); text-underline-offset: .2em; cursor: pointer; }
+@keyframes rd-folha-lado { from { opacity: 0; transform: translateX(8px); } }
+@keyframes rd-folha-baixo { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .rd-folha { animation: none; } }
+
+/* < 1100 px: each run starts with its rubrica (the note, full width); a bottom sheet. */
+@media (max-width: 1099px) {
+  .lei.lei-o { margin-left: 0; }
+  .rd-orun { display: block; }
+  .rd-orun + .rd-orun { margin-top: 24px; }
+  .rd-onota-col { border-left: 0; padding: 0; }
+  .rd-onota-band { display: none; }
+  .rd-onota { display: grid; grid-template-columns: 3px minmax(0, 1fr); column-gap: 10px; padding: 6px 0 8px; min-height: 44px; }
+  .rd-onota::before { content: ""; grid-row: 1 / span 3; width: 3px; background: var(--c); }
+  .rd-onota-tracejado .rd-onota::before { background: repeating-linear-gradient(var(--c) 0 4px, transparent 4px 7px); }
+  .rd-onota-pontilhado .rd-onota::before { background: repeating-linear-gradient(var(--c) 0 2px, transparent 2px 4px); }
+  .rd-onota-tit, .rd-onota-l1, .rd-onota-l2 { grid-column: 2; }
+  .rd-otxt { border-left: 1px solid var(--rule-mid); padding-left: 11px; }
+  .rd-orun.is-hover .rd-otxt, .rd-orun.is-open .rd-otxt { border-left-color: var(--ink); }
+  .rd-folha { top: auto; left: 0; width: auto; max-height: 64vh; border-left: 0; border-top: 1px solid var(--rule-strong); border-radius: var(--radius-md) var(--radius-md) 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); animation-name: rd-folha-baixo; }
+  .rd-folha-barra { padding: 6px 16px 0; }
+  .rd-folha-barra h2 { font-size: 18px; line-height: 24px; padding-top: 10px; }
+  .rd-folha-andar { padding: 0 16px 2px; }
+  .rd-folha-corpo { padding: 10px 16px 24px; }
+  /* The last run can still scroll into the free part of the screen. */
+  body.com-folha-origem .page { padding-bottom: 66vh; }
+}
+@media (max-width: 720px) {
+  .so-largo-t { display: none; }
+  .so-tel-t { display: inline; }
+  .oc-cabeca { margin-bottom: 20px; gap: 6px; }
+}
+@media (forced-colors: active) {
+  .rd-ofr:not(.rd-ofr-orig), .is-lente-ini .rd-ofr:not(.rd-ok-orig) { text-decoration-color: CanvasText; }
+  .rd-onota-band, .rd-onota::before, .oc-band { background: CanvasText; forced-color-adjust: none; }
+}
+
 .artigo[data-dir="anterior"] .art-lei { animation-name: rd-de-esquerda; animation-duration: var(--dur-3); }
 .acabado { animation: rd-marca var(--dur-marca) var(--ease) both; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .troca { display: inline-block; animation: rd-aparecer var(--dur-2) var(--ease) both; }

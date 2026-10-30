@@ -454,6 +454,18 @@ class Cascata(unittest.TestCase):
         self.assertEqual({s["passo"]: s["data"] for s in x["passos"]}["publicacao"], "2024-01-19")
         self.assertIn({"fase": "Lei (Publicação DR)", "data": "2023-12-07", "motivo": "sem_correspondencia"}, x["descartados"])
 
+    def test_joined_initiative_is_never_the_main_one(self):
+        # F3: an initiative the committee text cites, which the AR links to another law, joins the
+        # passage with its own events (a publication of that other law) but never leads it.
+        det = [{"data": "2018-04-30", "fase": "Entrada", "obs": None}, {"data": "2019-02-12", "fase": "Lei (Publicação DR)", "obs": None}]
+        alheia = [{"data": "2018-04-01", "fase": "Entrada", "obs": None}, {"data": "2019-01-20", "fase": "Lei (Publicação DR)", "obs": None}]
+        a = N(id=42542, kind="Proposta de Lei", number="129", legislature="XIII", title="t", votes=[], events=[(d["data"], d["fase"]) for d in det], details=det)
+        b = N(id=42517, kind="Projeto de Lei", number="847", legislature="XIII", title="t", votes=[], events=[(d["data"], d["fase"]) for d in alheia], details=alheia)
+        ctx = {"publicacao": "2019-02-12", "decretos": {"meus": [], "outros": []}, "juntas": {"42517"}}
+        x = passagem.passagem([({"IniAutorOutros": {"nome": "Governo"}}, a), ({"IniAutorGruposParlamentares": [{"GP": "BE"}]}, b)], "lei-13-2019", {}, ctx)
+        self.assertEqual([(i["id"], i["principal"]) for i in x["iniciativas"]], [("42542", True), ("42517", False)])
+        self.assertEqual({s["passo"]: s["data"] for s in x["passos"]}["publicacao"], "2019-02-12")
+
     def test_steps_out_of_order_are_dropped(self):
         det = [{"data": "2020-01-10", "fase": "Votação final global", "obs": None}, {"data": "2020-01-05", "fase": "Promulgação", "obs": None},
                {"data": "2020-01-20", "fase": "Lei (Publicação DR)", "obs": None}]
@@ -510,6 +522,28 @@ class Ids(unittest.TestCase):
     def test_diario_do_governo_has_a_date(self):
         x = atos.parse("Rectificado pelo/a [L]Rectificação  - Diário do Governo n.º 141/1975, Série I de 1975-06-21[/L]")
         self.assertEqual((x["publicacao"], atos.tipo_ato(x["designacao"], x["publicacao"], x["jornal"])), ("1975-06-21", "pre1976"))
+
+    def test_diario_do_governo_ids(self):
+        # F4: the act's id comes from its name, never from the Diário that published it.
+        for d, i in (("Revogado pelo/a Artigo 46.º do/a [L]Decreto-Lei n.º 201/75  - Diário do Governo n.º 88/1975, Série I de 1975-04-15[/L], em vigor a partir de 1975-04-30", "decreto-lei-201-75"),
+                     ("Alterado pelo/a Artigo 1.º do/a [L]Decreto-Lei n.º 67/75  - Diário do Governo n.º 42/1975, Série I de 1975-02-19[/L], em vigor a partir de 1975-02-20", "decreto-lei-67-75")):
+            self.assertEqual(atos.parse(d)["id"], i)
+
+    def test_stale_diplomas_leave_no_files(self):
+        # F4: a diploma that left the corpus (codigo-civil-locacao) leaves no article with an unknown act.
+        import verificacao
+        with tempfile.TemporaryDirectory() as t:
+            for slug in ("codigo-civil", "codigo-civil-locacao"):
+                os.makedirs(os.path.join(t, slug))
+                with open(os.path.join(t, slug + ".json"), "w", encoding="utf-8") as fh:
+                    json.dump({}, fh)
+                with open(os.path.join(t, slug, "artigo-1072.json"), "w", encoding="utf-8") as fh:
+                    json.dump({"id": "artigo-1072", "versoes": [{"ato": "decreto-lei-47344"}, {"ato": "decreto-lei-201-75" + ("-diario" if "locacao" in slug else "")}]}, fh)
+            atos_ = {"decreto-lei-47344": {}, "decreto-lei-201-75": {}}
+            self.assertEqual([x["diploma"] for x in verificacao.atos_em_falta(t, atos_)], ["codigo-civil-locacao"])
+            self.assertEqual(build.podar(t, {"codigo-civil"}), ["codigo-civil-locacao"])
+            self.assertEqual(sorted(os.listdir(t)), ["codigo-civil", "codigo-civil.json"])
+            self.assertEqual(verificacao.atos_em_falta(t, atos_), [])
 
     def test_kinds(self):
         self.assertEqual(atos.tipo_ato("Lei Orgânica n.º 1/2026", "2026-05-18"), "lei-organica")
@@ -737,6 +771,30 @@ class DadosReais(unittest.TestCase):
         n = self.quem["acordao-do-tribunal-constitucional-299-2020"]["tribunal"]["normas"]
         self.assertIn({"diploma": "codigo-civil", "artigo": "artigo-1091", "numeros": ["8"], "escrito_por": "lei-64-2018",
                        "efeitos_desde": "2018-10-30", "tipo": "inconstitucional"}, n)
+
+    def test_f1_committee_text_from_the_final_vote(self):
+        tc = self.quem["lei-organica-2-2006"]["texto_comissao"]
+        self.assertEqual((tc["tipo"], tc["n_iniciativas"]), ("texto_substituicao", 6))
+        # Only «Texto de substituição»: a final vote on the committee's «texto final» is not a committee text of its own.
+        self.assertIsNone(self.quem["lei-31-2012"]["texto_comissao"])
+        self.assertIsNone(self.quem["lei-43-2017"]["texto_comissao"])
+
+    def test_f2_proposers_of_amendments(self):
+        sem = [v for s in self.p["lei-organica-1-2024"]["passos"] for v in s["votacoes"]
+               if re.match(r"\s*Proposta,? do", v.get("descricao") or "") and not (v.get("proposta") or {}).get("proponente")]
+        self.assertEqual(sem, [])
+
+    def test_f3_initiatives_the_committee_text_cites(self):
+        ids = [i["id"] for i in self.p["lei-13-2019"]["iniciativas"]]
+        self.assertIn("42517", ids)  # Projeto de Lei n.º 847/XIII (BE)
+        self.assertEqual(next(i for i in self.p["lei-13-2019"]["iniciativas"] if i["principal"])["id"], "42542")
+        self.assertEqual(self.p["lei-13-2019"]["generalidade"], [{"origem": "texto_comissao", "indice": 0}])
+
+    def test_f4_every_redacao_has_its_act(self):
+        self.assertEqual(ler(APP_DATA, "verificacao.json")["quem"]["atos_em_falta"], [])
+        import verificacao
+        self.assertEqual(verificacao.atos_em_falta(os.path.join(APP_DATA, "d"), self.atos), [])
+        self.assertFalse(os.path.exists(os.path.join(APP_DATA, "d", "codigo-civil-locacao")))
 
     def test_gaps(self):
         for aid in ("lei-organica-2-2020", "lei-42-2017", "lei-2-2020"):

@@ -27,7 +27,7 @@ export declare function ProcessTrack(props: ProcessTrackProps): React.ReactEleme
 export interface GroupVote { group: string; seats?: number; vote: 'favor' | 'contra' | 'abstencao' | 'ausente' }
 export interface VoteBarProps { votes: GroupVote[]; title?: string; result?: string }
 export declare function VoteBar(props: VoteBarProps): React.ReactElement;
-export interface VotacaoProps { grupos: Record<string, 'favor' | 'contra' | 'abstencao'>; ordem?: string[]; contagens?: Record<string, Record<string, number>>; dissidencia?: { grupo: string; sentido: string; n?: number; nome?: string }[]; foraDeGrupo?: { nome: string; sentido: string }[]; ausentes?: string[]; semRegisto?: string[]; unanime?: boolean; resultado?: string; verificacao?: { ok: boolean; metodo: string; favor: number; contra: number; abstencao: number }; mostrarConta?: boolean; nomes?: Record<string, string> }
+export interface VotacaoProps { grupos: Record<string, 'favor' | 'contra' | 'abstencao'>; ordem?: string[]; contagens?: Record<string, Record<string, number>>; dissidencia?: { grupo: string; sentido: string; n?: number; nome?: string }[]; foraDeGrupo?: { nome: string; sentido: string }[]; ausentes?: string[]; semRegisto?: string[]; unanime?: boolean; resultado?: string; verificacao?: { ok: boolean; metodo: string; favor: number; contra: number; abstencao: number }; mostrarConta?: boolean; nomes?: Record<string, string>; destaque?: string[] }
 export declare function Votacao(props: VotacaoProps): React.ReactElement;
 export interface Definicao { termo: string; definicao: string[]; apoio?: string[]; fonte?: { rota?: string; url?: string; texto: string } }
 export interface TermoProps { id: string; texto: string; def: Definicao; onAbrirFolha?: (id: string, botao: HTMLButtonElement) => void }
@@ -38,4 +38,19 @@ export interface CitationProps { text: string; permalink?: string }
 export declare function Citation(props: CitationProps): React.ReactElement;
 export interface SourceNoteProps { children?: React.ReactNode; source?: { href: string; label: string }; updated?: string; verification?: Status; tone?: 'aviso' }
 export declare function SourceNote(props: SourceNoteProps): React.ReactElement;
-declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Votacao: typeof Votacao; Termo: typeof Termo; TermoConteudo: typeof TermoConteudo; Citation: typeof Citation; SourceNote: typeof SourceNote; dataPorExtenso(iso: string): string } } }
+export interface OrigemSpan { o: number; text: string; frase?: number }
+export interface OrigemLinha { i: number; kind: 'n' | 'al' | 'tab' | ''; nr: string; rev: boolean; spans: OrigemSpan[] }
+export interface OrigemRun { k: number; key: number; linhas: OrigemLinha[] }
+export interface OrigemNota { titulo: string; ano: string; l1: string; l2: string; aria: string; orig?: boolean }
+export interface OrigemCor { c: number; padrao: '' | 'tracejado' | 'pontilhado' }
+export type OrigemCategoria = 'gov' | 'dep' | 'mix' | 'dl' | 'ret' | 'unk' | 'orig';
+export interface OrigemAberta { run: number; o: number; frase: number | null }
+export interface OrigemTextoProps { runs: OrigemRun[]; notas: OrigemNota[]; cor: Record<number, OrigemCor>; cat: Record<number, OrigemCategoria>; lente: 'diploma' | 'iniciativa'; aberta: OrigemAberta | null; onNota: (k: number) => void; onFrase: (idx: number) => void }
+export declare function OrigemTexto(props: OrigemTextoProps): React.ReactElement;
+export interface NotaOrigemProps { id: string; nota: OrigemNota; cor?: OrigemCor; cat?: OrigemCategoria; expandida: boolean; onClick: () => void; onFocus?: () => void; onBlur?: () => void }
+export declare function NotaOrigem(props: NotaOrigemProps): React.ReactElement;
+export interface FolhaOrigemProps { aberta: boolean; titulo: React.ReactNode; andar: { ant: (() => void) | null; seg: (() => void) | null; segRotulo?: string }; onFechar: () => void; vivo?: string; children?: React.ReactNode }
+export declare function FolhaOrigem(props: FolhaOrigemProps): React.ReactElement;
+export interface LenteOrigemProps { valor: 'diploma' | 'iniciativa'; onEscolher: (v: 'diploma' | 'iniciativa') => void; categorias: [OrigemCategoria, string][]; honesta: string }
+export declare function LenteOrigem(props: LenteOrigemProps): React.ReactElement;
+declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Votacao: typeof Votacao; Termo: typeof Termo; TermoConteudo: typeof TermoConteudo; Citation: typeof Citation; SourceNote: typeof SourceNote; OrigemTexto: typeof OrigemTexto; NotaOrigem: typeof NotaOrigem; FolhaOrigem: typeof FolhaOrigem; LenteOrigem: typeof LenteOrigem; dataPorExtenso(iso: string): string } } }

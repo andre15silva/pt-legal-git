@@ -261,8 +261,160 @@ assert.strictEqual(search({ sinonimos: [], diplomas: [{ slug: 'nrau', sigla: 'NR
   assert.strictEqual(A.curtoAto('Lei n.º 25/94'), 'Lei 25/94');
   assert.strictEqual(A.curtoAto('Decreto-Lei n.º 194/2003'), 'DL 194/2003');
 }
+// ---- Origem do texto (FINAL-SPEC §12.1): rules R1–R5, the scope, the notes and the sheet ----
+let origemCasos = 0;
+const J = x => JSON.parse(JSON.stringify(x));  // objects from the app's context have another prototype
+{
+  const v = (ato, tipo, linhas) => ({ ato, tipo, publicacao: '2000-01-01', linhas: linhas || [] });
+  // R1: punctuation does not take the note; it is listed as «(só pontuação)».
+  let m = A.origemLinhas({ versoes: [v('a', 'original'), v('b', 'alterado'), v('c', 'alterado', [[[0, '1 — A casa'], [2, ','], [0, ' fica.']]])] }, 2);
+  assert.strictEqual(m.linhas[0].key, 0);
+  assert.ok(m.linhas[0].pont.includes(2));
+  m = A.origemLinhas({ versoes: [v('a', 'original'), v('b', 'alterado'), v('c', 'alterado', [[[0, '1 — A casa'], [2, ','], [0, ' fica '], [1, 'mãe']]])] }, 2);
+  assert.strictEqual(m.linhas[0].key, 1);
+  // R1: a label change («2-» to «2 —») does not either.
+  m = A.origemLinhas({ versoes: [v('a', 'original'), v('b', 'alterado', [[[0, '2'], [1, '-'], [0, ' Existe posse']]])] }, 1);
+  assert.strictEqual(m.linhas[0].key, 0);
+  assert.strictEqual(m.linhas[0].nr, '2 —');
+  assert.strictEqual(m.linhas[0].spans.map(s => s.text).join(''), 'Existe posse');
+  // R4: a span with no letter or digit is not a phrase.
+  assert.ok(m.frases.every(f => /[\p{L}\p{N}]/u.test(f.text)));
+  // R5: a synthetic article with 15 amending acts: 7 solid, 7 dashed, then act-7 dotted.
+  const quinze = [v('o', 'original')];
+  for (let i = 1; i <= 15; i++) quinze.push(v('a' + i, 'alterado'));
+  quinze[15].linhas = [quinze.map((x, i) => [i, 'palavra' + i + ' '])];
+  const cor = J(A.origemLinhas({ versoes: quinze }, 15).cor);
+  assert.strictEqual(cor[0], undefined);  // the original text is never underlined
+  assert.deepStrictEqual(cor[15], { c: 1, padrao: '' });
+  assert.deepStrictEqual(cor[8], { c: 1, padrao: 'tracejado' });
+  assert.deepStrictEqual(cor[1], { c: 7, padrao: 'pontilhado' });
+  // The scope, as people say it.
+  const L = (kind, n, al) => ({ kind, n, al });
+  assert.strictEqual(A.escopoLinhas([L('n', '1'), L('al', '1', 'a'), L('n', '10')]), 'N.º 1 a n.º 10');
+  assert.strictEqual(A.escopoLinhas([L('al', '11', 'a'), L('al', '11', 'b')]), 'N.º 11, alíneas a) e b)');
+  assert.strictEqual(A.escopoLinhas(['a', 'b', 'c', 'd', 'e', 'f'].map(x => L('al', '14', x))), 'N.º 14, alíneas a) a f)');
+  assert.strictEqual(A.escopoLinhas([L('', null)].concat(['a', 'b', 'c', 'd', 'e'].map(x => L('al', null, x)))), 'Corpo do artigo e alíneas a) a e)');
+  assert.strictEqual(A.escopoLinhas([L('al', '1', 'b')]), 'N.º 1, alínea b)');
+  assert.strictEqual(A.escopoLinhas([L('al', null, 'b')]), 'Alínea b)');
+  assert.strictEqual(A.escopoLinhas([L('n', '2'), L('al', '2', 'a'), L('al', '2', 'b'), L('al', '2', 'c')]), 'N.º 2 e alíneas a) a c)');
+  assert.strictEqual(A.escopoLinhas([L('al', '1', 'd'), L('n', '2'), L('n', '10')]), 'N.º 1, alínea d), a n.º 10');
+  // No step-2 content and no mock: the only «exemplo» in app.js is the search field's.
+  const src = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+  assert.ok(!/simulad|fictíc/i.test(src));
+  assert.deepStrictEqual(src.match(/exemplo/gi), ['exemplo']);
+  assert.ok(/Por exemplo: «art 87 circ»/.test(src));
+  origemCasos += 20;
+}
+if (fs.existsSync(path.join(__dirname, 'data', 'quem.json'))) {
+  const D = f => JSON.parse(fs.readFileSync(path.join(__dirname, 'data', f), 'utf8'));
+  const ref = { atos: D('atos.json'), quem: D('quem.json'), passagem: D('passagem.json'), governos: D('governos.json'), index: D('index.json') };
+  const modelo = (dip, artigo) => { const art = D('d/' + dip + '/' + artigo + '.json'); return { art, m: A.originModel(art, art.versoes.length - 1, ref.atos, null, null) }; };
+  // Runs (R2) on real articles.
+  const ln6 = modelo('lei-nacionalidade', 'artigo-6');
+  assert.strictEqual(ln6.m.runs.length, 4);
+  assert.deepStrictEqual(J(ln6.m.runs[0].linhas.map(l => l.i)), Array.from({ length: 22 }, (_, i) => i));
+  assert.strictEqual(ln6.m.runs[0].ato, 'lei-organica-1-2026');
+  assert.strictEqual(ln6.m.runs[1].ato, 'declaracao-de-retificacao-17-2026-1');
+  const cc1653 = modelo('codigo-civil', 'artigo-1653');
+  assert.strictEqual(cc1653.m.runs[0].ato, 'decreto-lei-273-2001');
+  assert.strictEqual(cc1653.m.runs[0].linhas.length, 1);
+  assert.strictEqual(cc1653.m.runs[1].ato, 'decreto-lei-47344');
+  // R1 on real data: the punctuation-only Declaração de Rectificação n.º 20-AS/2001 is listed, not noted.
+  const r20 = cc1653.art.versoes.findIndex(x => /20-as-2001/.test(x.ato));
+  if (r20 >= 0) assert.ok(cc1653.m.runs[0].pont.includes(r20) || !cc1653.m.runs[0].older.includes(r20));
+  // R4 and a regression guard on the phrases of LN art. 6.º; «sete» is phrase 2:4 (frase=2:4).
+  assert.ok(ln6.m.frases.every(f => /[\p{L}\p{N}]/u.test(f.text)));
+  assert.strictEqual(ln6.m.frases.length, 103);
+  const sete = ln6.m.frases.find(f => f.linha === 2 && f.si === 4);
+  assert.strictEqual(sete && sete.text.trim(), 'sete');
+  // R5: 8 amending acts in LN art. 6.º, 7 solid and 1 dashed (Lei n.º 25/94); no two share a mark.
+  const cores = J(ln6.m.cor), os = Object.keys(cores);
+  assert.strictEqual(os.length, 8);
+  assert.strictEqual(os.filter(o => cores[o].padrao === '').length, 7);
+  assert.strictEqual(ln6.art.versoes[os.find(o => cores[o].padrao === 'tracejado')].ato, 'lei-25-94');
+  assert.strictEqual(new Set(os.map(o => cores[o].c + cores[o].padrao)).size, 8);
+  // No corpus article reaches a dotted act (more than 14 amending acts in one redação).
+  // The notes (§2.2 and §6), exactly.
+  const nota = id => J(A.notaOrigem(ref, id, false, 'N.º 1 a n.º 10'));
+  const notas = {
+    'lei-organica-1-2026': ['Iniciativa do XXV Governo (Luís Montenegro) · texto da comissão', 'Aprovada a 28/10/2025, veto e novo decreto · promulgada por António José Seguro'],
+    'lei-31-2012': ['Iniciativa do XIX Governo (Pedro Passos Coelho)'],
+    'lei-43-2017': ['Iniciativa de deputados do PCP'],
+    'lei-organica-2-2006': ['Iniciativas do XVII Governo e de deputados de 5 grupos · texto da comissão'],
+    'lei-13-2019': ['Iniciativas do XXI Governo e de deputados do PSD e do BE · texto da comissão'],
+    'lei-organica-1-2024': ['Iniciativas de deputados de 6 grupos · texto da comissão'],
+    'lei-organica-2-2020': ['Não temos os dados do Parlamento.', 'Promulgada por Marcelo Rebelo de Sousa'],
+    'lei-37-81': ['Iniciativas do VII Governo e de deputados do PS e da ASDI', 'Sem registo da votação final · promulgada por António Ramalho Eanes'],
+    'decreto-lei-273-2001': ['Decreto-lei do XIV Governo (António Guterres)', 'O Parlamento não votou este texto.'],
+    'decreto-lei-496-77': ['Decreto-lei. Não sabemos que Governo o aprovou.', 'O Parlamento não votou este texto.'],
+    'decreto-lei-47344': ['Antes da Constituição de 1976.', 'O Parlamento não votou este texto.'],
+    'declaracao-de-retificacao-17-2026-1': ['Corrigiu o texto publicado da Lei Orgânica n.º 1/2026.', 'Não tem votação.'],
+  };
+  for (const [id, [l1, l2]] of Object.entries(notas)) {
+    const n = nota(id);
+    assert.strictEqual(n.l1, l1, id);
+    if (l2) assert.strictEqual(n.l2, l2, id);
+    assert.strictEqual(n.aria.split(', de ' + n.ano + '.').length, 2, id + ': ' + n.aria);  // the year said once
+    origemCasos++;
+  }
+  assert.strictEqual(nota('lei-organica-1-2026').aria, 'Lei Orgânica n.º 1/2026, de 2026. Iniciativa do XXV Governo (Luís Montenegro), texto da comissão. N.º 1 a n.º 10. Abrir quem fez.');
+  // Committee texts and vote differences in the sheet.
+  const conta = id => A.contaOrigem(ref, id, { porque: '#/x' });
+  const txt = c => (c.honesta ? A.textoDe(c.honesta) + ' ' : '') + c.seccoes.map(s => (s.titulo || '') + ' ' + (s.glossa ? A.textoDe(s.glossa) : '') + ' ' + (s.frases || []).map(A.textoDe).join(' ') + (s.nomes || []).join(' ')).join(' ');
+  const lo1 = txt(conta('lei-organica-1-2026'));
+  assert.ok(lo1.includes('Votou de forma diferente da generalidade: JPP (abstenção, depois a favor).'), lo1);
+  assert.ok(lo1.includes('Votou de forma diferente da votação final global: JPP (a favor, depois abstenção).'), lo1);
+  assert.ok(lo1.includes('O Tribunal Constitucional decidiu sobre o decreto (Acórdão n.º 1133/2025).'));
+  const p1 = ref.passagem['lei-organica-1-2026'];
+  assert.strictEqual(A.textoDe(A.linhaDiferencas(p1.vfg, A.votoNovoDecreto(p1), 'vfg')), 'Votou de forma diferente da votação final global: JPP (a favor, depois abstenção).');
+  const l13 = txt(conta('lei-13-2019'));
+  assert.ok(l13.includes('Uma comissão do Parlamento juntou 3 iniciativas num só texto (texto de substituição):'), l13);
+  assert.ok(l13.includes('Projeto de Lei n.º 847/XIII'), l13);
+  assert.ok(l13.includes('Proposta de Lei n.º 129/XIII foi para a comissão sem votação na generalidade.'), l13);
+  const lo2 = txt(conta('lei-organica-2-2006'));
+  assert.ok(lo2.includes('O Parlamento votou cada iniciativa em separado, sobre o seu próprio texto.'), lo2);
+  assert.ok(lo2.includes('Ver as outras 4 votações'), lo2);
+  assert.ok(txt(conta('lei-37-81')).includes('Não temos o registo da votação final global. Porquê?'));
+  const dl = txt(conta('decreto-lei-273-2001'));
+  assert.ok(dl.includes('O Parlamento não votou este texto. Antes, o Parlamento autorizou o Governo a legislar nesta matéria (Lei n.º 82/2001).'), dl);
+  assert.ok(txt(conta('decreto-lei-47344')).includes('Ver as 17 pessoas que assinaram'));
+  // The honesty line: every law, and no decree-law, retificação or act before 1976.
+  const estilo = [];
+  const sigla = '(?:ASDI|BE|CDS-PP|CDS|CH|IL|JPP|L|PAN|PCP|PEV|PPD/PSD|PSD|PS|UDP|UEDS|PRD|PPM|MDP/CDE)';
+  for (const id of Object.keys(ref.quem)) {
+    const t = ref.quem[id].tipo_ato, c = conta(id), n = nota(id);
+    if (/^lei/.test(t)) assert.ok(c.honesta && A.textoDe(c.honesta).startsWith('Mostramos quem apresentou a iniciativa'), id);
+    if (['decreto-lei', 'retificacao', 'pre1976'].includes(t)) assert.strictEqual(c.honesta, null, id);
+    // No note shows a vote; no sigla list longer than 4.
+    assert.ok(!/favor|contra|abstenção/.test(n.l1 + ' ' + n.l2), id + ': ' + n.l1 + ' ' + n.l2);
+    assert.ok(!new RegExp('(?:do|da) ' + sigla + '(?:, (?:do|da) ' + sigla + '){4}').test(n.l1), id);
+    const todos = [n.l1, n.l2, txt(c), A.confiancaOrigem(ref, id)];
+    for (const s of todos) assert.ok(!new RegExp('escrit\\w*\\W{1,3}(?:\\w+\\W{1,3}){0,2}' + sigla + '\\b').test(s), id + ': ' + s);
+    estilo.push(...todos);
+    origemCasos++;
+  }
+  // Siglas in a note follow the AR order of the legislatura (R6).
+  for (const id of Object.keys(ref.quem)) {
+    const p = ref.passagem[id], l1 = nota(id).l1, ss = (l1.match(new RegExp('(?:do|da) ' + sigla + '(?=,| e |$| ·)', 'g')) || []).map(x => x.slice(3));
+    if (p && ss.length > 1) { const o = ss.map(s => p.ordem_grupos.indexOf(s)); assert.deepStrictEqual(o.slice().sort((a, b) => a - b), o, id); }
+  }
+  // Neutrality (rule 8.2): every note and sheet string through tools/estilo.py's list.
+  const tmp = path.join(require('os').tmpdir(), 'redacao-origem-textos.json');
+  fs.writeFileSync(tmp, JSON.stringify(estilo));
+  const py = require('child_process').spawnSync('python3', ['-I', '-c',
+    'import json, sys; sys.path.insert(0, sys.argv[1]); import estilo; ' +
+    'e = [(t[:80], m) for t in json.load(open(sys.argv[2], encoding="utf-8")) for _, _, m in estilo.check_neutralidade(t)]; print(json.dumps(e, ensure_ascii=False))',
+    path.join(__dirname, '..', 'tools'), tmp], { encoding: 'utf8' });
+  assert.strictEqual(py.status, 0, py.stderr);
+  assert.deepStrictEqual(JSON.parse(py.stdout), []);
+  // «Copiar ligação» names the act, the source and the date.
+  const cp = A.textoCopiar(ref, { diploma: 'Lei da Nacionalidade', artigo: 'Artigo 6.º', escopo: 'N.º 1 a n.º 10', id: 'lei-organica-1-2026', consultado: '2026-10-28', url: 'https://x/#/d/lei-nacionalidade/artigo-6' });
+  assert.strictEqual(cp, 'Lei da Nacionalidade, art. 6.º, n.º 1 a n.º 10 · Origem do texto: Lei Orgânica n.º 1/2026. Fonte: Diário da República e Assembleia da República. Consultado a 28/10/2026. https://x/#/d/lei-nacionalidade/artigo-6');
+  // The summary line has no counts.
+  assert.strictEqual(A.textoDe(A.resumoOrigem(ln6.m, ln6.art, ref)), 'Este texto vem de diplomas publicados entre 1981 e 2026. O diploma mais recente é a Declaração de Retificação n.º 17/2026/1.');
+}
 // R-25: the old sentence is gone.
 assert.ok(!fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').includes('Não temos dados deste ato no Parlamento.'));
 
 console.log('ok: ' + cases.length + ' diff cases, 10 URL cases, 6 search cases, 3 diploma-diff cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : '') +
-  (quemCasos ? ', ' + quemCasos + ' fixture acts' : ', no fixture'));
+  (quemCasos ? ', ' + quemCasos + ' fixture acts' : ', no fixture') + ', ' + origemCasos + ' origem cases');

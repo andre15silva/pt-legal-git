@@ -73,7 +73,7 @@ When the DR changes its web app, `dr_client.py` stops with `StaleApiVersion` and
 |---|---|---|
 | `#/` | Home | |
 | `#/d/<slug>` | Diploma | |
-| `#/d/<slug>/<artigo>` | Article | `redacao=<ato>`, `ver=texto\|mudou\|origem`, `com=<ato>`, `lado=1`, `em=<data>&base=vigor`, `ato=<ato>`, `de=partilha` |
+| `#/d/<slug>/<artigo>` | Article | `redacao=<ato>`, `ver=texto\|mudou\|origem`, `com=<ato>`, `lado=1`, `em=<data>&base=vigor`, `ato=<ato>`, `de=partilha`; in Origem do texto `abrir=<linha>`, `frase=<linha>:<n>`, `marcar=iniciativa` (below) |
 | `#/alteracoes/<slug>` | What changed in a whole diploma between two dates | `de=<data>`, `ate=<data>` |
 | `#/ato/<id>` | Act: who made it, what it changed, its votes. An id in `index.aliases_atos` is replaced by the canonical id. | |
 | `#/iniciativa/<id>` | One parliamentary initiative (or a bill now in Parliament) | |
@@ -89,6 +89,39 @@ Examples: `#/d/codigo-irc/artigo-87?redacao=lei-64-2025&ver=mudou`, `#/alteracoe
 `#/quem/nrau?por=legislatura`, `#/grupo/cds-pp?diploma=lei-nacionalidade`.
 Old links still work: a redação index (`redacao=3`), the old compare page (`/comparar?de=…&ate=…&vista=lado`), and old act ids
 (`iii-acordao-do-tribunal-constitucional-299-2020`, `decreto-lei-329-a-95-1-parte`, `declaracao`) through `index.json.aliases_atos`.
+
+## Origem do texto
+
+The third view of an article (`ver=origem`) says who wrote each part of the text, and the people behind each act. The rules and the
+copy are in the design spec of 30/10/2026 (FINAL-SPEC). Step 1 names who **started** each law (its initiatives), not who worded
+each line: the especialidade amendments are not in the data yet, and the page says so.
+
+- **Runs and notes.** `originModel` (`app.js`) cuts the redação into lines (the número or alínea label apart) and gives each line to
+  the newest act that wrote a letter or a digit in it (R1: a change of punctuation or of the label alone does not count; that act is
+  listed as «só pontuação»). Consecutive lines of the same act make a run (R2), with one note: beside the text at ≥ 1100 px, above it
+  as a rubrica below that. The note names the act, its year, who started it («Iniciativa do XXV Governo (Luís Montenegro) · texto da
+  comissão») and what happened to it. Siglas appear in a note only as the complete list of the act's proposers, in AR order, at most
+  4; never a vote (R6).
+- **The text stays plain.** Each act present has an underline colour, newest first: 7 solid hues, the same hues dashed for the 8th to
+  14th act, then dotted (R5). Spans without a letter or digit are not marked (R4). Words are not buttons and not tab stops: a click
+  opens the sheet at that word's act; the keyboard reaches the same through the notes (↑ ↓ between them) and the phrase walk.
+- **The sheet** (`R.FolhaOrigem`, a non-modal dialog: at the side, or at the bottom on a phone) tells the act's story in a fixed
+  order, the same for every act: who presented the initiative, the generalidade vote, the votação final global, veto and new
+  decree, promulgação. Every vote lists every group, in AR order (`R.Votacao`, the proposing group in bold). A law's sheet starts
+  with the honesty line. «Também escreveram partes destas linhas» lists the other acts of the run; «Copiar ligação» copies the act,
+  the source and the date with the address.
+- **The lens** «Marcar o texto por: Diploma | Iniciativa da lei» changes the underlines to shapes by kind of initiative (Governo,
+  deputados, both, decree-law, retificação, no data). It has no hue and no option by party.
+- **Permalinks.** `abrir=<linha>` opens the run that holds line `<linha>` (0-based, in `versoes[i].linhas`); `frase=<linha>:<n>` opens
+  at span `n` of that line, after the label; `marcar=iniciativa` turns the lens on. A value that matches nothing opens nothing.
+  The page replaces the history entry, so Back still leaves the article.
+- **Copy.** `notaOrigem`, `escopoLinhas`, `resumoOrigem`, `contaOrigem`, `confiancaOrigem` and `textoCopiar` in `app.js` write every
+  sentence; the design system's `OrigemTexto`, `NotaOrigem`, `FolhaOrigem` and `LenteOrigem` render them.
+- **Tests.** `node app/test_diff.js` checks the rules and the exact notes of the reference acts on the built data. The browser smoke
+  test needs the real data: `python3 -m http.server 8861 -d app &` then `node app/test/origem.spec.js` (`SHOTS=<folder>` saves
+  screenshots).
+
+The story figures (`FigOrigem`) still use `R.TextOrigin` with the older single palette (`corDe`), as does the register's colour band.
 
 ## Data (`app/data/`)
 
@@ -173,7 +206,7 @@ The app turns each into one sentence (design spec §2.10). Method: [docs/QUEM.md
 - The text comes from the DR's consolidated legislation, which has no legal value. For the Constitution, `verificacao.py` checks every version against the official republications, and the article page says the result. The other diplomas are not checked yet.
 - The DR gives production of effects only as text notes. The app shows the notes, and warns when the "produção de efeitos" basis is selected.
 - About 1 in 5 amended versions have no entry-into-force date in the DR. The app shows these versions from their publication date and says so.
-- Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. The pipeline writes each row as one line, `│ cell │ cell │ cell`, filling merged cells (colspan, rowspan) with empty cells so the rows of a table have the same number of cells. The app shows the rows as a grid: text in the first column, numbers right-aligned. Changes inside a cell are marked as in any line. In Origem do texto the rows of one table share one margin note.
+- Tables in the law (the IRS rates in art. 68.º of the CIRS) come from the DR as HTML tables. The pipeline writes each row as one line, `│ cell │ cell │ cell`, filling merged cells (colspan, rowspan) with empty cells so the rows of a table have the same number of cells. The app shows the rows as a grid: text in the first column, numbers right-aligned. Changes inside a cell are marked as in any line. In Origem do texto a table's rows join the runs of the act that wrote them, like any line.
 - The AR open data gives each parliamentary group's vote, and counts only for some votes. Where it has no counts, the app adds the seats of each group on that day; it says so under the vote. There are no votes per deputy, only named dissent.
 - Bills in Parliament: we read the articles from the first sentence of each article of the bill. A bill that changes only a list or an annex (the IVA rate lists), or whose PDF has no text layer, is listed on the diploma without articles. A bill that changes a part of a code we do not have (Código Civil outside the locação) is left out.
 - Some codes start their history at a republication or revision: the CIRC (2014), the CIRS (2015), the CIVA (2008) and the Código Penal (1995). The page says so on the first redação. The DR has no consolidated text for the years before: its page for Decreto-Lei n.º 442-A/88 sends readers to the 2014 republication of the CIRS, and the consolidation of Decreto-Lei n.º 198/2001 (CIRS, CIRC and EBF) records only the changes of 2001 and 2002.
