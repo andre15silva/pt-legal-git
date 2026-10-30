@@ -592,6 +592,12 @@ class DadosReais(unittest.TestCase):
         self.assertEqual([e["acordao_tc"] for e in p["eventos"] if e["tipo"] == "veto"], ["1133/2025"])
         self.assertEqual(p["decreto"]["numero"], "48/XVII")
 
+    def test_joined_initiative_has_its_authors(self):
+        # PJL 847/XIII (BE) is in the committee text of Lei 13/2019, but the AR does not link it to the law.
+        props = {x["designacao"]: [g["sigla"] for g in x["grupos"]] for x in self.quem["lei-13-2019"]["proponentes"]}
+        self.assertEqual(props.get("Projeto de Lei n.º 847/XIII"), ["BE"])
+        self.assertIn("lei-13-2019", json.dumps(ler(APP_DATA, "grupos", "be.json")))
+
     def test_r1_one_vfg_and_its_initiatives(self):
         for aid, p in self.p.items():
             v = p["vfg"]

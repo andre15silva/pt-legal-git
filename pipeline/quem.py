@@ -334,7 +334,21 @@ def registo(aid: str, a: dict, p: dict | None, sig: dict | None, t: Tabelas, gru
     proponentes, texto_comissao, vfg, eventos = [], None, None, []
     entradas = ctx.get("entradas", {})
     if p:
-        for i in p["iniciativas"]:
+        # Initiatives a committee text joined but the AR does not link to the law: their authors come
+        # from iniciativas.json (["BE", "Grupos Parlamentares"], ["Governo"]).
+        ligadas = {i["id"] for i in p["iniciativas"]}
+        juntas = []
+        tcs = [g for g in p.get("generalidade", []) if g["origem"] == "texto_comissao"]
+        for c in (p["texto_comissao"][tcs[0]["indice"]].get("citadas_todas") or []) if tcs else []:
+            iid = ctx.get("indice", {}).get((c["tipo"], c["numero"], c["legislatura"]))
+            r = ctx.get("iniciativas", {}).get(iid or "")
+            if iid and r and iid not in ligadas and r.get("autores"):
+                ligadas.add(iid)
+                cat, gs_ = r["autores"][-1], r["autores"][:-1]
+                tipo_ = {"Governo": "governo", "Deputados": "deputados", "Cidadãos": "cidadaos"}.get(cat, "regiao" if cat.startswith("Assembleia Legislativa") else "grupos")
+                juntas.append({"id": iid, "designacao": f"{r['tipo']} n.º {r['numero']}/{r['legislatura']}", "generalidade": None,
+                               "autores": {"tipo": tipo_, "grupos": gs_, "deputados": [], "nome": "Governo" if tipo_ == "governo" else cat if tipo_ == "regiao" else None}})
+        for i in p["iniciativas"] + juntas:
             au = i["autores"]
             tp = TIPO_PROPONENTE.get(au.get("tipo"), "grupos")
             leg = i["designacao"].rsplit("/", 1)[-1]
@@ -619,7 +633,7 @@ def construir(out: str, atos: dict, passagens: dict, iniciativas: dict, ligacao:
     retificado_por: dict[str, list] = {}
     for r, alvo in corrige.items():
         retificado_por.setdefault(alvo, []).append(r)
-    ctx = {"entradas": entradas_de(iniciativas), "indice": ligacao.get("indice", {}), "notas": notas,
+    ctx = {"entradas": entradas_de(iniciativas), "indice": ligacao.get("indice", {}), "notas": notas, "iniciativas": iniciativas,
            "retifica": corrige, "retificado_por": retificado_por}
     quem = {aid: registo(aid, a, passagens.get(aid), sig.get(aid), t, grupos, ctx) for aid, a in atos.items()}
     escrever(os.path.join(out, "quem.json"), quem)
