@@ -53,9 +53,9 @@
  "conteudo": [
   {
    "tipo": "historia",
-   "id": "historia-teste",
-   "seccao": "lei-902-2019",
-   "motivo": "Os dados mudaram depois da preparação do texto."
+   "id": "teste",
+   "seccao": "voto",
+   "motivo": "teste.md:33: [R2] figura «voto»: os dados mudaram"
   }
  ]
 }

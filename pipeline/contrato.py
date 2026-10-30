@@ -40,9 +40,7 @@ SENTIDOS_GRUPO = {"favor", "contra", "abstencao", "ausente", "sem_registo", None
 MOTIVOS_DESCARTE = {"outro_decreto", "depois_da_publicacao", "sem_correspondencia", "passos_fora_de_ordem", "duplicado"}
 LISTAS = ("decretos_leis", "propostas", "outras", "publicados_sem_d_cm")
 FORA_DIPLOMA = ("revisoes", "acordaos", "antes_1976", "retificacoes_soltas", "outros")
-SEGMENTOS_LIGACAO = {"ato", "redacao", "comparar", "iniciativa", "data", "citacao", "fonte"}
-SEGMENTOS_APP = {"voto", "vfg", "governo", "presidente"}
-TIPOS_SECCAO = {"resumo", "perguntas", "numeros", "mudanca", "hoje", "todas", "limites", "metodo"}
+TIPOS_FIGURA = {"diff", "votacao", "cronologia", "origem", "ficha", "imagem"}
 CHAVE_PARTILHA = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -504,45 +502,98 @@ def validar_historias_index(obj) -> list[str]:
     if not e.chaves("historias/index.json", obj, ("historias", "artigos")):
         return e
     for k, h in enumerate(obj.get("historias") or []):
-        if e.chaves(f"historias/index[{k}]", h, ("slug", "titulo", "resumo", "preparado_em", "preparacao", "revisao_externa", "diplomas")):
+        if e.chaves(f"historias/index[{k}]", h, ("slug", "titulo", "resumo", "preparado_em", "preparacao", "revisao_externa",
+                                                  "diplomas", "aviso", "minutos")):
             e.valor(f"historias/index[{k}].preparacao", h.get("preparacao"), {"assistida", "equipa"})
+            e.data(f"historias/index[{k}].preparado_em", h.get("preparado_em"))
+    for art, xs in (obj.get("artigos") or {}).items():
+        if "/" not in art:
+            e.append(f"historias/index.artigos: chave {art!r} sem <diploma>/<artigo>")
+        for x in xs if isinstance(xs, list) else []:
+            if not isinstance(x, dict) or "historia" not in x or "seccao" not in x:
+                e.append(f"historias/index.artigos[{art}]: {{historia, seccao}} esperado")
     return e
 
 
-def _segmentos(e: _Erros, onde: str, pars) -> None:
-    if not e.tipo(onde, pars, list):
+def _partes(e: _Erros, onde: str, partes) -> None:
+    """Inline segments of a story: strings, links {href, texto|partes}, {t:'em'}, {t:'nota', n, id}, {t:'governo'}."""
+    if not e.tipo(onde, partes, list):
         return
-    for i, par in enumerate(pars):
-        if not e.tipo(f"{onde}[{i}]", par, list):
+    for j, s in enumerate(partes):
+        if isinstance(s, str):
             continue
-        for j, s in enumerate(par):
-            if isinstance(s, str):
-                continue
-            if not isinstance(s, dict) or s.get("t") not in SEGMENTOS_LIGACAO | SEGMENTOS_APP:
-                e.append(f"{onde}[{i}][{j}]: segmento inválido {s!r}"[:200])
-            elif s["t"] in SEGMENTOS_LIGACAO and not ("texto" in s and "href" in s):
-                e.append(f"{onde}[{i}][{j}]: {s['t']} sem texto ou href")
-            elif s["t"] in SEGMENTOS_APP and "ato" not in s:
-                e.append(f"{onde}[{i}][{j}]: {s['t']} sem ato")
+        w = f"{onde}[{j}]"
+        if not isinstance(s, dict):
+            e.append(f"{w}: segmento inválido {s!r}"[:200])
+        elif "href" in s:
+            if not ("texto" in s or "partes" in s):
+                e.append(f"{w}: ligação sem texto")
+            elif not (str(s["href"]).startswith("#/") or URL.match(str(s["href"]))):
+                e.append(f"{w}: href {s['href']!r} inválido")
+            if "partes" in s:
+                _partes(e, w + ".partes", s["partes"])
+        elif s.get("t") == "em":
+            e.tipo(w + ".texto", s.get("texto"), str)
+        elif s.get("t") == "nota":
+            if not isinstance(s.get("n"), int) or not s.get("id"):
+                e.append(f"{w}: nota sem n ou id")
+        elif s.get("t") == "governo":
+            e.tipo(w + ".numero", s.get("numero"), int)
+        else:
+            e.append(f"{w}: segmento inválido {s!r}"[:200])
 
 
 def validar_historia(obj) -> list[str]:
     e = _Erros()
-    if not e.chaves("historia", obj, ("slug", "titulo", "resumo", "preparado_em", "preparacao", "revisao_externa", "aviso", "ambito", "seccoes")):
+    if not e.chaves("historia", obj, ("slug", "titulo", "resumo", "preparado_em", "atualizado_em", "autoria", "preparacao",
+                                      "revisao_externa", "aviso", "diplomas", "palavras", "minutos", "imagem_partilha",
+                                      "desatualizada", "blocos", "notas", "relacionadas")):
         return e
     w = f"historias/{obj.get('slug')}"
     e.data(f"{w}.preparado_em", obj.get("preparado_em"))
-    ids = set()
-    for k, s in enumerate(obj.get("seccoes") or []):
-        ww = f"{w}.seccoes[{k}]"
-        if not e.chaves(ww, s, ("id", "tipo")):
-            continue
-        if s["id"] in ids:
-            e.append(f"{ww}: id repetido {s['id']!r}")
-        ids.add(s["id"])
-        e.valor(f"{ww}.tipo", s.get("tipo"), TIPOS_SECCAO)
-        if "paragrafos" in s:
-            _segmentos(e, f"{ww}.paragrafos", s["paragrafos"])
+    e.data(f"{w}.atualizado_em", obj.get("atualizado_em"))
+    e.valor(f"{w}.preparacao", obj.get("preparacao"), {"assistida", "equipa"})
+    ids, n_fig = set(), 0
+    for k, b in enumerate(obj.get("blocos") or []):
+        ww = f"{w}.blocos[{k}]"
+        t = b.get("t") if isinstance(b, dict) else None
+        if t == "p":
+            _partes(e, ww + ".partes", b.get("partes"))
+        elif t in ("h2", "h3"):
+            if e.chaves(ww, b, ("id", "texto")):
+                if b["id"] in ids:
+                    e.append(f"{ww}: id repetido {b['id']!r}")
+                ids.add(b["id"])
+        elif t == "citacao":
+            _partes(e, ww + ".partes", b.get("partes"))
+            _partes(e, ww + ".autor", b.get("autor"))
+        elif t == "figura":
+            if not e.chaves(ww, b, ("n", "id", "tipo", "largura", "titulo", "sub", "legenda", "fonte", "href", "params", "retida", "aviso")):
+                continue
+            n_fig += 1
+            if b["n"] != n_fig:
+                e.append(f"{ww}: figura n.º {b['n']}, esperado {n_fig}")
+            e.valor(f"{ww}.tipo", b.get("tipo"), TIPOS_FIGURA)
+            e.valor(f"{ww}.largura", b.get("largura"), {"texto", "larga", "lado"})
+            e.tipo(f"{ww}.params", b.get("params"), dict)
+            _partes(e, ww + ".legenda", b.get("legenda"))
+            if "fig-" + str(b["id"]) in ids:
+                e.append(f"{ww}: id repetido {b['id']!r}")
+            ids.add("fig-" + str(b["id"]))
+        else:
+            e.append(f"{ww}: bloco inválido {t!r}")
+    for k, n in enumerate(obj.get("notas") or []):
+        ww = f"{w}.notas[{k}]"
+        if e.chaves(ww, n, ("n", "id", "partes", "urls")):
+            if n["n"] != k + 1:
+                e.append(f"{ww}: n {n['n']}, esperado {k + 1}")
+            _partes(e, ww + ".partes", n["partes"])
+            for u in n.get("urls") or []:
+                e.url(ww + ".urls", u.get("href"))
+                if u.get("consultado"):
+                    e.data(ww + ".consultado", u.get("consultado"))
+    for k, r in enumerate(obj.get("relacionadas") or []):
+        e.chaves(f"{w}.relacionadas[{k}]", r, ("texto", "href"))
     return e
 
 

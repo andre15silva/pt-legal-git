@@ -25,6 +25,7 @@ jobs:
       - name: Copy follows PTS (docs/ESTILO.md)
         run: |
           python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js design-system/components/*/preview.html docs/ESTILO.md app/app.js pipeline/glossario.json
-          python -I tools/estilo.py --historia pipeline/historias/*.json
+      - name: Stories follow the format (pipeline/historias/README.md)
+        run: python -I pipeline/historias.py --sintaxe
       - name: Design tokens meet contrast targets
         run: python -I tools/check_contrast.py design-system/tokens.json

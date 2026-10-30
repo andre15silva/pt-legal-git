@@ -214,10 +214,19 @@ def texto_diploma(d: Dados, slug: str) -> dict:
 
 
 def texto_historia(h: dict) -> dict:
+    """A long-form story (pipeline/historias.py): the dek, cut to fit, then the date and «Texto não oficial.»"""
     quando = f"Preparada a {data_extenso(h.get('preparado_em'))}."
-    return {"titulo": h["titulo"], "descricao": cortar_desc([h.get("resumo")], [quando, NAO_OFICIAL]),
-            "tipo_og": "article", "linhas": [h["titulo"], "Uma história da Redação", quando.rstrip(".")],
-            "rotulo": "História", "aviso": h.get("aviso")}
+    fixo = [quando, NAO_OFICIAL]
+    resumo = (h.get("resumo") or "").strip()
+    livre = 200 - len(" ".join(fixo)) - 1
+    if len(resumo) > livre:
+        corte = resumo[: livre - 1]
+        resumo = corte[: corte.rfind(" ")].rstrip(" ,;:") + "…" if " " in corte else corte + "…"
+    frase = re.split(r"(?<=[.!?])\s", (h.get("resumo") or "").strip())[0]
+    return {"titulo": h["titulo"], "descricao": cortar_desc([resumo], fixo), "tipo_og": "article",
+            "linhas": [h["titulo"], frase.rstrip("."), f"{h.get('autoria') or 'Redação'} · {data_extenso(h.get('preparado_em'))}"],
+            "rotulo": "História", "aviso": h.get("aviso"), "publicado": h.get("preparado_em"),
+            "modificado": h.get("atualizado_em") or h.get("preparado_em")}
 
 
 def texto_ato(d: Dados, aid: str) -> dict:
@@ -441,6 +450,8 @@ def pagina(base: str, caminho: str, canonico: str, rota: str, txt: dict, img_cam
         f"<meta property=\"og:description\" content=\"{e(txt['descricao'])}\">\n"
         f"<meta property=\"og:url\" content=\"{e(base + 'p/' + canonico)}\">\n"
         f"<meta property=\"og:type\" content=\"{txt['tipo_og']}\">\n"
+        + (f"<meta property=\"article:published_time\" content=\"{e(txt['publicado'])}\">\n" if txt.get("publicado") else "")
+        + (f"<meta property=\"article:modified_time\" content=\"{e(txt['modificado'])}\">\n" if txt.get("modificado") else "") +
         "<meta property=\"og:locale\" content=\"pt_PT\">\n"
         "<meta property=\"og:site_name\" content=\"Redação\">\n"
         "<meta property=\"og:image:width\" content=\"1200\">\n"
@@ -513,7 +524,14 @@ def construir(out: str, estrito: bool, fonte: str = FONTE, destino: str | None =
     for h in d.historias.get("historias", []):
         t = texto_historia(h)
         c = f"historia/{h['slug']}/"
-        ic, ih = img(t["rotulo"], t["linhas"], c)
+        propria = os.path.join(out, "historias", h["imagem_partilha"]) if h.get("imagem_partilha") else None
+        if propria and os.path.exists(propria):
+            # The story's own 1200×630 image (front matter imagem_partilha), copied as is.
+            os.makedirs(os.path.join(raiz, c), exist_ok=True)
+            shutil.copyfile(propria, os.path.join(raiz, c, "og.png"))
+            ic, ih = c, hashlib.sha256(open(propria, "rb").read()).hexdigest()[:12]
+        else:
+            ic, ih = img(t["rotulo"], t["linhas"], c)
         escrever(c, pagina(base, c, c, f"historia/{h['slug']}", t, ic, ih, ". ".join(x for x in t["linhas"] if x)))
         hist.append(h["slug"])
 

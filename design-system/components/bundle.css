@@ -93,6 +93,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(
 .rd-cel-num { text-align: right; }
 .rd-origin-note { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 .rd-origin-note strong { color: var(--ink); font-weight: 500; }
+.rd-origin-gap { margin: 8px 0 0; font-family: var(--font-sans); font-size: 14px; line-height: 20px; color: var(--ink-muted); }
 
 /* DateLens: form content for a popover. No frame of its own. */
 .rd-lens { display: flex; flex-direction: column; gap: var(--space-3); max-width: 560px; }

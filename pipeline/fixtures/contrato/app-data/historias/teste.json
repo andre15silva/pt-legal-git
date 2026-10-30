@@ -1,0 +1,470 @@
+{
+ "slug": "teste",
+ "titulo": "Como mudou a Lei de teste",
+ "resumo": "As alterações à Lei de teste, com as figuras do formato longo. Uma história de teste para os testes do compilador, sobre os dados da fixture partilhada.",
+ "preparado_em": "2026-10-30",
+ "atualizado_em": "2026-10-30",
+ "autoria": "Redação",
+ "preparacao": "assistida",
+ "revisao_externa": null,
+ "aviso": "Texto preparado com a ajuda de uma ferramenta automática, a partir dos dados do site e das fontes indicadas. Data: 30 de outubro de 2026. Ainda sem revisão jurídica externa.",
+ "diplomas": [
+  "lei-teste"
+ ],
+ "palavras": 179,
+ "minutos": 3,
+ "imagem_partilha": null,
+ "desatualizada": [],
+ "blocos": [
+  {
+   "t": "p",
+   "partes": [
+    "A ",
+    {
+     "href": "#/d/lei-teste",
+     "texto": "Lei de teste"
+    },
+    " começou com o ",
+    {
+     "href": "#/ato/decreto-lei-90001",
+     "texto": "Decreto-Lei n.º 90001, de 2 de março de 1970"
+    },
+    {
+     "t": "nota",
+     "n": 1,
+     "id": "dr"
+    },
+    ". O ",
+    {
+     "href": "#/d/lei-teste/artigo-1",
+     "texto": "artigo 1.º"
+    },
+    " trata do prazo, e a ",
+    {
+     "href": "#/historia/teste?ir=fig-prazo",
+     "texto": "figura 1"
+    },
+    " mostra como mudou."
+   ]
+  },
+  {
+   "t": "h2",
+   "id": "prazo",
+   "texto": "O prazo"
+  },
+  {
+   "t": "p",
+   "partes": [
+    "A ",
+    {
+     "href": "#/ato/lei-901-2020",
+     "texto": "Lei n.º 901/2020, de 15 de outubro"
+    },
+    " mudou o ",
+    {
+     "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020",
+     "texto": "artigo 1.º"
+    },
+    " a ",
+    {
+     "href": "#/ato/lei-901-2020",
+     "texto": "15 de outubro de 2020"
+    },
+    ". Veja ",
+    {
+     "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou",
+     "texto": "o que mudou no artigo 1.º"
+    },
+    " e ",
+    {
+     "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=origem",
+     "texto": "a origem do texto do artigo 1.º"
+    },
+    ". Na generalidade, o PS votou a favor da ",
+    {
+     "href": "#/ato/lei-901-2020",
+     "texto": "Lei n.º 901/2020"
+    },
+    "."
+   ]
+  },
+  {
+   "t": "figura",
+   "n": 1,
+   "id": "prazo",
+   "tipo": "diff",
+   "largura": "texto",
+   "titulo": "Artigo 1.º da Lei de teste: antes e depois da Lei n.º 901/2020",
+   "sub": "N.º 2 · 3.ª redação (Decreto-Lei n.º 901/77) → 4.ª redação (Lei n.º 901/2020)",
+   "legenda": [
+    "O n.º 2 passa de seis para dez anos e acrescenta o momento a partir do qual o prazo se conta, na redação da lei de 2020."
+   ],
+   "fonte": "Diário da República, legislação consolidada.",
+   "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou",
+   "params": {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "de_i": 2,
+    "para_i": 3,
+    "de": "decreto-lei-901-1977",
+    "para": "lei-901-2020",
+    "mostrar": [
+     {
+      "n": "2",
+      "al": null
+     }
+    ],
+    "vista": "texto",
+    "de_nome": "Decreto-Lei n.º 901/77",
+    "para_nome": "Lei n.º 901/2020",
+    "rotulo": "Artigo 1.º"
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "p",
+   "partes": [
+    "A lei veio da ",
+    {
+     "href": "#/iniciativa/900101",
+     "texto": "Proposta de Lei n.º 901/XIV"
+    },
+    ", do ",
+    {
+     "href": "#/quem/lei-teste?ir=governo-4",
+     "partes": [
+      {
+       "t": "governo",
+       "numero": 4
+      }
+     ]
+    },
+    ", e o ",
+    {
+     "href": "#/grupo/ps?diploma=lei-teste",
+     "texto": "Partido Socialista"
+    },
+    " tem a sua página. O Presidente ",
+    {
+     "href": "#/ato/lei-901-2020",
+     "texto": "Presidente de teste B"
+    },
+    " promulgou-a a ",
+    {
+     "href": "#/ato/lei-901-2020",
+     "texto": "5 de outubro de 2020"
+    },
+    ", como mostram a ",
+    {
+     "href": "#/historia/teste?ir=fig-voto",
+     "texto": "figura 2"
+    },
+    " e a ",
+    {
+     "href": "#/historia/teste?ir=fig-ficha",
+     "texto": "figura 3"
+    },
+    "."
+   ]
+  },
+  {
+   "t": "figura",
+   "n": 2,
+   "id": "voto",
+   "tipo": "votacao",
+   "largura": "texto",
+   "titulo": "Votação na generalidade: Proposta de Lei n.º 901/XIV, 5 de março de 2020",
+   "sub": "5 de março de 2020",
+   "legenda": [
+    "O voto de cada grupo na generalidade da proposta, e depois a votação final global, o veto e a confirmação do decreto pelo Parlamento."
+   ],
+   "fonte": "Assembleia da República, dados abertos: o voto de cada grupo na generalidade; da votação final global, só o resultado. Ordem dos grupos: a da Assembleia da República.",
+   "href": "#/ato/lei-901-2020?ir=generalidade",
+   "params": {
+    "ato": "lei-901-2020",
+    "item": null
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "citacao",
+   "partes": [
+    "«O prazo é de dez anos, contados da entrada.»"
+   ],
+   "autor": [
+    "Lei n.º 901/2020, artigo 1.º",
+    {
+     "t": "nota",
+     "n": 1,
+     "id": "dr"
+    }
+   ]
+  },
+  {
+   "t": "figura",
+   "n": 3,
+   "id": "ficha",
+   "tipo": "ficha",
+   "largura": "lado",
+   "titulo": "Lei n.º 901/2020: quem a fez",
+   "sub": null,
+   "legenda": [
+    "Os factos da lei de 2020, da proposta à publicação, como o site os regista a partir das fontes oficiais."
+   ],
+   "fonte": "Dados do site: Diário da República, Assembleia da República, tabelas de Governos e de Presidentes.",
+   "href": "#/ato/lei-901-2020",
+   "params": {
+    "ato": "lei-901-2020",
+    "campos": null
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "h2",
+   "id": "origem",
+   "texto": "Quem escreveu o texto"
+  },
+  {
+   "t": "p",
+   "partes": [
+    "A ",
+    {
+     "href": "#/historia/teste?ir=fig-origem",
+     "texto": "figura 4"
+    },
+    " mostra quem escreveu cada palavra, e a ",
+    {
+     "href": "#/historia/teste?ir=fig-todas",
+     "texto": "figura 5"
+    },
+    " põe cada ato no seu Governo, como a página ",
+    {
+     "href": "#/quem/lei-teste?ir=governo-4",
+     "texto": "quem fez cada alteração"
+    },
+    " e o ",
+    {
+     "href": "#/quem/lei-teste?ir=governo-4",
+     "partes": [
+      {
+       "t": "governo",
+       "numero": 4
+      }
+     ]
+    },
+    "."
+   ]
+  },
+  {
+   "t": "figura",
+   "n": 4,
+   "id": "origem",
+   "tipo": "origem",
+   "largura": "texto",
+   "titulo": "Quem escreveu o artigo 1.º da Lei de teste, na redação da Lei n.º 901/2020",
+   "sub": "4.ª redação",
+   "legenda": [
+    "Cada cor é um diploma que escreveu parte do texto. As palavras marcadas vêm da lei de 2020, e as outras vêm de atos anteriores."
+   ],
+   "fonte": "Diário da República, legislação consolidada.",
+   "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=origem",
+   "params": {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "redacao_i": 3,
+    "redacao": "lei-901-2020",
+    "mostrar": null,
+    "destacar_i": 3,
+    "nome_original": null
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "figura",
+   "n": 5,
+   "id": "todas",
+   "tipo": "cronologia",
+   "largura": "larga",
+   "titulo": "As alterações à Lei de teste, por Governo, 1970–2026",
+   "sub": "11 atos · 4 Governos",
+   "legenda": [
+    "Cada traço é um ato que mudou a lei de teste, e o traço grosso é a lei de que esta história fala, com a lista por Governo."
+   ],
+   "fonte": "Diário da República; Assembleia da República; tabela de Governos do site.",
+   "href": "#/quem/lei-teste",
+   "params": {
+    "diploma": "lei-teste",
+    "por": "governo",
+    "desde": "1970-03-02",
+    "ate": null,
+    "atos": [
+     {
+      "ato": "decreto-lei-90002",
+      "data": "1974-02-01",
+      "grupo": null,
+      "como": "Antes da Constituição de 1976",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "decreto-lei-901-1977",
+      "data": "1977-06-01",
+      "grupo": 1,
+      "como": "Decreto-lei",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "lei-constitucional-901-1997",
+      "data": "1997-09-20",
+      "grupo": 2,
+      "como": "Revisão da Constituição",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "decreto-lei-902-2010",
+      "data": "2010-06-20",
+      "grupo": 2,
+      "como": "Decreto-lei",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "decreto-lei-903-2012",
+      "data": "2012-03-01",
+      "grupo": 3,
+      "como": "Decreto-lei",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "lei-organica-901-2018",
+      "data": "2018-07-10",
+      "grupo": 3,
+      "como": "Texto da comissão: 7 iniciativas",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "lei-902-2019",
+      "data": "2019-02-12",
+      "grupo": 3,
+      "como": "Texto da comissão: 3 iniciativas",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "lei-901-2020",
+      "data": "2020-10-15",
+      "grupo": 4,
+      "como": "Proposta do Governo",
+      "n": 1,
+      "marcado": true
+     },
+     {
+      "ato": "acordao-do-tribunal-constitucional-9001-2021",
+      "data": "2021-03-01",
+      "grupo": 4,
+      "como": "Acórdão do Tribunal Constitucional",
+      "n": 0,
+      "marcado": false
+     },
+     {
+      "ato": "lei-901-2022",
+      "data": "2022-01-10",
+      "grupo": 4,
+      "como": "Proposta do Governo",
+      "n": 1,
+      "marcado": false
+     },
+     {
+      "ato": "lei-901-2023",
+      "data": "2023-06-01",
+      "grupo": 4,
+      "como": "Iniciativa de deputados",
+      "n": 1,
+      "marcado": false
+     }
+    ],
+    "marcar": [
+     "lei-901-2020"
+    ]
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "figura",
+   "n": 6,
+   "id": "pagina",
+   "tipo": "imagem",
+   "largura": "larga",
+   "titulo": "Uma página de exemplo",
+   "sub": null,
+   "legenda": [
+    "Uma imagem estática de teste, no lugar de um fac-símile do Diário da República, que a ",
+    {
+     "href": "#/historia/teste?ir=fig-pagina",
+     "texto": "figura 6"
+    },
+    " mostra em largura larga."
+   ],
+   "fonte": "Redação. Licença: domínio público.",
+   "href": "https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000",
+   "params": {
+    "arquivo": "historias/img/pagina-exemplo.png",
+    "alt": "Uma página de exemplo, com linhas de texto cinzentas.",
+    "credito": "Redação",
+    "licenca": "domínio público"
+   },
+   "retida": null,
+   "aviso": null
+  },
+  {
+   "t": "p",
+   "partes": [
+    "Esta história liga a si própria em ",
+    {
+     "href": "#/historia/teste",
+     "texto": "Como mudou a Lei de teste"
+    },
+    "."
+   ]
+  }
+ ],
+ "notas": [
+  {
+   "n": 1,
+   "id": "dr",
+   "partes": [
+    {
+     "t": "em",
+     "texto": "Diário da República"
+    },
+    ", I série."
+   ],
+   "urls": [
+    {
+     "href": "https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000",
+     "host": "diariodarepublica.pt",
+     "consultado": "2026-10-30"
+    }
+   ]
+  }
+ ],
+ "relacionadas": [
+  {
+   "texto": "Quem fez cada alteração da Lei de teste",
+   "href": "#/quem/lei-teste"
+  },
+  {
+   "texto": "Lei de teste",
+   "href": "#/d/lei-teste"
+  }
+ ]
+}

@@ -79,7 +79,7 @@ When the DR changes its web app, `dr_client.py` stops with `StaleApiVersion` and
 | `#/iniciativa/<id>` | One parliamentary initiative (or a bill now in Parliament) | |
 | `#/quem/<slug>` | Who made each change to a diploma, by Government | `por=legislatura` |
 | `#/grupos`, `#/grupo/<id>` | Parliamentary groups | `diploma=<slug>` |
-| `#/historias`, `#/historia/<slug>` | Stories | |
+| `#/historias`, `#/historia/<slug>` | Stories: the index, and one long-form story (below) | `ir=fig-<id>`, `ir=nota-<n>`, `ir=<subtítulo>` |
 | `#/glossario`, `#/glossario/<id>` | Glossary; `<id>` scrolls to the entry | |
 | `#/verificacao` | Checks of the text and of who made each act | |
 | `#/sobre`, `#/sobre/<ancora>` | About; scrolls to `limites`, `quem`, `votacoes` | |
@@ -111,6 +111,30 @@ A `null` fact has a reason code next to it (`motivos`).
 | `grupos/index.json`, `grupos/<id>.json` | groups, alphabetical; a group's initiatives that became a law (`como`: `propria` \| `juntada`) and its generalidade positions by diploma |
 | `verificacao.json` | checks against official republications; `quem` (signature coverage, cross-check, dropped steps and votes); `conteudo` (content withheld) |
 | `glossario.json`, `historias/`, `partilha.json` | written by `pipeline/conteudo.py` |
+
+**`historias/<slug>.json` (long-form stories).** Compiled by `pipeline/historias.py` from `pipeline/historias/<slug>.md`
+(the writer's guide is [`pipeline/historias/README.md`](../pipeline/historias/README.md)). Keys: `slug`, `titulo`, `resumo`,
+`preparado_em`, `atualizado_em`, `autoria`, `preparacao`, `revisao_externa` (`{por, em}` or null), `aviso`, `diplomas`, `palavras`,
+`minutos`, `imagem_partilha`, `desatualizada[]` (`{artigo, ato}`: the law changed after the lock), `blocos[]`, `notas[]`
+(`{n, id, partes, urls[{href, host, consultado}]}`), `relacionadas[]` (`{texto, href}`). A block is `{t:'p', partes}`,
+`{t:'h2'|'h3', id, texto}`, `{t:'citacao', partes, autor}` or `{t:'figura', n, id, tipo, largura, titulo, sub, legenda, fonte, href,
+params, retida, aviso}`. `partes` are strings, links `{href, texto}` (or `{href, partes:[{t:'governo', numero}]}`), `{t:'em', texto}`
+and `{t:'nota', n, id}`. `params` hold ids and indices the build resolved, so a figure needs no lookup: `diff` `{diploma, artigo, de_i,
+para_i, mostrar[{n, al}], vista}`, `votacao` `{ato, item}`, `cronologia` `{diploma, por, desde, ate, atos[{ato, data, grupo, como, n,
+marcado}], marcar}`, `origem` `{diploma, artigo, redacao_i, mostrar, destacar_i}`, `ficha` `{ato, campos}`, `imagem` `{arquivo, alt,
+credito, licenca}` (images are copied to `historias/img/`). `historias/index.json` lists the published stories and, under `artigos`,
+the anchor (`fig-<id>` or a subhead) each cited article's page links to.
+
+**The story page.** `Historia()` in `app.js` draws the header (title, dek, byline with the reading time, the disclosure line), the body
+in a 650 px column with a 300 px side column (`Nesta história` and `largura: lado` fichas float into it at ≥ 1100 px; `larga` figures
+span 1014 px), then `Notas e fontes`, `Sobre este texto` and `Continuar a ler`. Each figure is one `Figura` frame (number, title,
+sub-line, Atenção line when stale, body, caption, source, «Abrir no site») around a body drawn live from `app/data` with the site's own
+functions: `FigDiff` (`diffLines` + `segsLei`, with `mostrar` and folds), `FigVotacao` (`VotosAto`/`Voto`, `linhaVfg`,
+`linhasEventos`, `linhaPresidente`), `FigCronologia` (an SVG ruler sized to its box, then a ledger by Government or legislatura),
+`FigOrigem` (`originModel` + `R.TextOrigin`), `FigFicha` and `FigImagem`. A withheld figure (`retida`) keeps its frame and says it
+is under review. Links inside the page (notes, `fig:`, subheads) change only `ir=`, with `history.replaceState`. On a phone (≤ 760 px)
+everything is one column, `Nesta história` is a closed `<details>`, and note markers have a 44 px target.
+To see every figure type on real data: `python -I pipeline/historias.py --exemplo`, then open `#/historia/exemplo`.
 
 **`quem.json` record (R-14).** Keys: `tipo_ato` (`decreto-lei`, `lei`, `lei-organica`, `lei-constitucional`, `retificacao`, `acordao-tc`,
 `acordao-outro`, `pre1976`, `aprovacao-constituicao`, `portaria`, `resolucao`, `dlr`, `outro`); `governo` (`{numero, base:

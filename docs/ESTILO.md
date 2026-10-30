@@ -150,20 +150,16 @@ Descreva o que aconteceu. Não diga quem ganhou nem fale de campos políticos. A
 - Percentagens: «%» junto do nome de um grupo parlamentar ou de um Governo.
 <!-- pts:ignorar-fim -->
 
-### 8.3. Histórias (`tools/estilo.py --historia`)
+### 8.3. Histórias (`pipeline/historias.py`)
 
-Numa história, as datas, os números, os nomes e as votações vêm dos dados do site, por referências (`{ato:…}`, `{data:…}`, `{citacao:…}`, `{voto:…}`). A prosa fora das referências e das citações não tem:
+As histórias são artigos longos, em registo jornalístico. Não seguem as regras 1 a 7 deste guia. Seguem estas regras:
 
-<!-- pts:ignorar-inicio -->
-- algarismos, nomes de meses, «n.º», siglas de grupos parlamentares;
-- palavras de votação: «votou», «votaram», «a favor», «absteve», «abstiveram», «abstenção», «unanimidade»;
-- números por extenso: «dois» a «vinte», «trinta» a «mil», «primeiro» a «décimo», «metade», «dobro», «triplo», «terço»;
-- unidades: «ano», «anos», «mês», «meses», «dia», «dias», «semana», «semanas», «euro», «euros», «por cento»;
-- palavras comparativas ou de causa: «mais», «menos», «aumentou», «aumentaram», «reduziu», «reduziram», «alargou», «alargaram», «encurtou», «encurtaram», «subiu», «subiram», «desceu», «desceram», «passou de», «endureceu», «facilitou», «por causa», «devido», «graças», «para que», «com o objetivo»;
-- adjetivos de mérito e rótulos: «mais dura», «mais duro», «restritiva» (e «restritiv-»), «generosa» (e «generos-»), «polémica» (e «polémic-»), «controversa» (e «controvers-»), «histórica», «maioria de esquerda», «maioria de direita», «oposição», «geringonça», «chumbou» (e «chumb-»), «travou», «luz verde», «vencedores» (e «vencedor-»), «derrotados» (e «derrotad-»), «lei do» ou «proposta do» seguido de uma sigla, «escrito por» seguido de uma sigla, «%».
-<!-- pts:ignorar-fim -->
+- A regra 8.2 aplica-se fora das citações.
+- Cada facto tem uma fonte: uma ligação ao site (ato, artigo, redação, iniciativa, grupo) ou uma nota com o endereço da fonte.
+- Cada argumento tem um autor. Escreva «o Governo argumentou», «o PS respondeu». O narrador não diz o motivo de uma lei.
+- Numa mudança contestada, dê os argumentos de cada lado.
 
-Para dizer o que um ato fez à lei, use «mudou», «acrescentou», «revogou», «retificou» ou «renumerou». Na mesma frase, ponha a ligação à redação.
+`pipeline/historias.py` verifica as ligações, as figuras, as notas e as votações. Dá um aviso quando uma frase do narrador tem uma palavra de motivo («para travar», «finalmente») sem autor e sem nota. O guia para quem escreve está em [`pipeline/historias/README.md`](../pipeline/historias/README.md).
 
 ### 8.4. Nomes de ferramentas
 

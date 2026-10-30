@@ -469,8 +469,6 @@ VERIF_QUEM = {
 }
 
 # ---- Content files (C's shapes, §2.12–§2.14) -----------------------------------------------------
-AVISO = ("Texto preparado a partir dos dados do site, com ajuda de uma ferramenta automática. Data: 2026-10-30. "
-         "Ainda sem revisão jurídica externa.")
 GLOSSARIO = {
     "preparado_em": HOJE,
     "grupos": [{"id": "texto", "titulo": "O texto da lei"}, {"id": "tipos", "titulo": "Tipos de diploma"}, {"id": "datas", "titulo": "As datas"},
@@ -488,44 +486,14 @@ GLOSSARIO = {
                                  "verificado_em": HOJE, "hash_fonte": "sha256:1111111111111111111111111111111111111111111111111111111111111111"},
     },
 }
-HIST_INDEX = {"historias": [{"slug": "historia-teste", "titulo": "Como mudou a Lei de teste", "resumo": "As alterações à Lei de teste, ato a ato.",
-                             "preparado_em": HOJE, "preparacao": "assistida", "revisao_externa": None, "diplomas": ["lei-teste"]}],
-              "artigos": {"lei-teste/artigo-1": [{"historia": "historia-teste", "seccao": "lei-901-2020"}]}}
+# The story: compiled from pipeline/fixtures/historias/teste.md by pipeline/historias.py, on this fixture.
+HISTORIA_FONTE = os.path.join(PIPE, "fixtures", "historias", "teste.md")
 
 
-def r_ato(aid, texto_):
-    return {"t": "ato", "id": aid, "texto": texto_, "href": "#/ato/" + aid}
-
-
-HISTORIA = {
-    "slug": "historia-teste", "titulo": "Como mudou a Lei de teste", "resumo": "As alterações à Lei de teste, ato a ato.",
-    "preparado_em": HOJE, "preparacao": "assistida", "revisao_externa": None, "aviso": AVISO,
-    "ambito": {"desde": "1970-03-02", "diplomas": [{"slug": "lei-teste", "artigos": "todos"}]},
-    "seccoes": [
-        {"id": "em-cinco-frases", "tipo": "resumo", "titulo": "Em cinco frases",
-         "paragrafos": [["A ", r_ato("decreto-lei-90001", "Decreto-Lei n.º 90001, de 2 de março de 1970"), " aprovou a lei."]]},
-        {"id": "nesta-historia", "tipo": "perguntas", "titulo": "Nesta história", "itens": [{"texto": "Qual é o prazo?", "alvo": "lei-901-2020"}]},
-        {"id": "em-numeros", "tipo": "numeros", "titulo": "Em números", "atos_por_tipo": [{"tipo_ato": "lei", "n": 4}], "artigos_alterados": 3,
-         "mais_alterados": [{"diploma": "lei-teste", "artigo": "artigo-1", "rotulo": "Artigo 1.º", "n": 6}]},
-        {"id": "lei-901-2020", "tipo": "mudanca", "atos": ["lei-901-2020"], "subtitulo": None, "retida": None,
-         "paragrafos": [["A ", r_ato("lei-901-2020", "Lei n.º 901/2020, de 15 de outubro"), " mudou o ",
-                         {"t": "comparar", "texto": "o que mudou no artigo 1.º", "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou"}, "."],
-                        ["Quem a propôs: ", {"t": "governo", "ato": "lei-901-2020"}, ". ", {"t": "vfg", "ato": "lei-901-2020"}]],
-         "mostrar": [{"diploma": "lei-teste", "artigo": "artigo-1", "rotulo": "Artigo 1.º", "ato": "lei-901-2020", "antes": "2 — O prazo é de seis anos.",
-                      "depois": "2 — O prazo é de dez anos, contados da entrada.", "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou"}],
-         "tabela": None, "desatualizada": False, "hashes": {"lei-teste/artigo-1@lei-901-2020": "sha256:2222222222222222222222222222222222222222222222222222222222222222"}},
-        {"id": "lei-902-2019", "tipo": "mudanca", "atos": ["lei-902-2019"], "subtitulo": None, "retida": "Os dados mudaram depois da preparação do texto.",
-         "paragrafos": [], "mostrar": [], "tabela": None, "desatualizada": True, "hashes": {}},
-        {"id": "hoje", "tipo": "hoje", "artigos": [{"diploma": "lei-teste", "artigo": "artigo-1", "rotulo": "Artigo 1.º"}], "pendentes": [], "paragrafos": []},
-        {"id": "todas", "tipo": "todas", "atos": [a["id"] for a in ATOS[1:]]},
-        {"id": "o-que-nao-diz", "tipo": "limites", "paragrafos": [["Esta história não dá conselhos jurídicos."]]},
-        {"id": "como-fizemos", "tipo": "metodo", "paragrafos": [["Usámos os dados do site."]], "correcoes": []},
-    ],
-}
 PARTILHA = {"base": "https://andre15silva.github.io/pt-legal-git/",
             "artigos": {"lei-teste/artigo-1": ["decreto-lei-90001", "decreto-lei-90002", "decreto-lei-901-1977", "lei-901-2020",
                                                "declaracao-de-retificacao-901-2020", "lei-901-2022"]},
-            "historias": ["historia-teste"]}
+            "historias": ["teste"]}
 
 
 def escrever(rel, obj):
@@ -571,11 +539,17 @@ def main():
     for k, g in paginas.items():
         escrever(f"grupos/{k}.json", g)
     escrever("verificacao.json", {"consultado_em": HOJE, "diplomas": {"lei-teste": {"titulo": "Lei de teste", "sigla": "LT", "relatorio": None}},
-                                  "quem": VERIF_QUEM, "conteudo": [{"tipo": "historia", "id": "historia-teste", "seccao": "lei-902-2019",
-                                                                    "motivo": "Os dados mudaram depois da preparação do texto."}]})
+                                  "quem": VERIF_QUEM, "conteudo": [{"tipo": "historia", "id": "teste", "seccao": "voto",
+                                                                    "motivo": "teste.md:33: [R2] figura «voto»: os dados mudaram"}]})
     escrever("glossario.json", GLOSSARIO)
-    escrever("historias/index.json", HIST_INDEX)
-    escrever("historias/historia-teste.json", HISTORIA)
+    os.environ["REDACAO_HOJE"] = HOJE
+    import historias
+    idx, msgs, _ = historias.construir(OUT, estrito=True, ficheiros=[HISTORIA_FONTE])
+    if [m for m in msgs if not m.startswith("aviso")]:
+        print("\n".join(msgs))
+        return 1
+    for nome in ("index.json", "teste.json"):   # indented, like the other fixture files
+        escrever("historias/" + nome, json.load(open(os.path.join(OUT, "historias", nome), encoding="utf-8")))
     escrever("partilha.json", PARTILHA)
     import contrato
     erros = contrato.validar_pasta(OUT, completo=True)

@@ -73,6 +73,13 @@ if (fs.existsSync(dir)) {
       const id = g.replace(/\.json$/, ''), art = JSON.parse(fs.readFileSync(path.join(dir, f, g), 'utf8'));
       const t = art.versoes.map(v => v.linhas.map(l => l.map(s => s[1]).join('')).join('\n'));
       for (let i = 1; i < t.length; i++, pairs++) assert.ok(rebuilds(t[i - 1], t[i]), f + ' ' + id + ' ' + i);
+      // diffLines (with rewritten paragraphs shown whole) keeps every word of both texts, in order.
+      for (let i = 1; i < t.length; i++) {
+        const ls = window.RedacaoApp.diffLines(t[i - 1], t[i]), so = s => s.replace(/\s+/g, '');
+        const lado = op => so(ls.map(l => l.filter(s => s.op !== op).map(s => s.text).join('')).join(''));
+        assert.strictEqual(lado('ins'), so(t[i - 1]), f + ' ' + id + ' ' + i + ' (antes)');
+        assert.strictEqual(lado('del'), so(t[i]), f + ' ' + id + ' ' + i + ' (depois)');
+      }
     }
   }
 }
@@ -239,6 +246,21 @@ assert.strictEqual(search({ sinonimos: [], diplomas: [{ slug: 'nrau', sigla: 'NR
   ['nrau', 'artigo-1083', 'Artigo 1083.º', 'Fundamento da resolução do arrendamento', 'vigente', 'codigo-civil'],
   ['codigo-civil', 'artigo-1083', 'Artigo 1083.º', 'Fundamento da resolução do arrendamento', 'vigente', null],
 ] }, 'artigo 1083 arrendamento').map(r => r[0] + '/' + r[1]).join(','), 'codigo-civil/artigo-1083,nrau/artigo-1083');
+// Story figures: labels of each line, the `mostrar` selection and the gap lines (pipeline/historias.py).
+{
+  const rots = A.rotular(['1 — O Governo concede:', 'a) Serem maiores;', 'b) Residirem;', 'c) Conhecerem;', '2 — Outro número.', '3 — E outro.']);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(rots[2])), { n: '1', al: 'b', abre: false });
+  const sel = rots.map(r => A.escolhida(r, [{ n: '1', al: 'b' }]));
+  assert.deepStrictEqual(sel, [true, false, true, false, false, false]);   // the número's opening line is context
+  assert.strictEqual(A.linhaFalta([rots[1]]), '⋯ alínea a) não mostrada');
+  assert.strictEqual(A.linhaFalta([rots[3], rots[4], rots[5]]), '⋯ alínea c) e n.os 2 a 3 não mostrados');
+  assert.strictEqual(A.linhaFalta([rots[4]]), '⋯ n.º 2 não mostrado');
+  assert.strictEqual(A.linhaFalta([{ n: '', al: null, abre: false }, { n: '', al: null, abre: false }]), '⋯ 2 parágrafos não mostrados');
+  assert.ok(A.escolhida(rots[4], null));
+  assert.strictEqual(A.curtoAto('Lei Orgânica n.º 2/2006'), 'LO 2/2006');
+  assert.strictEqual(A.curtoAto('Lei n.º 25/94'), 'Lei 25/94');
+  assert.strictEqual(A.curtoAto('Decreto-Lei n.º 194/2003'), 'DL 194/2003');
+}
 // R-25: the old sentence is gone.
 assert.ok(!fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').includes('Não temos dados deste ato no Parlamento.'));
 

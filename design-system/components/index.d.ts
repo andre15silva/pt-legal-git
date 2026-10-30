@@ -10,8 +10,8 @@ export declare function ActChip(props: ActChipProps): React.ReactElement;
 export interface Segment { op: 'eq' | 'ins' | 'del'; text: string }
 export interface RedlineProps { segments: Segment[]; mode?: 'inline' | 'final' | 'previous'; number?: string; caption?: string; legend?: boolean }
 export declare function Redline(props: RedlineProps): React.ReactElement;
-export interface OriginParagraph { number?: string; spans: { text: string; act: number }[] }
-export interface TextOriginProps { paragraphs: OriginParagraph[]; acts: Act[]; focus?: number; legendLabel?: string }
+export interface OriginParagraph { number?: string; spans: { text: string; act: number }[]; gap?: string }
+export interface TextOriginProps { paragraphs: OriginParagraph[]; acts: Act[]; focus?: number; legendLabel?: string; margem?: boolean }
 export declare function TextOrigin(props: TextOriginProps): React.ReactElement;
 export interface DateLensProps { date?: string; basis?: 'vigor' | 'efeitos' | 'publicacao'; onChange?: (v: { date: string; basis: string }) => void; id?: string; today?: string }
 export declare function DateLens(props: DateLensProps): React.ReactElement;

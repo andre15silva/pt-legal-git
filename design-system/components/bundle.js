@@ -170,6 +170,8 @@
               })));
           };
           var p = ps[0];
+          // A gap line (a story figure that shows only some números): muted text, not a phrase.
+          if (p.gap) return h('p', { key: pi, className: 'rd-origin-gap' }, p.gap);
           return linha(
             p.kind === 'tab' ? h('div', { className: 'rd-tabela' }, ps.map(function (r, ri) { return linhaTabela(r, pi, ri); }))
               : h('p', { className: cx('rd-statute', p.kind && 'rd-p-' + p.kind) },

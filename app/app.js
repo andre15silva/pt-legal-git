@@ -715,7 +715,8 @@
   }
 
   // ---- Word diff (Myers) for comparing any two versions -------------------------------------
-  var TOK = /\n|\s+|[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu;
+  // «n.º», «n.os» and «31.º» are one word each, so a change never lands between «n» and «.º».
+  var TOK = /\n|\s+|n\.(?:º|os)|\p{N}+\.º|[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu;
   function diff(a, b) {
     var A = a.match(TOK) || [], B = b.match(TOK) || [];
     var n = A.length, m = B.length, max = n + m, off = max + 1, v = new Int32Array(2 * max + 3), trace = [];
@@ -764,8 +765,7 @@
         var e = segs[i], p = segs[i - 1], n = segs[i + 1];
         if (e.eq == null || p.eq != null || n.eq != null || e.eq.indexOf('\n') >= 0) continue;
         var size = e.eq.trim().length;
-        var short = semantic && p.del && p.ins && n.del && n.ins &&
-          size <= Math.max(p.del.length, p.ins.length) && size <= Math.max(n.del.length, n.ins.length);
+        var short = semantic && size <= p.del.length + p.ins.length && size <= n.del.length + n.ins.length;
         // The unchanged run goes into both texts, so join only when both texts change.
         if ((size === 0 || short) && (p.del || n.del) && (p.ins || n.ins)) {
           segs.splice(i - 1, 3, { del: p.del + e.eq + n.del, ins: p.ins + e.eq + n.ins });
@@ -801,15 +801,83 @@
     return out;
   }
   function common(a, b) { return a.length < b.length ? a : b; }
+  // Paragraphs first, then words: lines that did not change anchor the comparison; between two
+  // anchors, an old and a new paragraph pair up when they have the same número or alínea, or
+  // share most of their words, and only paired paragraphs are compared word by word. So a new
+  // ending of n.º 3 never lands under the old n.º 5.
   function diffLines(a, b) {
-    var lines = [[]];
-    diff(a, b).forEach(function (s) {
-      s.text.split('\n').forEach(function (part, i) {
-        if (i) lines.push([]);
-        if (part) lines[lines.length - 1].push({ op: s.op, text: part });
-      });
+    var A = a.split('\n'), B = b.split('\n'), n = A.length, m = B.length, L = [];
+    for (var i = n; i >= 0; i--) {
+      L[i] = new Int32Array(m + 1);
+      for (var j = m - 1; i < n && j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    }
+    var out = [], dels = [], inss = [];
+    function fecha() { out.push.apply(out, juntaLacuna(dels, inss)); dels = []; inss = []; }
+    i = 0; j = 0;
+    while (i < n || j < m) {
+      if (i < n && j < m && A[i] === B[j]) { fecha(); out.push([{ op: 'eq', text: A[i] }]); i++; j++; }
+      else if (j < m && (i >= n || L[i][j + 1] >= L[i + 1][j])) inss.push(B[j++]);
+      else dels.push(A[i++]);
+    }
+    fecha();
+    return out.filter(function (l) { return l.length && l.some(function (s) { return s.text; }); }).map(function (l) {
+      return l.filter(function (s) { return s.text; });
     });
-    return lines.filter(function (l) { return l.length; });
+  }
+  function rotuloLinha(l) {
+    var m = /^\s*(\d+(?:\.\d+)*(?:-[A-Z]+)?\s*[—–-]|[a-z]{1,2}(?:-[a-z])?\))/.exec(l);
+    return m ? m[1].replace(/\s+/g, '') : null;
+  }
+  // How alike two paragraphs are: the share of words they have in common (0 to 1).
+  function semelhanca(x, y) {
+    var px = x.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [], py = y.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [], c = {}, k = 0;
+    px.forEach(function (w) { c[w] = (c[w] || 0) + 1; });
+    py.forEach(function (w) { if (c[w]) { c[w]--; k++; } });
+    return 2 * k / Math.max(1, px.length + py.length);
+  }
+  // Old paragraphs `ds` and new `is` between two unchanged lines. They pair up in order so that
+  // the pairs share the most words (an alínea that was relettered still finds its old text); the
+  // same número or alínea counts as a little more. Unpaired paragraphs show whole.
+  function juntaLacuna(ds, is) {
+    var n = ds.length, m = is.length, S = [], P = [];
+    function nota(i, j) {
+      var s = semelhanca(ds[i], is[j]), r = rotuloLinha(ds[i]);
+      return s < 0.4 ? 0 : s + (r && r === rotuloLinha(is[j]) ? 0.15 : 0);
+    }
+    for (var i = n; i >= 0; i--) {
+      S[i] = new Float64Array(m + 1); P[i] = new Int8Array(m + 1);
+      for (var j = m; j >= 0; j--) {
+        if (i === n || j === m) continue;
+        var x = nota(i, j), best = S[i + 1][j], pk = 1;
+        if (S[i][j + 1] > best) { best = S[i][j + 1]; pk = 2; }
+        if (x > 0 && x + S[i + 1][j + 1] > best) { best = x + S[i + 1][j + 1]; pk = 3; }
+        S[i][j] = best; P[i][j] = pk;
+      }
+    }
+    var out = [];
+    i = 0; j = 0;
+    while (i < n || j < m) {
+      var pk = i < n && j < m ? P[i][j] : (i < n ? 1 : 2);
+      if (pk === 3) { out.push(reescrita(diff(ds[i], is[j]))); i++; j++; }
+      else if (pk === 1) out.push([{ op: 'del', text: ds[i++] }]);
+      else out.push([{ op: 'ins', text: is[j++] }]);
+    }
+    return out;
+  }
+  // A paragraph that keeps less than a third of its words reads better as the old text, struck,
+  // then the new one, than as words of both mixed together.
+  function reescrita(l) {
+    var eq = 0, tudo = 0, del = '', ins = '';
+    l.forEach(function (s) {
+      var n = s.text.trim().length;
+      tudo += n; if (s.op === 'eq') eq += n;
+      if (s.op !== 'ins') del += s.text;
+      if (s.op !== 'del') ins += s.text;
+    });
+    if (!del.trim() || !ins.trim() || eq * 3 >= tudo) return l;
+    var nr = (del.match(/^\s*(?:\d+[\.\-ºA-Z]*\s*[—–-]\s*|[a-z]{1,2}\)\s*)/) || [''])[0];  // the número stays in its place
+    if (!nr || ins.indexOf(nr) !== 0) nr = '';
+    return [{ op: 'eq', text: nr }, { op: 'del', text: del.slice(nr.length) }, { op: 'ins', text: ins.slice(nr.length) }].filter(function (s) { return s.text.trim(); });
   }
 
   // ---- Shared pieces ---------------------------------------------------------------------
@@ -910,7 +978,7 @@
     if (!props.nome) return props.sigla;
     return h('abbr', { title: props.nome, className: 'sigla' }, h('span', { 'aria-hidden': 'true' }, props.sigla), h('span', { className: 'rd-sr' }, props.nome));
   }
-  // ctx: {votos(id) -> element} for {t:'votos'}; ref and slug for story segments.
+  // ctx: {votos(id) -> element} for {t:'votos'}; slug and vistas for a story's note markers.
   function render(partes, ctx) {
     ctx = ctx || {};
     return (partes || []).map(function (x, k) {
@@ -925,9 +993,9 @@
       if (x.t === 'votos') return ctx.votos ? h(React.Fragment, { key: k }, ctx.votos(x.ato)) : null;
       if (x.t === 'lista') return h('ul', { key: k, className: 'quem-lista' }, x.itens.map(function (it, j) { return h('li', { key: j }, render(it, ctx)); }));
       if (x.t === 'citacao') return h('a', { key: k, href: x.href }, h('span', { 'data-citacao': '' }, /^«/.test(x.texto) ? x.texto : '«' + x.texto + '»'));
-      // Story segments the app writes from the data (pipeline/historias, §2.13).
-      // The build may add an href to these; the text is still the app's.
-      if (x.ato && (!x.href || /^(voto|vfg|governo|presidente)$/.test(x.t)) && ctx.ref) return h(React.Fragment, { key: k }, render(segmentoApp(x, ctx), ctx));
+      if (x.t === 'em') return h('em', { key: k }, x.texto);
+      // A story's note marker (pipeline/historias.py): the first marker of a note takes the id «↩» returns to.
+      if (x.t === 'nota') return ctx.slug ? h(MarcaNota, { key: k, n: x.n, slug: ctx.slug, vistas: ctx.vistas }) : null;
       if (x.href) {
         var txt = x.partes ? render(x.partes, ctx) : x.texto;
         return externo(x.href) ? h('a', { key: k, href: x.href, target: '_blank', rel: 'noopener' }, txt) : h('a', { key: k, href: x.href }, txt);
@@ -957,7 +1025,6 @@
     diploma: 'Esta página mostra um diploma inteiro. No índice, cada linha é um artigo. Cada traço na linha é uma redação. Em «Atos que o alteraram», vê os diplomas que mudaram este diploma. Para ver quem fez cada mudança, escolha «Quem fez cada alteração».',
     iniciativa: 'Esta página mostra uma iniciativa: um texto que alguém propôs ao Parlamento. Uma iniciativa ainda não é lei. Passa a lei depois da votação final global, da promulgação e da publicação no Diário da República. Em «Todas as fases», vê cada passo no Parlamento, com a data.',
     alteracoes: 'Esta página mostra os artigos que mudaram entre duas datas. Para mudar o período, escolha as datas «De» e «Até». O texto acrescentado tem um traço por baixo. O texto eliminado tem um traço por cima. Escolha um artigo para ver o artigo inteiro.',
-    historia: 'Esta página conta como mudou uma lei, ato a ato. Cada frase tem uma ligação ao ato ou ao artigo no site. As datas, os nomes e as votações vêm dos dados do site. Em «Todas as alterações neste período», vê a lista completa. Em «Como fizemos esta história», vê as fontes e a data.',
     quem: 'Esta página mostra todos os atos que mudaram este diploma, por período. Escolha «Por Governo» ou «Por legislatura». Em cada período, os decretos-leis vêm primeiro e as leis do Parlamento depois. Uma lei fica no período da votação que a decidiu. Um período sem alterações também aparece.',
     grupo: 'Esta página mostra as iniciativas de um grupo parlamentar que deram origem a leis deste site. Também mostra como o grupo votou as alterações a um diploma. Escolha o diploma na lista. Para ver os votos de todos os grupos, abra o ato.'
   };
@@ -973,30 +1040,6 @@
       h('summary', null, 'Como ler esta página'),
       h('div', { className: 'guia-in' }, h('p', null, GUIAS[props.texto || props.tipo]), h('p', null, h('a', { href: '#/glossario' }, 'Ver o glossário'))));
   }
-  // Segments of a story that the app writes from the data, with the act page's functions.
-  function segmentoApp(x, ctx) {
-    var ref = ctx.ref, r = registo(ref, x.ato), q = r.quem;
-    if (x.t === 'vfg') return [lig(link(['ato', x.ato]), textoDe(linhaVfg(q.vfg, (q.motivos || {}).vfg)))];
-    if (x.t === 'presidente') { var pr = q.presidente && (presidenteDe(ref, q.presidente.id) || q.presidente); return [lig(link(['ato', x.ato]), pr ? pr.nome : 'o Presidente da República')]; }
-    if (x.t === 'governo') {
-      var n = q.governo && q.governo.numero != null ? q.governo.numero : ((q.proponentes || []).filter(function (y) { return y.governo != null; })[0] || {}).governo;
-      return n == null ? ['o Governo'] : [{ t: 'link', href: link(['quem', ctx.slug], { ir: 'governo-' + n }), partes: ['o ', gov(n)] }];
-    }
-    if (x.t === 'voto') {
-      var nomes = nomesDe(ref, (r.p || {}).legislatura), itens = r.p ? itensGeneralidade(r.p) : [];
-      var t = itens.map(function (it) {
-        var v = it.voto, ordem = ordemDe(r.p, [v]), cab = itens.length > 1 ? it.titulo + ': ' : '';
-        if (v.unanime) return cab + (v.resultado || 'Aprovado') + ' por unanimidade.';
-        return cab + [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']].map(function (s) {
-          var gs = ordem.filter(function (g) { return v.grupos[g] === s[0]; }).map(function (g) { return nomes[g] || g; });
-          return gs.length ? s[1] + ': ' + lista(gs) + '.' : '';
-        }).filter(Boolean).join(' ');
-      }).join(' ');
-      return [lig(link(['ato', x.ato], { ir: 'generalidade' }), t || 'Não temos o registo da votação na generalidade.')];
-    }
-    return [x.texto || ''];
-  }
-
   // ---- Home ---------------------------------------------------------------------------------
   var SIGLAS = { crp: 'constituicao', constituicao: 'constituicao', 'constituição': 'constituicao', ct: 'codigo-do-trabalho', trabalho: 'codigo-do-trabalho',
     circ: 'codigo-irc', irc: 'codigo-irc', nrau: 'nrau',
@@ -2423,6 +2466,9 @@
   }
 
   // ---- Stories (#/historias, #/historia/<slug>) ------------------------------------------------------
+  // Long-form stories (pipeline/historias.py, pipeline/historias/README.md): prose with links, notes,
+  // pull quotes and figures. The build resolves every link and figure; each figure is drawn here, live,
+  // from app/data with the site's own functions, inside one frame (Figura).
   function Historias() {
     var r = useData(['historias/index.json']);
     if (!r.data) return h(Loading, { error: r.error });
@@ -2430,99 +2476,392 @@
     return h('div', { className: 'pagina-ato' },
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, 'Histórias'),
-        h('p', { className: 'lead' }, 'Como mudaram algumas leis, ato a ato. Cada facto tem uma ligação ao site.')),
+        h('p', { className: 'lead' }, 'Como mudaram algumas leis, contado com figuras feitas a partir dos dados do site. Cada facto tem uma fonte.')),
       h('div', { className: 'historias-indice' }, h(ListaHistorias, { historias: r.data[0].historias || [] })));
   }
-  var TIPO_ATO = { lei: ['lei', 'leis'], 'lei-organica': ['lei orgânica', 'leis orgânicas'], 'lei-constitucional': ['lei constitucional', 'leis constitucionais'],
-    'decreto-lei': ['decreto-lei', 'decretos-leis'], retificacao: ['declaração de retificação', 'declarações de retificação'], 'acordao-tc': ['acórdão do Tribunal Constitucional', 'acórdãos do Tribunal Constitucional'],
-    'acordao-outro': ['acórdão', 'acórdãos'], pre1976: ['diploma anterior a 1976', 'diplomas anteriores a 1976'], outro: ['outro diploma', 'outros diplomas'] };
-  function nomeTipo(t, n) { var x = TIPO_ATO[t] || TIPO_ATO.outro; return n === 1 ? x[0] : x[1]; }
-  function Historia(props) {
-    var r = useData(['historias/' + props.slug + '.json', 'atos.json', '?quem.json', 'passagem.json', '?governos.json', 'index.json', 'pendentes.json']);
-    if (!r.data) return h(Loading, { error: r.error });
-    var hx = r.data[0], ref = { atos: r.data[1], quem: r.data[2] || {}, passagem: r.data[3], governos: r.data[4], index: r.data[5] }, pend = r.data[6];
-    document.title = tituloDe(['historia', hx.slug], { historia: hx });
-    var slug0 = ((hx.ambito || {}).diplomas || [])[0] ? hx.ambito.diplomas[0].slug : null;
-    var dips = (hx.ambito && hx.ambito.diplomas || []).map(function (x) { return x.slug; });
-    var ctx = { ref: ref, slug: slug0, votos: function (id) { var p = ref.passagem[id]; return p ? h(VotosAto, { p: p, quem: registo(ref, id).quem, dados: ref, conta: false }) : null; } };
-    var sec = {};
-    (hx.seccoes || []).forEach(function (s) { sec[s.tipo] = sec[s.tipo] || s; });
-    var paragrafos = function (s) { return (s.paragrafos || []).map(function (p, k) { return h('p', { key: k, className: 'historia-p' }, render(p, ctx)); }); };
-    var titulo = function (s, t) { return h('h2', { id: s.id, tabIndex: -1 }, s.titulo || t); };
-    var nomesDip = {};
-    ref.index.diplomas.forEach(function (d) { nomesDip[d.slug] = d; });
-    var bloco = function (s) {
-      if (s.tipo === 'mudanca') {
-        var atos0 = (s.atos || []).map(function (id) { return ref.atos[id] || { id: id, designacao: id }; });
-        var cab = s.subtitulo || atos0.map(nomeCompleto).join(' e ');
-        return h('section', { key: s.id, className: 'secao historia-mudanca', 'aria-labelledby': s.id },
-          h('h2', { id: s.id, tabIndex: -1 }, s.atos && s.atos.length === 1 && !s.subtitulo ? h('a', { href: link(['ato', s.atos[0]]) }, cab) : cab),
-          s.retida ? h('p', { className: 'regra' }, 'Esta parte está em revisão. Os dados mudaram depois da preparação do texto.') : [
-            s.desatualizada ? h('p', { key: 'd', className: 'regra' }, h('strong', null, 'Nota: '), 'esta parte pode estar desatualizada. A lei mudou depois da preparação do texto.') : null,
-            h(React.Fragment, { key: 'p' }, paragrafos(s)),
-            (s.mostrar || []).length ? h('div', { key: 'm', className: 'historia-mostrar' }, h('h3', { className: 'h3' }, 'O que mudou'),
-              h('ul', { className: 'list' }, s.mostrar.map(function (m, k) {
-                return h('li', { key: k }, h('p', { className: 'mostrar-rot' }, m.rotulo + (dips.length > 1 && nomesDip[m.diploma] ? ' ' + (nomesDip[m.diploma].genitivo || '') : '')),
-                  h('p', { className: 'mostrar-antes' }, h('span', { className: 'muted' }, 'Antes: '), m.antes ? h('span', { 'data-citacao': '' }, '«' + m.antes + '»') : 'este texto não existia.'),
-                  h('p', { className: 'mostrar-depois' }, h('span', { className: 'muted' }, 'Depois: '), h('span', { 'data-citacao': '' }, '«' + m.depois + '»')),
-                  h('p', null, h('a', { href: m.href }, 'Ver o antes e o depois')));
-              }))) : null,
-            h('div', { key: 'q', className: 'historia-quem' }, h('h3', { className: 'h3' }, 'Quem'),
-              (s.atos || []).map(function (id) { return h('ul', { key: id, className: 'linhas-ato' }, h(LinhaAto, { frases: marcarFrases(linhaAto(id, ref, { expandida: true }), 'quem'), ctx: ctx, semNome: s.atos.length === 1 && !s.subtitulo })); }))]);
+  // A note marker: a superscript number. Its first use takes the id that «↩» in the notes returns to.
+  function MarcaNota(props) {
+    var n = props.n, vistas = props.vistas || {}, primeira = !vistas[n];
+    vistas[n] = true;
+    return h('sup', { className: 'hist-marca' }, h('a', { id: primeira ? 'nota-ref-' + n : undefined, href: link(['historia', props.slug], { ir: 'nota-' + n }), 'aria-label': 'Nota ' + n }, n));
+  }
+  // The width of an element, kept up to date (the timeline draws to it).
+  function useLargura() {
+    var el = React.useRef(null), st = useState(0);
+    useEffect(function () {
+      if (!el.current) return;
+      var medir = function () { if (el.current) st[1](Math.round(el.current.getBoundingClientRect().width)); };
+      medir();
+      if (!window.ResizeObserver) { window.addEventListener('resize', medir); return function () { window.removeEventListener('resize', medir); }; }
+      var ro = new ResizeObserver(medir);
+      ro.observe(el.current);
+      return function () { ro.disconnect(); };
+    }, []);
+    return [el, st[0]];
+  }
+  // A figure waiting for its article file: the space stays, and the words appear after 400 ms.
+  function FigCarregar(props) {
+    var st = useState(false);
+    useEffect(function () { var t = setTimeout(function () { st[1](true); }, 400); return function () { clearTimeout(t); }; }, []);
+    if (props.error) return h('p', { className: 'fig-retida' }, 'Não foi possível carregar os dados desta figura.');
+    return h('p', { className: 'fig-carregar', 'aria-busy': 'true' }, st[0] ? 'A carregar a figura…' : '');
+  }
+  // Labels of each line of an article (número, alínea), as pipeline/historias.py rotulos_linhas().
+  function rotular(textos) {
+    var n = '', al = null;
+    return textos.map(function (t) {
+      var m = /^(\d+(?:\.\d+)*(?:-[A-Z])?) — /.exec(t);
+      if (m) { n = m[1]; al = null; return { n: n, al: null, abre: true }; }
+      m = /^([a-z]+(?:-[a-z])?)\) /.exec(t);
+      if (m) al = m[1];
+      return { n: n, al: al, abre: false };
+    });
+  }
+  // mostrar = [{n, al}]: the número, or the alínea and the line that opens its número.
+  function escolhida(rot, mostrar) {
+    return !mostrar || mostrar.some(function (s) { return s.n === rot.n && (s.al == null || rot.al === s.al || (rot.al == null && !!rot.n)); });
+  }
+  // «⋯ alíneas d) a f) não mostradas», «⋯ n.os 2 a 5 não mostrados»: one line for each gap.
+  function linhaFalta(rots) {
+    var nums = [], als = [];
+    rots.forEach(function (x) {
+      if (x.abre) { if (nums.indexOf(x.n) < 0) nums.push(x.n); }
+      else if (x.al && nums.indexOf(x.n) < 0 && als.indexOf(x.al) < 0) als.push(x.al);
+    });
+    var partes = [];
+    if (als.length) partes.push(als.length === 1 ? 'alínea ' + als[0] + ')' : 'alíneas ' + als[0] + ') a ' + als[als.length - 1] + ')');
+    if (nums.length) partes.push(nums.length === 1 ? 'n.º ' + nums[0] : 'n.os ' + nums[0] + ' a ' + nums[nums.length - 1]);
+    if (!partes.length) return '⋯ ' + (rots.length === 1 ? '1 parágrafo não mostrado' : rots.length + ' parágrafos não mostrados');
+    var fem = !nums.length, pl = als.length + nums.length > 1 || nums.length > 1 || als.length > 1;
+    return '⋯ ' + partes.join(' e ') + ' não ' + (fem ? (pl ? 'mostradas' : 'mostrada') : (pl ? 'mostrados' : 'mostrado'));
+  }
+  function legendaRedline() {
+    return h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado')));
+  }
+  // 2a. An article between two redações: the diff of the article page, without its focus state.
+  function FigDiff(props) {
+    var p = props.b.params, r = useData(['d/' + p.diploma + '/' + p.artigo + '.json']);
+    if (!r.data) return h(FigCarregar, { error: r.error });
+    var art = r.data[0], va = art.versoes[p.de_i], vb = art.versoes[p.para_i];
+    if (!va || !vb) return h('p', { className: 'fig-retida' }, 'Esta figura está em revisão: os dados mudaram depois do texto.');
+    var lines = diffLines(texto(va), texto(vb));
+    var rots = rotular(lines.map(function (l) {
+      var novo = l.filter(function (x) { return x.op !== 'del'; }).map(function (x) { return x.text; }).join('');
+      return novo || l.map(function (x) { return x.text; }).join('');
+    }));
+    var lado = p.vista === 'lado';
+    function linha(l, k, comLado) {
+      if (!comLado) return segsLei(l, k);
+      return h('div', { key: k, className: 'lado-row' },
+        segsLei(l.filter(function (x) { return x.op !== 'ins'; }), 'a'), segsLei(l.filter(function (x) { return x.op !== 'del'; }), 'b'));
+    }
+    function corpo(comLado) {
+      var out = [], gap = [], run = [], numero = '';
+      var fecharGap = function (k) { if (gap.length) out.push(h('p', { key: 'g' + k, className: 'fig-falta' }, linhaFalta(gap))); gap = []; };
+      var fecharRun = function (k) {
+        if (run.length < 2) run.forEach(function (x) { out.push(x.el); });
+        else out.push(h('details', { key: 'd' + k, className: 'dobra' },
+          h('summary', null, run.length + ' parágrafos sem alterações' + (run[0].w.de === 'do parágrafo' && run[run.length - 1].w.a === 'ao parágrafo' ? '.' : ', ' + run[0].w.de + ' ' + run[run.length - 1].w.a + '.')), run.map(function (x) { return x.el; })));
+        run = [];
+      };
+      lines.forEach(function (l, k) {
+        var mudou = l.some(function (x) { return x.op !== 'eq'; });
+        if (p.mostrar) {
+          if (!escolhida(rots[k], p.mostrar)) { gap.push(rots[k]); return; }
+          fecharGap(k);
+          out.push(linha(l, k, comLado));
+          return;
+        }
+        var w = ondeLinha(l.filter(function (x) { return x.op !== 'ins'; }).map(function (x) { return x.text; }).join('') || l.map(function (x) { return x.text; }).join(''), numero);
+        numero = w.numero;
+        if (mudou) { fecharRun(k); out.push(linha(l, k, comLado)); } else run.push({ el: linha(l, k, comLado), w: w });
+      });
+      fecharGap('fim');
+      fecharRun('fim');
+      return out;
+    }
+    var antes = 'Antes · ' + p.de_nome, depois = 'Depois · ' + p.para_nome;
+    return h('div', { className: 'fig-diff' },
+      lado ? h('div', { className: 'so-lado' }, h('div', { className: 'lado-head', 'aria-hidden': 'true' }, h('span', null, antes), h('span', null, depois)),
+        h('div', { className: 'lei lei-lado' }, corpo(true))) : null,
+      h('div', { className: 'lei' + (lado ? ' so-texto' : '') }, corpo(false)),
+      legendaRedline());
+  }
+  // 2b. The generalidade vote by group, then the final vote, veto and Court, and the promulgation.
+  function FigVotacao(props) {
+    var p = props.b.params, ref = props.dados, pa = (ref.passagem || {})[p.ato];
+    if (!pa) return h('p', { className: 'fig-retida' }, 'Não temos os dados desta votação.');
+    var rg = registo(ref, p.ato), q = rg.quem, itens = itensGeneralidade(pa);
+    if (p.item === 'comissao') itens = itens.filter(function (x) { return x.comissao; });
+    else if (p.item) itens = itens.filter(function (x) { return x.ini && x.ini.id === p.item; });
+    var tabela = !p.item && itens.filter(function (x) { return x.ini; }).length > 1;
+    var votos = tabela ? h(VotosAto, { p: pa, quem: q, dados: ref }) : h(React.Fragment, null, itens.map(function (it, k) {
+      var v = it.voto, gn = genero(it.titulo || 'Texto');
+      var res = v.resultado === 'Aprovado' ? gn.ado : v.resultado === 'Rejeitado' ? gn.ejeitado : v.resultado;
+      return h('div', { key: k, className: 'fig-voto' },
+        itens.length > 1 ? h('p', { className: 'voto-nome' }, it.titulo + ', ' + extenso(v.data)) : null,
+        res && !v.unanime ? h('p', { className: 'voto-res' }, res) : null,
+        h(Voto, { v: v, ordem: ordemDe(pa, [v]), nomes: nomesDe(ref, v.legislatura || pa.legislatura) }));
+    }), h(NotasVoto, { votos: itens.map(function (x) { return x.voto; }) }));
+    var depois = q.provisorio ? [] : [linhaVfg(q.vfg, (q.motivos || {}).vfg)].concat(linhasEventos(q.eventos, ref))
+      .concat([linhaPresidente(q, ref, rg.ato, rg.ato.designacao && /^Lei/.test(rg.ato.designacao) ? 'a lei' : 'o texto')]);
+    return h('div', { className: 'fig-votacao' }, votos,
+      depois.length ? h('div', { className: 'fig-depois' }, depois.map(function (f, k) { return h('p', { key: k }, render(f)); })) : null);
+  }
+  // 2e. Facts box for one act: who proposed, voted, promulgated and published it.
+  var CAMPOS_FICHA = ['proposta', 'governo', 'generalidade', 'vfg', 'tribunal', 'veto', 'novo_decreto', 'confirmacao', 'd_cm', 'promulgacao', 'publicacao', 'vigor'];
+  function FigFicha(props) {
+    var p = props.b.params, ref = props.dados, rg = registo(ref, p.ato), q = rg.quem, a = rg.ato, pa = rg.p, m = q.motivos || {};
+    var dl = (q.tipo_ato || tipoDe(a.designacao)) === 'decreto-lei', rows = {};
+    var nome = function (id, nm) { var pr = presidenteDe(ref, id); return (pr && pr.nome) || nm || ''; };
+    if (!dl && (q.proponentes || []).length) {
+      var props0 = q.proponentes.slice(0, 3).map(function (x, k) {
+        return h('span', { key: k, className: 'factos-linha' }, render([ligIni(x.iniciativa, x.designacao, pa), ', '].concat(autorIni(x, ref, q.legislatura).de)));
+      });
+      if (q.texto_comissao) props0.unshift(h('span', { key: 't', className: 'factos-sub' }, 'Texto da comissão, a partir de:'));
+      if (q.proponentes.length > 3) props0.push(h('span', { key: 'm', className: 'factos-sub' }, 'E mais ' + (q.proponentes.length - 3) + '.'));
+      rows.proposta = ['Proposta', props0];
+    }
+    var n = q.governo && q.governo.numero != null ? q.governo.numero : ((q.proponentes || []).filter(function (x) { return x.governo != null; })[0] || {}).governo;
+    if (n == null && q.periodo) n = q.periodo.governo;
+    var g = governoDe(ref, n);
+    if (n != null) rows.governo = ['Governo', render([gov(n)].concat(g && g.primeiro_ministro ? [' · ' + g.primeiro_ministro] : []))];
+    else if (m.governo && MOTIVOS[m.governo]) rows.governo = ['Governo', render(motivo(m.governo))];
+    if (dl && q.d_cm) rows.d_cm = ['Conselho de Ministros', curta(q.d_cm)];
+    var itens = pa ? itensGeneralidade(pa) : [];
+    if (itens.length) {
+      var v = itens[0].voto;
+      rows.generalidade = ['Generalidade', [curta(v.data) + ' · ' + (v.resultado || '') + (v.unanime ? ', por unanimidade' : ''),
+        v.unanime ? null : h('span', { key: 's', className: 'factos-sub' }, sentidos(v, ordemDe(pa, [v])).trim()),
+        itens.length > 1 ? h('span', { key: 'm', className: 'factos-sub' }, 'E mais ' + (itens.length - 1) + (itens.length === 2 ? ' votação.' : ' votações.')) : null]];
+    }
+    if (!dl && q.vfg) rows.vfg = ['Votação final global', curta(q.vfg.data) + ' · ' + (q.vfg.resultado || '') + (q.vfg.unanime ? ', por unanimidade' : '')];
+    else if (!dl && m.vfg && MOTIVOS[m.vfg]) rows.vfg = ['Votação final global', render(motivo(m.vfg))];
+    (q.eventos || []).forEach(function (e) {
+      if (e.tipo === 'veto') {
+        if (e.acordao_tc) rows.tribunal = ['Tribunal Constitucional', 'Acórdão n.º ' + e.acordao_tc];
+        rows.veto = ['Veto', curta(e.data) + (e.presidente ? ' · ' + nome(e.presidente) : '')];
+      } else if (e.tipo === 'tribunal') rows.tribunal = ['Tribunal Constitucional', curta(e.data)];
+      else if (e.tipo === 'novo_decreto') rows.novo_decreto = ['Novo decreto', curta(e.data)];
+      else if (e.tipo === 'confirmacao') rows.confirmacao = ['Confirmação', curta(e.data)];
+    });
+    var pr = q.presidente;
+    if (pr && pr.d_promulgacao) rows.promulgacao = ['Promulgação', curta(pr.d_promulgacao) + ' · ' + nome(pr.id, pr.nome)];
+    else if (m.presidente && MOTIVOS[m.presidente]) rows.promulgacao = ['Promulgação', render(motivo(m.presidente))];
+    if (a.publicacao) rows.publicacao = ['Publicação', a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, curta(a.publicacao) + ' ↗') : curta(a.publicacao)];
+    var vs = [];
+    (a.alteracoes || []).forEach(function (c) { if (c.vigor && vs.indexOf(c.vigor) < 0) vs.push(c.vigor); });
+    vs.sort();
+    if (vs.length) rows.vigor = ['Entrada em vigor', vs.length === 1 ? curta(vs[0]) : 'Datas diferentes, de ' + curta(vs[0]) + ' a ' + curta(vs[vs.length - 1])];
+    var ordem = (p.campos || CAMPOS_FICHA).filter(function (k) { return rows[k]; });
+    return h('dl', { className: 'fig-ficha' }, ordem.map(function (k) {
+      return h('div', { key: k, className: 'fig-ficha-l' }, h('dt', null, rows[k][0]), h('dd', null, rows[k][1]));
+    }));
+  }
+  // 2d. «Origem do texto» of one redação: the words of each act, with the legend and the popover.
+  function FigOrigem(props) {
+    var p = props.b.params, ref = props.dados, r = useData(['d/' + p.diploma + '/' + p.artigo + '.json']);
+    if (!r.data) return h(FigCarregar, { error: r.error });
+    var art = r.data[0], v = art.versoes[p.redacao_i];
+    if (!v) return h('p', { className: 'fig-retida' }, 'Esta figura está em revisão: os dados mudaram depois do texto.');
+    var model = originModel(art, p.redacao_i, ref.atos || {}, function (o) { return link(['d', p.diploma, p.artigo], { redacao: versionKey(art, o) }); }, p.nome_original);
+    var paras = model.paragraphs;
+    if (p.mostrar) {
+      var rots = rotular(v.linhas.map(function (l) { return l.map(function (s) { return s[1]; }).join(''); })), out = [], gap = [];
+      paras.forEach(function (x, k) {
+        if (escolhida(rots[k], p.mostrar)) { if (gap.length) out.push({ gap: linhaFalta(gap), spans: [] }); gap = []; out.push(x); } else gap.push(rots[k]);
+      });
+      if (gap.length) out.push({ gap: linhaFalta(gap), spans: [] });
+      paras = out;
+    }
+    var usados = {};
+    paras.forEach(function (x) { x.spans.forEach(function (s) { usados[s.act] = true; }); });
+    var acts = model.acts.filter(function (a) { return usados[a.index]; });
+    var foco = p.destacar_i != null && art.versoes[p.destacar_i] ? corDe(art, p.destacar_i) : undefined;
+    return h('div', { className: 'lei lei-origem fig-origem' },
+      h(R.TextOrigin, { key: art.id + p.redacao_i, paragraphs: paras, acts: acts, margem: false, focus: foco }),
+      h('p', { className: 'fig-nota' }, 'Cada cor é um diploma que escreveu parte do texto.'));
+  }
+  // 2c. A diploma's changes by Government (or legislatura): a ruler, then a ledger.
+  var CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+  function curtoAto(des) {
+    return (des || '').replace(/^Lei Orgânica n\.º /, 'LO ').replace(/^Lei Constitucional n\.º /, 'LC ').replace(/^Lei n\.º /, 'Lei ')
+      .replace(/^Decreto-Lei n\.º /, 'DL ').replace(/^Declaração de Retificação n\.º /, 'Ret. ').replace(/^Acórdão do Tribunal Constitucional n\.º /, 'Ac. TC ');
+  }
+  function anoDe(iso) { var d = new Date((iso || '').slice(0, 10) + 'T00:00:00Z'); return d.getUTCFullYear() + (d.getUTCMonth() * 30.44 + d.getUTCDate()) / 365.25; }
+  function Regua(props) {
+    var W = props.largura, atos = props.atos, telefone = W < 600, ref = props.dados, por = props.por;
+    var a0 = anoDe(props.desde), a1 = anoDe(props.ate || hoje()), M = 8;
+    if (!(W > 0) || a1 <= a0) return null;
+    var x = function (iso) { return M + (anoDe(iso) - a0) / (a1 - a0) * (W - 2 * M); };
+    var yTopo = telefone ? 16 : 44, yEixo = yTopo + 14, out = [];
+    // Year labels at their true positions: every 5 or 10 years, by width; on a phone, start, middle and end.
+    var anos = [], i0 = Math.ceil(a0), i1 = Math.floor(a1);
+    if (telefone) anos = [Math.floor(a0), Math.round((a0 + a1) / 2), Math.floor(a1)];
+    else {
+      var porAno = (W - 2 * M) / (a1 - a0), passo = porAno * 5 >= 56 ? 5 : porAno * 10 >= 48 ? 10 : 20;
+      anos.push(Math.floor(a0));
+      for (var y = Math.ceil(i0 / passo) * passo; y <= i1; y += passo) if (y - a0 > passo * 0.45 && a1 - y > passo * 0.45) anos.push(y);
+      anos.push(Math.floor(a1));
+    }
+    out.push(h('line', { key: 'eixo', x1: M, x2: W - M, y1: yEixo, y2: yEixo, className: 'cr-eixo' }));
+    anos.forEach(function (y, k) {
+      var px = k === 0 ? M : k === anos.length - 1 ? W - M : M + (y - a0) / (a1 - a0) * (W - 2 * M);
+      out.push(h('text', { key: 'a' + k, x: px, y: yEixo + 20, className: 'cr-ano', textAnchor: k === 0 ? 'start' : k === anos.length - 1 ? 'end' : 'middle' }, String(y)));
+    });
+    // One tick per act; the acts the text discusses are heavy, with a label above (or a number on a phone).
+    var fila = [-1e9, -1e9];
+    atos.forEach(function (at) {
+      var px = x(at.data);
+      out.push(h('line', { key: 't' + at.ato, x1: px, x2: px, y1: at.marcado ? yEixo - 14 : yEixo - 8, y2: yEixo + (at.marcado ? 6 : 4), className: at.marcado ? 'cr-tick cr-marca' : 'cr-tick' }));
+      if (!at.marcado) return;
+      var rot = telefone ? at.num : curtoAto(((ref.atos || {})[at.ato] || {}).designacao || at.ato);
+      var w = rot.length * 6.6, l = Math.max(0, Math.min(W - w, px - w / 2));
+      var row = telefone ? 0 : l > fila[0] + 6 ? 0 : 1;
+      fila[row] = l + w;
+      out.push(h('text', { key: 'm' + at.ato, x: l + w / 2, y: telefone ? yEixo - 18 : yTopo - 8 - row * 16, className: 'cr-rot', textAnchor: 'middle' }, rot));
+    });
+    // Each Government's (or legislatura's) span as a hairline bracket, with its numeral when it fits.
+    var yG = yEixo + 34, spans = [];
+    if (por === 'governo') ((ref.governos || {}).governos || []).forEach(function (g) { spans.push({ i: g.inicio, f: g.fim, t: romano(g.numero) }); });
+    else ((ref.governos || {}).legislaturas || []).forEach(function (l) { spans.push({ i: l.inicio, f: l.fim, t: l.sigla }); });
+    spans.forEach(function (s, k) {
+      if (!s.i || (s.f && s.f <= props.desde) || s.i >= (props.ate || hoje())) return;
+      var xi = Math.max(M, x(s.i)), xf = Math.min(W - M, x(s.f || props.ate || hoje()));
+      if (xf - xi < 2) return;
+      out.push(h('path', { key: 'g' + k, d: 'M' + (xi + 1) + ' ' + (yG - 4) + 'V' + yG + 'H' + (xf - 1) + 'V' + (yG - 4), className: 'cr-gov' }));
+      if (!telefone && xf - xi > s.t.length * 7 + 6) out.push(h('text', { key: 'gt' + k, x: (xi + xf) / 2, y: yG + 14, className: 'cr-gov-t', textAnchor: 'middle' }, s.t));
+    });
+    return h('svg', { width: W, height: yG + (telefone ? 6 : 20), viewBox: '0 0 ' + W + ' ' + (yG + (telefone ? 6 : 20)), className: 'cr-regua', 'aria-hidden': 'true', focusable: 'false' }, out);
+  }
+  function FigCronologia(props) {
+    var p = props.b.params, ref = props.dados, med = useLargura();
+    var k = 0, atos = (p.atos || []).map(function (a) { return Object.assign({}, a, a.marcado ? { num: CIRC.charAt(k++) || String(k) } : {}); });
+    var grupos = [];
+    atos.forEach(function (a) { var g = grupos[grupos.length - 1]; if (!g || g.id !== a.grupo) grupos.push(g = { id: a.grupo, atos: [] }); g.atos.push(a); });
+    var cab = function (id) {
+      if (id == null) return ['Sem Governo nos dados'];
+      if (p.por !== 'governo') {
+        var l = ((ref.governos || {}).legislaturas || []).filter(function (x) { return x.sigla === id; })[0];
+        return [nomeLeg(id) + (l ? ' · ' + l.inicio.slice(0, 4) + '–' + (l.fim ? l.fim.slice(0, 4) : 'hoje') : '')];
       }
-      if (s.tipo === 'hoje') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Hoje'), paragrafos(s),
-        (s.artigos || []).length ? h('ul', { className: 'list' }, s.artigos.map(function (a, k) {
-          return h('li', { key: k }, h('a', { href: link(['d', a.diploma, a.artigo]) }, a.rotulo + (nomesDip[a.diploma] ? ' ' + (nomesDip[a.diploma].genitivo || '') : '')));
-        })) : null,
-        (s.pendentes || []).map(function (id) {
-          var i = (pend.iniciativas || {})[id];
-          return i ? h('p', { key: id }, 'Ainda não é lei: ', h('a', { href: link(['iniciativa', id]) }, i.designacao), ', ' + dePropos(i) + '. ' + i.fase_texto.replace(/([^.])$/, '$1.')) : null;
-        }));
-      if (s.tipo === 'todas') {
-        var dentro = {};
-        (s.atos || []).forEach(function (id) { dentro[id] = true; });
-        var filhas = {};
-        (s.atos || []).forEach(function (id) { var q = registo(ref, id).quem; if (q.retifica && dentro[q.retifica]) (filhas[q.retifica] = filhas[q.retifica] || []).push(id); });
-        var linhaTodas = function (id) {
-          var a = ref.atos[id] || { designacao: id }, q = registo(ref, id).quem;
-          var n = (a.alteracoes || []).filter(function (c) { return dips.indexOf(c.diploma) >= 0 && c.tipo !== 'sem_alteracao'; }).length;
-          return [curta(a.publicacao) + ' · ', h('a', { key: 'a', href: link(['ato', id]) }, a.designacao), ' · ' + nomeTipo(q.tipo_ato || tipoDe(a.designacao), 1) + ' · ' + n + (n === 1 ? ' artigo' : ' artigos')];
-        };
-        return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Todas as alterações neste período'),
-          h('ul', { className: 'list todas' }, (s.atos || []).filter(function (id) { var q = registo(ref, id).quem; return !(q.retifica && dentro[q.retifica]); }).map(function (id) {
-            return h('li', { key: id }, linhaTodas(id), (filhas[id] || []).map(function (f) {
-              var fa = ref.atos[f] || { designacao: f };
-              return h('p', { key: f, className: 'todas-ret' }, 'Retificada pela ', h('a', { href: link(['ato', f]) }, nomeCompleto(fa)), '.');
-            }));
+      var g = governoDe(ref, id);
+      return [gov(id)].concat(g ? [(g.primeiro_ministro ? ' · ' + g.primeiro_ministro : '') + ' · ' + g.inicio.slice(0, 4) + '–' + (g.fim ? g.fim.slice(0, 4) : 'hoje')] : []);
+    };
+    return h('div', { className: 'fig-crono', ref: med[0] },
+      h(Regua, { largura: med[1], atos: atos, desde: p.desde, ate: p.ate, por: p.por, dados: ref }),
+      h('div', { className: 'cr-livro' }, grupos.map(function (g, gi) {
+        return h('div', { key: gi, className: 'cr-grupo' },
+          h('p', { className: 'cr-grupo-h' }, render(cab(g.id))),
+          h('ul', { className: 'cr-linhas' }, g.atos.map(function (a) {
+            var at = (ref.atos || {})[a.ato] || { designacao: a.ato };
+            return h('li', { key: a.ato, className: 'cr-linha' + (a.marcado ? ' is-marca' : '') },
+              h('span', { className: 'cr-ato' }, a.num ? h('span', { className: 'cr-num', 'aria-hidden': 'true' }, a.num + ' ') : null, h('a', { href: link(['ato', a.ato]) }, at.designacao)),
+              h('span', { className: 'cr-meta' },
+                h('span', { className: 'cr-data' }, curta(a.data)),
+                h('span', { className: 'cr-como' }, a.como),
+                h('span', { className: 'cr-n' }, a.n === 1 ? '1 artigo' : a.n + ' artigos')));
           })));
-      }
-      if (s.tipo === 'limites') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'O que esta história não diz'), paragrafos(s));
-      if (s.tipo === 'metodo') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Como fizemos esta história'), paragrafos(s),
-        h('p', { className: 'historia-p' }, 'Preparámos esta história a ' + extenso(hx.preparado_em) + ', com ajuda de uma ferramenta automática. Cada facto vem dos dados do site e tem uma ligação. Ainda não teve revisão jurídica externa.'),
-        (s.correcoes || []).length ? [h('h3', { key: 'c', className: 'h3' }, 'Correções'), h('ul', { key: 'l', className: 'list' }, s.correcoes.map(function (c, k) { return h('li', { key: k }, extenso(c.data) + ': ' + c.texto); }))] : null,
-        h('p', null, h('a', { href: 'https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro: ' + hx.titulo), target: '_blank', rel: 'noopener' }, 'Reportar um erro ↗')));
+      })));
+  }
+  // 2f. A static image: a document or a facsimile, never a photograph of a person.
+  function FigImagem(props) {
+    var p = props.b.params;
+    return h('img', { className: 'fig-img', src: 'data/' + p.arquivo, alt: p.alt, loading: 'lazy', decoding: 'async' });
+  }
+  var FIGURAS = { diff: FigDiff, votacao: FigVotacao, cronologia: FigCronologia, origem: FigOrigem, ficha: FigFicha, imagem: FigImagem };
+  // The frame of every figure: number, title and what it shows; the body; caption, source and link.
+  function Figura(props) {
+    var b = props.b, ref = props.dados, Corpo = FIGURAS[b.tipo], tid = 'fig-' + b.id + '-t';
+    var av = b.aviso && !b.retida ? b.aviso : null, avAto = av && (ref.atos || {})[av.ato];
+    var imagem = b.tipo === 'imagem';
+    return h('figure', { id: 'fig-' + b.id, className: 'fig fig-' + b.tipo + ' fig-' + (b.largura || 'texto'), 'aria-labelledby': tid, tabIndex: -1 },
+      h('figcaption', { className: 'fig-cabeca' },
+        h('p', { className: 'fig-n' }, 'Figura ' + b.n),
+        h('p', { className: 'fig-titulo', id: tid }, b.titulo),
+        b.sub && !b.retida ? h('p', { className: 'fig-sub' }, b.sub) : null),
+      av ? h('p', { className: 'regra regra-aviso fig-aviso' }, h('strong', null, 'Atenção: '),
+        av.tipo === 'votos' ? 'os dados desta votação mudaram depois do texto. '
+          : av.tipo === 'texto' ? 'o texto desta redação mudou depois do texto da história. '
+          : 'este artigo tem uma redação mais recente (' + (avAto ? avAto.designacao : av.ato) + '). ',
+        h('a', { href: av.href }, av.tipo === 'votos' ? 'Ver a votação' : 'Ver o texto em vigor')) : null,
+      h('div', { className: 'fig-corpo' }, b.retida || !Corpo ? h('p', { className: 'fig-retida' }, 'Esta figura está em revisão: os dados mudaram depois do texto.') : h(Corpo, { b: b, dados: ref })),
+      h('div', { className: 'fig-pe' },
+        (b.legenda || []).length ? h('p', { className: 'fig-legenda' }, render(b.legenda, props.ctx)) : null,
+        b.fonte ? h('p', { className: 'fig-fonte' }, 'Fonte: ' + b.fonte) : null,
+        b.href ? h('p', { className: 'fig-abrir' }, imagem
+          ? h('a', { href: b.href, target: '_blank', rel: 'noopener', 'aria-label': 'Ver a fonte: ' + b.titulo }, 'Ver a fonte ↗')
+          : h('a', { href: b.href, 'aria-label': 'Abrir no site: ' + b.titulo }, 'Abrir no site')) : null));
+  }
+  function Indice(props) {
+    return h('ol', { className: 'hist-indice-lista' }, props.h2.map(function (b) {
+      return h('li', { key: b.id }, h('a', { href: link(['historia', props.slug], { ir: b.id }) }, b.texto));
+    }));
+  }
+  function Historia(props) {
+    var r = useData(['historias/' + props.slug + '.json', 'atos.json', 'passagem.json', '?quem.json', '?governos.json', 'index.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var hx = r.data[0], ref = { atos: r.data[1], passagem: r.data[2], quem: r.data[3] || {}, governos: r.data[4], index: r.data[5] };
+    document.title = tituloDe(['historia', hx.slug], { historia: hx });
+    var ctx = { slug: hx.slug, vistas: {} };
+    var h2 = (hx.blocos || []).filter(function (b) { return b.t === 'h2'; });
+    var tipos = {};
+    (hx.blocos || []).forEach(function (b) { if (b.t === 'figura') tipos[b.tipo] = true; });
+    // Links inside the page (notes, figures, subheads) change only ir=, without a new history entry.
+    var irNaPagina = function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a') : null, href = a ? a.getAttribute('href') || '' : '';
+      if (href.indexOf(link(['historia', hx.slug]) + '?ir=') === 0) { e.preventDefault(); substituir(href); }
+    };
+    var bloco = function (b, k) {
+      if (b.t === 'p') return h('p', { key: k, className: 'hist-p' }, render(b.partes, ctx));
+      if (b.t === 'h2') return h('h2', { key: k, id: b.id, className: 'hist-h2', tabIndex: -1 }, b.texto);
+      if (b.t === 'h3') return h('h3', { key: k, id: b.id, className: 'hist-h3', tabIndex: -1 }, b.texto);
+      if (b.t === 'citacao') return h('figure', { key: k, className: 'hist-citacao' },
+        h('blockquote', null, h('p', null, render(b.partes, ctx))), h('figcaption', null, '— ', render(b.autor, ctx)));
+      if (b.t === 'figura') return h(Figura, { key: k, b: b, dados: ref, ctx: ctx });
       return null;
     };
-    var resumo = sec.resumo, perguntas = sec.perguntas, numeros = sec.numeros;
-    return h('div', { className: 'pagina-ato pagina-historia' },
-      h(Crumbs, { items: [['Histórias', '#/historias'], [hx.titulo]] }),
-      h('header', { className: 'ato-cabeca' },
-        h('h1', { className: 'display' }, hx.titulo),
-        h('p', { className: 'historia-aviso nota' }, avisoHistoria(hx)),
-        hx.revisao_externa ? h('p', { className: 'historia-aviso' }, 'Revisão jurídica externa: ' + hx.revisao_externa.por + ', ' + extenso(hx.revisao_externa.em) + '.') : null,
-        h(Guia, { tipo: 'historia' })),
-      h('div', { className: 'historia-topo' },
-        resumo ? h('section', { className: 'historia-resumo-sec', 'aria-labelledby': resumo.id }, titulo(resumo, 'Em cinco frases'), paragrafos(resumo)) : null,
-        perguntas ? h('nav', { className: 'historia-perguntas', 'aria-labelledby': perguntas.id }, titulo(perguntas, 'Nesta história'),
-          h('ul', { className: 'list' }, (perguntas.itens || []).map(function (it, k) { return h('li', { key: k }, h('a', { href: link(['historia', hx.slug], { ir: it.alvo }) }, it.texto)); }))) : null,
-        numeros ? h('section', { className: 'historia-numeros', 'aria-labelledby': numeros.id }, titulo(numeros, 'Em números'),
-          h('p', null, 'Atos que alteraram a lei: ' + (numeros.atos_por_tipo || []).reduce(function (a, x) { return a + x.n; }, 0) + ' (' +
-            (numeros.atos_por_tipo || []).map(function (x) { return x.n + ' ' + nomeTipo(x.tipo_ato, x.n); }).join(', ') + ').'),
-          h('p', null, 'Artigos alterados: ' + numeros.artigos_alterados + '.'),
-          (numeros.mais_alterados || []).length ? h('p', null, 'Artigos com mais redações: ', (numeros.mais_alterados || []).map(function (m, k) {
-            return [k ? ', ' : '', h('a', { key: k, href: link(['d', m.diploma, m.artigo]) }, m.rotulo.replace(/^Artigo/, 'artigo')), ' (' + m.n + ')'];
-          }), '.') : null) : null),
-      (hx.seccoes || []).filter(function (s) { return ['resumo', 'perguntas', 'numeros'].indexOf(s.tipo) < 0; }).map(bloco));
+    var fontesFig = [];
+    if (tipos.diff || tipos.origem) fontesFig.push('Diário da República (legislação consolidada)');
+    if (tipos.votacao || tipos.ficha || tipos.cronologia) fontesFig.push('Assembleia da República (dados abertos)');
+    if (tipos.ficha || tipos.cronologia) fontesFig.push('tabelas de Governos e de Presidentes do site');
+    var desat = hx.desatualizada || [];
+    var aviso = (hx.aviso || '').replace(/ Data: [^.]+\./, '');
+    var corpo = (hx.blocos || []).map(bloco);
+    return h('article', { className: 'hist', onClick: irNaPagina },
+      h('nav', { 'aria-label': 'Localização', className: 'crumbs' }, h('a', { href: '#/historias' }, 'Histórias'), h('span', { 'aria-hidden': 'true' }, '›')),
+      h('header', { className: 'hist-cabeca' },
+        h('h1', { className: 'hist-titulo' }, hx.titulo),
+        hx.resumo ? h('p', { className: 'hist-dek' }, hx.resumo) : null,
+        h('p', { className: 'hist-linha' }, (hx.autoria || 'Redação') + ' · ' + extenso(hx.preparado_em) + (hx.minutos ? ' · ' + hx.minutos + ' min de leitura' : '')),
+        h('p', { className: 'hist-aviso' }, aviso),
+        desat.length ? h('p', { className: 'regra regra-aviso hist-atencao' }, h('strong', null, 'Atenção: '), 'a lei mudou depois deste texto. As figuras mostram os dados de hoje e dizem o que mudou.') : null,
+        h2.length ? h('details', { className: 'hist-indice-tel' }, h('summary', null, 'Nesta história'), h(Indice, { h2: h2, slug: hx.slug })) : null),
+      h('div', { className: 'hist-corpo' },
+        h2.length ? h('nav', { className: 'hist-indice', 'aria-labelledby': 'hist-indice-t' }, h('p', { id: 'hist-indice-t', className: 'hist-indice-t' }, 'Nesta história'), h(Indice, { h2: h2, slug: hx.slug })) : null,
+        corpo),
+      (hx.notas || []).length ? h('section', { className: 'hist-sec hist-notas', 'aria-labelledby': 'notas' },
+        h('h2', { id: 'notas', className: 'hist-h2', tabIndex: -1 }, 'Notas e fontes'),
+        h('ol', { className: 'hist-notas-lista' }, hx.notas.map(function (n) {
+          return h('li', { key: n.n, id: 'nota-' + n.n, tabIndex: -1 },
+            h('span', { className: 'hist-nota-n', 'aria-hidden': 'true' }, n.n + '. '),
+            render(n.partes, { slug: hx.slug }),
+            (n.urls || []).map(function (u, k) {
+              return h(React.Fragment, { key: k }, ' ', h('a', { className: 'hist-url', href: u.href, target: '_blank', rel: 'noopener', 'data-url': u.href }, u.host.replace(/^www\./, '') + ' ↗'),
+                u.consultado ? ', consultado a ' + extenso(u.consultado) + '.' : '');
+            }),
+            ' ', h('a', { className: 'hist-volta', href: link(['historia', hx.slug], { ir: 'nota-ref-' + n.n }), 'aria-label': 'Voltar ao texto da nota ' + n.n }, '↩'));
+        }))) : null,
+      h('section', { className: 'hist-sec hist-sobre', 'aria-labelledby': 'sobre-texto' },
+        h('h2', { id: 'sobre-texto', className: 'hist-h2', tabIndex: -1 }, 'Sobre este texto'),
+        h('p', null, hx.aviso),
+        h('p', null, 'Preparado por ' + (hx.autoria || 'Redação') + ' a ' + extenso(hx.preparado_em) + '.' + (hx.atualizado_em && hx.atualizado_em > hx.preparado_em ? ' Atualizado a ' + extenso(hx.atualizado_em) + '.' : '')),
+        fontesFig.length ? h('p', null, 'As figuras usam os dados do site: ' + lista(fontesFig) + '. As datas, os nomes e as votações vêm desses dados.') : null,
+        h('p', null, 'As figuras mostram os dados do site. Para ver a vista completa, escolha «Abrir no site».'),
+        h('p', null, h('a', { href: 'https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro: ' + hx.titulo), target: '_blank', rel: 'noopener' }, 'Reportar um erro ↗'))),
+      (hx.relacionadas || []).length ? h('section', { className: 'hist-sec hist-continuar', 'aria-labelledby': 'continuar' },
+        h('h2', { id: 'continuar', className: 'hist-h2', tabIndex: -1 }, 'Continuar a ler'),
+        h('ul', { className: 'list' }, hx.relacionadas.map(function (x, k) { return h('li', { key: k }, h('a', { href: x.href }, x.texto)); }))) : null);
   }
 
   // ---- Glossary (#/glossario) ----------------------------------------------------------------------
@@ -2698,7 +3037,7 @@
         if (!vivo) return;
         var e = document.getElementById(alvo);
         if (!e) { if (n++ < 100) setTimeout(tentar, 50); return; }
-        var foco = /^H[1-6]$/.test(e.tagName) ? e : e.querySelector('h1, h2, h3') || e;
+        var foco = /^(H[1-6]|FIGURE|LI)$/.test(e.tagName) ? e : e.querySelector('h1, h2, h3') || e;
         if (!foco.hasAttribute('tabindex') && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(foco.tagName)) foco.setAttribute('tabindex', '-1');
         e.scrollIntoView({ block: 'start', behavior: 'auto' });
         foco.focus({ preventScroll: true });
@@ -2755,11 +3094,11 @@
   if (!root.hasAttribute('data-theme')) { root.setAttribute('data-theme-auto', ''); theme(); }
   if (mq && mq.addEventListener) mq.addEventListener('change', theme);
 
-  window.RedacaoApp = { pick: pick, diff: diff, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey,
+  window.RedacaoApp = { pick: pick, diff: diff, diffLines: diffLines, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey,
     frasesQuem: frasesQuem, frasesProponentes: frasesProponentes, linhaPessoas: linhaPessoas, linhaVfg: linhaVfg, linhasEventos: linhasEventos, linhaAto: linhaAto,
     nomeGrupo: nomeGrupo, ordinalExtenso: ordinalExtenso, marcarTermos: marcarTermos, termosPara: termosPara, chavePartilha: chavePartilha, partilhaUrl: partilhaUrl,
     metaDiploma: metaDiploma, tituloDe: tituloDe, textoDe: textoDe, fraseOE: fraseOE, avisoTransitorias: avisoTransitorias, faixasLegislaturas: faixasLegislaturas,
-    ledeGeneralidade: ledeGeneralidade, registo: registo };
+    ledeGeneralidade: ledeGeneralidade, registo: registo, rotular: rotular, escolhida: escolhida, linhaFalta: linhaFalta, curtoAto: curtoAto };
   if (!window.Redacao) return;  // node tests load this file without the design system or a page
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();

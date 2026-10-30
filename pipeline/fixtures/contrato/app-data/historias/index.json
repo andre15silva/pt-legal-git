@@ -1,22 +1,26 @@
 {
  "historias": [
   {
-   "slug": "historia-teste",
+   "slug": "teste",
    "titulo": "Como mudou a Lei de teste",
-   "resumo": "As alterações à Lei de teste, ato a ato.",
+   "resumo": "As alterações à Lei de teste, com as figuras do formato longo. Uma história de teste para os testes do compilador, sobre os dados da fixture partilhada.",
    "preparado_em": "2026-10-30",
+   "atualizado_em": "2026-10-30",
    "preparacao": "assistida",
    "revisao_externa": null,
+   "aviso": "Texto preparado com a ajuda de uma ferramenta automática, a partir dos dados do site e das fontes indicadas. Data: 30 de outubro de 2026. Ainda sem revisão jurídica externa.",
    "diplomas": [
     "lei-teste"
-   ]
+   ],
+   "minutos": 3,
+   "imagem_partilha": null
   }
  ],
  "artigos": {
   "lei-teste/artigo-1": [
    {
-    "historia": "historia-teste",
-    "seccao": "lei-901-2020"
+    "historia": "teste",
+    "seccao": "fig-prazo"
    }
   ]
  }

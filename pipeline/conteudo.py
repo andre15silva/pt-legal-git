@@ -6,12 +6,14 @@ existing app/data:
     python -I pipeline/conteudo.py [--parcial] [--estrito]
 
 Two levels (§6.0):
-- lenient (the daily build): a failing glossary entry, story section or story is withheld, the reason
+- lenient (the daily build): a failing glossary entry, story figure or story is withheld (a story's
+  figure when the error is inside it, the whole story otherwise; pipeline/historias.py), the reason
   goes to verificacao.json «conteudo», and the messages returned are warnings;
 - strict (REDACAO_ESTRITO=1, on push): every failed check is an error and the build fails.
 
 --parcial turns the errors caused by a missing file of the data pipeline (quem.json) into warnings,
-to work on a build that does not have it yet.
+to work on a build that does not have it yet. The stories are pipeline/historias/<slug>.md; their guide is
+pipeline/historias/README.md.
 """
 from __future__ import annotations
 

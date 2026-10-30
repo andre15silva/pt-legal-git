@@ -1,0 +1,39 @@
+{
+ "atualizado": "2026-10-30",
+ "redacoes": {
+  "lei-nacionalidade/artigo-15@lei-organica-1-2024": "sha256:4c438b1a3d9a1359ffff5c9624a79e6421b45b8b57c58102a1de3b211e0a0965",
+  "lei-nacionalidade/artigo-15@lei-organica-1-2026": "sha256:08af3c0ec5729b3579b94d31494bc7766071bfbdfe0077b211287d424348fca0",
+  "lei-nacionalidade/artigo-15@lei-organica-2-2006": "sha256:c76621b0f8ea525e3835e42b0e9c352f74420f4221a212d5ccac4d5bb46283da",
+  "lei-nacionalidade/artigo-15@lei-organica-2-2018": "sha256:7550dfc80a64c3c70a30698226b54940ab5c4ecf647aa35b128db97c225080bb",
+  "lei-nacionalidade/artigo-1@lei-25-94": "sha256:ee17c7767873b1a96b7821fd1f40856bc87732e571c6f4dc3fbe43dea0b04d08",
+  "lei-nacionalidade/artigo-1@lei-37-81": "sha256:6378bea0897d3ae4a342fed06226b328514b6f1b24947f69f56f6aa434848c6c",
+  "lei-nacionalidade/artigo-1@lei-organica-1-2024": "sha256:5100472fb0dc692788a0d8a6655bb1a8dec6b5f84a02fc97ddcb11f58cebd14f",
+  "lei-nacionalidade/artigo-1@lei-organica-1-2026": "sha256:0d0a63522769f01caee303b715927b7b49b9a1100eb1cc8d348bb63af32eb404",
+  "lei-nacionalidade/artigo-1@lei-organica-2-2006": "sha256:b59aafb16a274d6e399448038d9ca4c89a8ac7645f5266d01978127acfb3d020",
+  "lei-nacionalidade/artigo-1@lei-organica-2-2018": "sha256:2d9218c29ad1828119118ef77fcda9d0d9321a6f8268e14cd42ddb67b8a0755c",
+  "lei-nacionalidade/artigo-1@lei-organica-2-2020": "sha256:90eb084e72ae245beaef168baa5ab6bae44d903a14c8f4292ea0ec8d8ab136f6",
+  "lei-nacionalidade/artigo-1@lei-organica-9-2015": "sha256:4979741f64d4316be4e33177564b4bdd3d0d010f6adc6460ceed5af3acc64559",
+  "lei-nacionalidade/artigo-3@lei-25-94": "sha256:822ba2e53f71815c0df44c1b11b62a83364d75ba87945f0b6941b665b1d3ef99",
+  "lei-nacionalidade/artigo-3@lei-37-81": "sha256:3f004f92a1b963dd6cf0ee813e73f541864dcf4c9c99ac4933031c3f748f6e4d",
+  "lei-nacionalidade/artigo-6@declaracao-de-retificacao-17-2026-1": "sha256:ed7b3a5775f1cd9caf21bc3c40c65652726582dfa9fdd6cac878c9848046828f",
+  "lei-nacionalidade/artigo-6@lei-25-94": "sha256:c4ec016f35c50e4b945101a88edf9035b98a53ab79e187ff86fb6d0f2d9f4079",
+  "lei-nacionalidade/artigo-6@lei-37-81": "sha256:c50d373ba3cfbbbfbf5dbedaf6e282c533bc1fbd3a3400dc5d9a431eb40e2d62",
+  "lei-nacionalidade/artigo-6@lei-organica-1-2026": "sha256:f9c465c4795d75313480d606766aa32812f72e8bebee673057b4acb7a3995e38",
+  "lei-nacionalidade/artigo-6@lei-organica-2-2006": "sha256:497a90b4812a9b51dd27f9fddfd38dd6ce63e849aaaa53432b3fe9c769286777",
+  "lei-nacionalidade/artigo-6@lei-organica-2-2020": "sha256:1ab9dedddce64bdc47e88c04ed2a4389affb83cfaacf9a8634e221f30ed379ad",
+  "lei-nacionalidade/artigo-9@lei-organica-1-2024": "sha256:3e233a659cca6041941b86a0fcfff0504ffcaf7bd44c0862b96befc06947f2ef",
+  "lei-nacionalidade/artigo-9@lei-organica-1-2026": "sha256:a7f5aee2d43530c36757e1d718e564b9aef893ab7b7ddb1540c253bc1996218a"
+ },
+ "ultimas": {
+  "lei-nacionalidade/artigo-1": "lei-organica-1-2026",
+  "lei-nacionalidade/artigo-15": "lei-organica-1-2026",
+  "lei-nacionalidade/artigo-3": "lei-organica-1-2026",
+  "lei-nacionalidade/artigo-40": "lei-37-81",
+  "lei-nacionalidade/artigo-6": "declaracao-de-retificacao-17-2026-1",
+  "lei-nacionalidade/artigo-9": "lei-organica-1-2026"
+ },
+ "votos": {
+  "lei-organica-1-2026": "sha256:961db69095bab3c357f5c5aa1946a7475532741fe11b04d7760aad4eb581f8e5",
+  "lei-organica-2-2018": "sha256:a76602e8781cddaa43ab9e9cfcc43001ef719ccdcf6e943ac7b94a8a121ac55b"
+ }
+}

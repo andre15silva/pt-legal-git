@@ -42,33 +42,10 @@ try:
 except ImportError:  # A's validator; the tests that need it skip without it
     contrato = None
 
-HISTORIA = {
-    "slug": "teste", "titulo": "Como mudou a Lei de teste", "resumo": "As alterações à Lei de teste, ato a ato.",
-    "preparado_em": "2026-10-30", "preparacao": "assistida", "revisao_externa": None,
-    "ambito": {"desde": "1970-03-02", "diplomas": [{"slug": "lei-teste", "artigos": "todos"}]},
-    "seccoes": [
-        {"id": "em-cinco-frases", "tipo": "resumo", "paragrafos": ["A Lei de teste é o {ato:decreto-lei-90001}."]},
-        {"id": "nesta-historia", "tipo": "perguntas", "itens": [{"texto": "Qual é o prazo?", "alvo": "prazo"},
-                                                                {"texto": "Quem fez cada mudança?", "alvo": "todas"}]},
-        {"id": "prazo", "tipo": "mudanca", "atos": ["lei-901-2020"], "subtitulo": None, "paragrafos": [
-            "A {ato:lei-901-2020} mudou o {comparar:lei-teste/artigo-1@lei-901-2020|artigo sobre o objeto}. "
-            "Na redação nova, diz: {citacao:lei-teste/artigo-1@lei-901-2020#2}.",
-            "Propôs a lei {governo:lei-901-2020}. Veja a votação: {voto:lei-901-2020/generalidade} {vfg:lei-901-2020}",
-            "O Presidente da República, {presidente:lei-901-2020}, promulgou a lei a {data:lei-901-2020.promulgacao}. "
-            "A lei saiu a {data:lei-901-2020.publicacao}, com a {iniciativa:900101}.",
-            "O {redacao:lei-teste/artigo-1@lei-901-2020|texto} tem esta fonte: "
-            "{fonte:https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000@2026-10-30|«O prazo é de dez anos»}."],
-         "mostrar": ["lei-teste/artigo-1@lei-901-2020"],
-         "tabela": {"diploma": "lei-teste", "artigo": "artigo-1", "numero": "2", "alinea": None},
-         "fontes_iniciativas": []},
-        {"id": "regime", "tipo": "mudanca", "atos": ["lei-organica-901-2018"], "subtitulo": None, "paragrafos": [
-            "A {ato:lei-organica-901-2018} mudou o {comparar:lei-teste/artigo-3@lei-organica-901-2018|artigo sobre o regime}."],
-         "mostrar": [], "tabela": None, "fontes_iniciativas": []},
-        {"id": "hoje", "tipo": "hoje", "artigos": ["lei-teste/artigo-1"], "pendentes": [], "paragrafos": []},
-        {"id": "o-que-nao-diz", "tipo": "limites", "paragrafos": ["Não trata outros diplomas."]},
-        {"id": "como-fizemos", "tipo": "metodo", "paragrafos": ["Usamos os dados do site."], "correcoes": []},
-    ],
-}
+HISTORIAS_FIX = os.path.join(HERE, "fixtures", "historias")
+with open(os.path.join(HISTORIAS_FIX, "teste.md"), encoding="utf-8") as _f:
+    HISTORIA = _f.read()
+
 
 TERMO = {
     "id": "regime", "termo": "regime", "formas": ["regime"], "grupo": "texto",
@@ -110,19 +87,27 @@ class Base(unittest.TestCase):
         with open(os.path.join(self.out, *p), "w", encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False)
 
-    def historia(self, src=None, estrito=True):
-        src = src or HISTORIA
-        with open(os.path.join(self.fontes, src["slug"] + ".json"), "w", encoding="utf-8") as f:
-            json.dump(src, f, ensure_ascii=False)
+    def escrever_fonte(self, texto=None, nome="teste"):
+        if not os.path.isdir(os.path.join(self.fontes, "img")):
+            shutil.copytree(os.path.join(HISTORIAS_FIX, "img"), os.path.join(self.fontes, "img"))
+        with open(os.path.join(self.fontes, nome + ".md"), "w", encoding="utf-8") as f:
+            f.write(texto if texto is not None else HISTORIA)
+        return os.path.join(self.fontes, nome + ".md")
+
+    def historia(self, texto=None, estrito=True):
+        self.escrever_fonte(texto)
         return historias.construir(self.out, estrito, pasta=self.fontes)
 
-    def compilar(self, src):
-        h = historias.Historia(src, historias.Dados(self.out))
-        return h, h.compilar()
+    def compilar(self, texto=None):
+        return historias.compilar_ficheiro(self.escrever_fonte(texto), historias.Dados(self.out))
 
-    def erros_de(self, src):
-        h, _ = self.compilar(src)
+    def erros_de(self, texto):
+        h, _ = self.compilar(texto)
         return [e for _, e in h.erros]
+
+    def avisos_de(self, texto):
+        h, _ = self.compilar(texto)
+        return h.avisos
 
     def partilha_src(self, artigos=None):
         p = os.path.join(self.tmp, "partilha-src.json")
@@ -132,187 +117,303 @@ class Base(unittest.TestCase):
                        [{"diploma": "lei-teste", "artigo": "artigo-2", "motivo": "Os requisitos."}]}, f)
         return p
 
-    def com_paragrafo(self, texto, seccao="prazo"):
-        src = copy.deepcopy(HISTORIA)
-        for s in src["seccoes"]:
-            if s["id"] == seccao:
-                s["paragrafos"] = [texto]
-        return src
+
+def com_paragrafo(texto, depois="## O prazo {#prazo}\n"):
+    """The fixture story with one more paragraph after a line."""
+    assert depois in HISTORIA
+    return HISTORIA.replace(depois, depois + "\n" + texto + "\n", 1)
 
 
 # ---------------------------------------------------------------------------------------------
-# Stories
+# Stories (pipeline/historias.py, pipeline/historias/README.md)
 
 
-class Referencias(Base):
-    def test_every_reference_type_resolves(self):
-        h, comp = self.compilar(HISTORIA)
+class Formato(Base):
+    """The fixture story (pipeline/fixtures/historias/teste.md) uses every link scheme and figure type."""
+
+    def test_fixture_compiles_clean(self):
+        h, comp = self.compilar()
         self.assertEqual(h.erros, [])
-        tipos = {s["t"] for sec in comp["seccoes"] for p in sec.get("paragrafos", []) for s in p if isinstance(s, dict)}
-        self.assertEqual(tipos, {"ato", "comparar", "citacao", "governo", "voto", "vfg", "presidente", "data",
-                                 "iniciativa", "redacao", "fonte"})
-        prazo = next(s for s in comp["seccoes"] if s["id"] == "prazo")
-        cit = next(s for s in prazo["paragrafos"][0] if isinstance(s, dict) and s["t"] == "citacao")
-        self.assertIn("contados da", cit["texto"])
-        self.assertEqual(prazo["mostrar"][0]["numero"], "2")
-        self.assertEqual([l["ato"] for l in prazo["tabela"]["linhas"]][:2], ["decreto-lei-90001", "decreto-lei-90002"])
+        esquemas = {t["esquema"] for b in h.f.blocos if b["t"] in ("p", "citacao")
+                    for t in historias.tokens_inline(b["texto"] + " " + b.get("autor", "")) if isinstance(t, dict) and t["t"] == "ref"}
+        esquemas |= {t["esquema"] for b in h.f.blocos if b["t"] == "figura"
+                     for t in historias.tokens_inline(b["params"].get("legenda", "")) if isinstance(t, dict) and t["t"] == "ref"}
+        esquemas |= {r.partition(":")[0] for r in h.f.fm["relacionadas"].split(", ")}
+        self.assertEqual(esquemas, set(historias.ESQUEMAS))
+        figs = [b for b in comp["blocos"] if b["t"] == "figura"]
+        self.assertEqual({b["tipo"] for b in figs}, set(historias.FIGURAS))
+        self.assertEqual([b["n"] for b in figs], list(range(1, len(figs) + 1)))
+        self.assertTrue(all(b["retida"] is None and b["href"] and b["titulo"] for b in figs))
+        self.assertEqual({b["t"] for b in comp["blocos"]}, {"p", "h2", "citacao", "figura"})
+        self.assertEqual([n["n"] for n in comp["notas"]], [1])
+        self.assertIn("ferramenta automática", comp["aviso"])
         if contrato:
             self.assertEqual(contrato.validar_historia(comp), [])
 
-    def test_first_mention_has_the_date(self):
-        _, comp = self.compilar(HISTORIA)
-        textos = [s["texto"] for sec in comp["seccoes"] for p in sec.get("paragrafos", []) for s in p
-                  if isinstance(s, dict) and s.get("t") == "ato" and s["id"] == "lei-901-2020"]
-        self.assertTrue(textos[0].startswith("Lei n.º 901/2020, de "))
+    def test_resolved_links(self):
+        _, comp = self.compilar()
+        links = {}
+        for b in comp["blocos"]:
+            for x in b.get("partes") or [] if b["t"] == "p" else []:
+                if isinstance(x, dict) and "href" in x:
+                    links.setdefault(x["href"], x)
+        self.assertEqual(links["#/ato/lei-901-2020"]["texto"], "Lei n.º 901/2020, de 15 de outubro")  # first mention: the date
+        self.assertIn("#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou", links)
+        self.assertIn("#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=origem", links)
+        self.assertIn("#/quem/lei-teste?ir=governo-4", links)
+        self.assertEqual(links["#/historia/teste?ir=fig-prazo"]["texto"], "figura 1")
+        self.assertEqual(links["#/iniciativa/900101"]["texto"], "Proposta de Lei n.º 901/XIV")
+        gov = [x for b in comp["blocos"] if b["t"] == "p" for x in b["partes"] if isinstance(x, dict) and x.get("partes")]
+        self.assertEqual(gov[0]["partes"], [{"t": "governo", "numero": 4}])
+        diff = next(b for b in comp["blocos"] if b["t"] == "figura" and b["tipo"] == "diff")
+        self.assertEqual(diff["params"]["de_i"], 2)
+        self.assertEqual(diff["params"]["para_i"], 3)
+        self.assertEqual(diff["params"]["mostrar"], [{"n": "2", "al": None}])
+        self.assertIn("2.ª redação", diff["sub"].replace("3.ª", "2.ª"))
 
-    def assert_falha(self, texto, nome):
-        src = self.com_paragrafo(texto)
-        erros = self.erros_de(src)
-        self.assertTrue(any(nome in e for e in erros), erros)
-        # lenient: the section is withheld, not the story
-        _, msgs, linhas = self.historia(src, estrito=False)
-        comp = json.load(open(os.path.join(self.out, "historias", "teste.json"), encoding="utf-8"))
-        prazo = next(s for s in comp["seccoes"] if s["id"] == "prazo")
-        self.assertTrue(prazo["retida"])
+    def test_lenient_withholds_the_figure_or_the_story(self):
+        # An error inside a figure withholds only that figure.
+        mau = HISTORIA.replace("mostrar: 2\n", "mostrar: 7\n")
+        _, msgs, linhas = self.historia(mau, estrito=False)
+        comp = self.ler("historias", "teste.json")
+        fig = next(b for b in comp["blocos"] if b["t"] == "figura" and b["id"] == "prazo")
+        self.assertTrue(fig["retida"])
+        self.assertEqual(fig["params"], {})
         self.assertTrue(any(x["seccao"] == "prazo" for x in linhas))
+        # An error in the prose withholds the whole story.
+        _, msgs, linhas = self.historia(com_paragrafo("A [](ato:lei-999-2099) mudou tudo."), estrito=False)
+        self.assertFalse(os.path.exists(os.path.join(self.out, "historias", "teste.json")))
+        self.assertEqual(self.ler("historias", "index.json")["historias"], [])
+        self.assertTrue(any(x["seccao"] is None and "lei-999-2099" in x["motivo"] for x in linhas))
+        # Strict: the same errors are errors.
+        _, msgs, _ = self.historia(mau, estrito=True)
+        self.assertTrue(any("[R2]" in m for m in msgs if not m.startswith("aviso")))
 
-    def test_unknown_act(self):
-        self.assert_falha("A {ato:lei-999-2099} mudou o {comparar:lei-teste/artigo-1@lei-901-2020}.", "lei-999-2099")
-
-    def test_unknown_redacao(self):
-        self.assert_falha("A {ato:lei-901-2020} mudou o {comparar:lei-teste/artigo-2@lei-901-2020}.", "lei-teste/artigo-2")
-
-    def test_governo_null(self):
-        self.assert_falha("Aprovou-o {governo:decreto-lei-903-2012}, com o {redacao:lei-teste/artigo-3@decreto-lei-903-2012}.",
-                          "decreto-lei-903-2012")
+    def test_r1_links(self):
+        for mau, regra in (("[](ato:lei-999-2099)", "R1"), ("[](artigo:lei-teste/artigo-9)", "R1"),
+                           ("[](artigo:lei-teste/artigo-2@lei-901-2020)", "R1"), ("[](iniciativa:123)", "R1"),
+                           ("[](data:lei-902-2019.d_cm)", "R1"), ("[](fig:nada)", "R1"), ("[](grupo:xyz)", "R1"),
+                           ("[](historia:outra)", "R1"), ("[](governo:99)", "R1")):
+            with self.subTest(mau=mau):
+                self.assertTrue(any(f"[{regra}]" in e for e in self.erros_de(com_paragrafo("Ver " + mau + "."))))
 
     def test_annex_copy_is_refused(self):
         d = self.ler("d", "lei-teste.json")
         d["copia"] = {"inicio": 2, "diploma": "outro", "rotulo": "Anexo"}
         self.gravar(d, "d", "lei-teste.json")
-        src = self.com_paragrafo("A {ato:lei-902-2019} mudou o {comparar:lei-teste/artigo-2@lei-902-2019}.")
-        src["seccoes"] = [s for s in src["seccoes"] if s["id"] != "regime"]
-        self.assertTrue(any("cópia" in e for e in self.erros_de(src)))
+        erros = self.erros_de(com_paragrafo("Ver [](artigo:lei-teste/artigo-2)."))
+        self.assertTrue(any("cópia" in e for e in erros), erros)
 
+    def test_r2_figures(self):
+        for antes, depois in (("mostrar: 2\n", "mostrar: 1\n"),            # nothing changed in n.º 1
+                              ("para: lei-901-2020\n", "para: lei-902-2019\n"),
+                              ("ato: lei-901-2020\nlegenda: O voto", "ato: decreto-lei-903-2012\nlegenda: O voto"),
+                              ("marcar: lei-901-2020", "marcar: lei-902-2023"),
+                              ("destacar: lei-901-2020", "destacar: lei-901-2022")):
+            with self.subTest(depois=depois):
+                h, _ = self.compilar(HISTORIA.replace(antes, depois))
+                self.assertTrue(h.erros)
+                self.assertTrue(all(f is not None for f, _ in h.erros), h.erros)
 
-class Lints(Base):
-    def erros(self, texto, seccao="prazo"):
-        return self.erros_de(self.com_paragrafo(texto, seccao))
+    def test_r3_designations(self):
+        e = self.erros_de(com_paragrafo("A [Lei n.º 902/2019](ato:lei-901-2020) mudou o prazo."))
+        self.assertTrue(any("[R3]" in x for x in e), e)
+        e = self.erros_de(com_paragrafo("A [Lei n.º 901/2020](ato:lei-901-2020), de 3 de maio, mudou o prazo."))
+        self.assertTrue(any("[R3]" in x for x in e), e)
+        self.assertEqual(self.erros_de(com_paragrafo("A [Lei n.º 901/2020](ato:lei-901-2020), de 15 de outubro, mudou o prazo.")), [])
 
-    def test_prose_lints(self):
-        base = "A {ato:lei-901-2020} mudou o {comparar:lei-teste/artigo-1@lei-901-2020}"
-        for mau in (" em 2020.", " em maio.", " no n.º dois.", ", com o PS.", ". Os grupos votaram {voto:lei-901-2020/generalidade}.",
-                    ", com dez anos de prazo.", " e reduziu o prazo.", " por causa da {iniciativa:900101}.",
-                    ". O Parlamento chumbou a {iniciativa:900101}.", ". Escrevemos com o " + codecs.decode("PungTCG", "rot13") + " a {iniciativa:900101}."):
-            with self.subTest(mau=mau):
-                self.assertTrue(self.erros(base + mau), mau)
+    def test_r4_first_mention_is_a_link(self):
+        e = self.erros_de(com_paragrafo("A Lei n.º 902/2019 mudou o artigo 2.º[^dr]."))
+        self.assertTrue(any("[R4]" in x for x in e), e)
+        self.assertEqual(self.erros_de(com_paragrafo("A [](ato:lei-902-2019) mudou o artigo 2.º. A Lei n.º 902/2019 é curta[^dr].")), [])
 
-    def test_quoted_source_is_allowed(self):
-        bom = ("A {ato:lei-901-2020} tem esta fonte: "
-               "{fonte:https://diariodarepublica.pt/dr/detalhe/lei/901-2020@2026-10-30|«O PS votou e chumbou dez anos em maio de 2020»}.")
-        self.assertEqual(self.erros(bom), [])
+    def test_r5_vote_claims(self):
+        e = self.erros_de(com_paragrafo("Na generalidade, o PSD votou a favor da [](ato:lei-901-2020)."))
+        self.assertTrue(any("[R5]" in x for x in e), e)
+        self.assertEqual(self.erros_de(com_paragrafo("Na generalidade, o PSD votou contra a [](ato:lei-901-2020).")), [])
+        self.assertEqual(self.erros_de(com_paragrafo("O Partido Socialista votou a favor da [](ato:lei-901-2020).")), [])
+        e = self.erros_de(com_paragrafo("Na votação final global, o PSD votou contra a [](ato:lei-901-2020)."))
+        self.assertTrue(any("[R5]" in x for x in e), e)
+        self.assertEqual(self.erros_de(com_paragrafo("Na votação final global, o PSD votou contra a [](ato:lei-901-2020)[^dr].")), [])
+        a = self.avisos_de(com_paragrafo("O PS votou a favor e o PSD votou contra a [](ato:lei-901-2020)."))
+        self.assertTrue(any("[R5]" in x for x in a), a)
 
-    def test_manual_quote_is_refused(self):
-        self.assertTrue(self.erros("A {ato:lei-901-2020} diz «dez anos»."))
-
-    def test_sentence_without_reference(self):
-        self.assertTrue(any("[3]" in e for e in self.erros("A lei mudou muito.")))
-        self.assertEqual(self.erros("A lei ficou como estava.", seccao="como-fizemos"), [])
-
-    def test_verb_must_match_the_redacao(self):
-        e = self.erros("A {ato:lei-901-2020} revogou o {redacao:lei-teste/artigo-1@lei-901-2020}.")
-        self.assertTrue(any("[14]" in x for x in e), e)
-        e = self.erros("A {ato:lei-901-2020} alterou o {redacao:lei-teste/artigo-1@lei-901-2020}.")
-        self.assertTrue(any("[14]" in x for x in e), e)
-
-    def test_quoting_one_initiative_needs_all(self):
-        src = copy.deepcopy(HISTORIA)
-        src["seccoes"].insert(3, {
-            "id": "comissao", "tipo": "mudanca", "atos": ["lei-902-2019"], "mostrar": [], "tabela": None,
-            "fontes_iniciativas": ["900201"],
-            "paragrafos": ["A {ato:lei-902-2019} mudou o {comparar:lei-teste/artigo-2@lei-902-2019}. "
-                           "A {iniciativa:900201} diz: {fonte:https://www.parlamento.pt/x?BID=900201@2026-10-30|«Texto»}."]})
-        self.assertTrue(any("[15]" in e for e in self.erros_de(src)))
-
-    def test_missing_preparado_em(self):
-        src = copy.deepcopy(HISTORIA)
-        del src["preparado_em"]
-        self.assertTrue(any("[12]" in e for e in self.erros_de(src)))
-        _, msgs, _ = self.historia(src, estrito=False)
-        self.assertFalse(os.path.exists(os.path.join(self.out, "historias", "teste.json")))
-
-    def test_vendor_name_anywhere(self):
-        src = copy.deepcopy(HISTORIA)
-        src["seccoes"][-1]["paragrafos"] = ["Preparado com o " + codecs.decode("Pynhqr", "rot13") + "."]
-        self.assertTrue(any("[6]" in e for e in self.erros_de(src)))
-
-    def test_question_without_section(self):
-        src = copy.deepcopy(HISTORIA)
-        src["seccoes"][1]["itens"].append({"texto": "E depois?", "alvo": "nada"})
-        self.assertTrue(any("[7]" in e for e in self.erros_de(src)))
-
-
-class DadosDaHistoria(Base):
-    def test_votes_come_from_the_data(self):
-        # R-37: the compiled story holds no vote; the app reads it from passagem.json, so a changed vote
-        # changes the story without an edit. Without the vote, the reference fails.
-        _, comp = self.compilar(HISTORIA)
-        txt = json.dumps(comp, ensure_ascii=False)
-        for sentido in ("favor", "contra", "abstencao"):
-            self.assertNotIn(f'"{sentido}"', txt)
-        p = self.ler("passagem.json")
-        p["lei-901-2020"]["generalidade"] = []
-        p["lei-901-2020"]["iniciativas"] = [dict(i, generalidade=None) for i in p["lei-901-2020"]["iniciativas"]]
-        p["lei-901-2020"]["texto_comissao"] = []
-        self.gravar(p, "passagem.json")
-        self.assertTrue(any("votação na generalidade" in e for e in self.erros_de(HISTORIA)))
-
-    def test_staleness(self):
-        h, _ = self.compilar(HISTORIA)
-        src = copy.deepcopy(HISTORIA)
-        src["hashes"] = h.hashes_atuais
-        h2, comp = self.compilar(src)
-        prazo = next(s for s in comp["seccoes"] if s["id"] == "prazo")
-        self.assertFalse(prazo["desatualizada"])
+    def test_lock_and_staleness(self):
+        self.escrever_fonte()
+        self.assertEqual(historias.atualizar("teste", self.out, pasta=self.fontes), 0)
+        lock = json.load(open(os.path.join(self.fontes, "teste.lock.json"), encoding="utf-8"))
+        self.assertIn("lei-teste/artigo-1@lei-901-2020", lock["redacoes"])
+        self.assertIn("lei-teste/artigo-1", lock["ultimas"])
+        self.assertIn("lei-901-2020", lock["votos"])
+        h, comp = self.compilar()
+        self.assertEqual([a for a in h.avisos if re.search(r"\[S\d\]", a)], [])
+        self.assertEqual(comp["desatualizada"], [])
+        # A new redação of a cited article: S2, the Atenção lines, still no error.
         art = self.ler("d", "lei-teste", "artigo-1.json")
         nova = copy.deepcopy(art["versoes"][-1])
         nova.update(ato="lei-901-2030", publicacao="2030-01-01", vigor="2030-01-02")
         art["versoes"].append(nova)
         self.gravar(art, "d", "lei-teste", "artigo-1.json")
-        _, comp = self.compilar(src)
-        prazo = next(s for s in comp["seccoes"] if s["id"] == "prazo")
-        self.assertTrue(prazo["desatualizada"])
-        # a changed text also marks it
+        h, comp = self.compilar()
+        self.assertEqual(h.erros, [])
+        self.assertTrue(any("[S2]" in a for a in h.avisos))
+        self.assertEqual(comp["desatualizada"][0]["artigo"], "lei-teste/artigo-1")
+        fig = next(b for b in comp["blocos"] if b["t"] == "figura" and b["id"] == "prazo")
+        self.assertEqual(fig["aviso"]["tipo"], "redacao")
+        # A changed text of a pinned redação: S1.
         art["versoes"].pop()
-        art["versoes"][3]["linhas"] = [[[0, "1 — Outro texto."]]]
+        art["versoes"][3]["linhas"] = [[[0, "1 — Outro texto."]], [[3, "2 — O prazo é de dez anos."]]]
         self.gravar(art, "d", "lei-teste", "artigo-1.json")
-        _, comp = self.compilar(src)
-        self.assertTrue(next(s for s in comp["seccoes"] if s["id"] == "prazo")["desatualizada"])
+        h, comp = self.compilar()
+        self.assertTrue(any("[S1]" in a for a in h.avisos))
+        # Votes changed: S1 on the vote figure.
+        p = self.ler("passagem.json")
+        p["lei-901-2020"]["iniciativas"][0]["generalidade"]["grupos"]["PSD"] = "abstencao"
+        self.gravar(p, "passagem.json")
+        h, comp = self.compilar()
+        voto = next(b for b in comp["blocos"] if b["t"] == "figura" and b["id"] == "voto")
+        self.assertEqual(voto["aviso"]["tipo"], "votos")
 
-    def test_completeness(self):
-        _, comp = self.compilar(HISTORIA)
-        todas = next(s for s in comp["seccoes"] if s["id"] == "todas")["atos"]
-        # An independent query over d/lei-teste/*.json.
-        esperado = set()
-        for f in glob.glob(os.path.join(self.out, "d", "lei-teste", "*.json")):
-            art = json.load(open(f, encoding="utf-8"))
-            esperado |= {v["ato"] for v in art["versoes"] if v["tipo"] not in ("original", "sem_alteracao")}
-            esperado |= {n["ato"] for n in art.get("notas", []) if n.get("ato")}
-        self.assertEqual(set(todas), esperado)
-        self.assertIn("acordao-do-tribunal-constitucional-9001-2021", todas)
-        self.assertIn("declaracao-de-retificacao-901-2020", todas)
+    def test_lock_refuses_errors(self):
+        self.escrever_fonte(com_paragrafo("A [](ato:lei-999-2099) mudou."))
+        self.assertEqual(historias.atualizar("teste", self.out, pasta=self.fontes), 1)
+        self.assertFalse(os.path.exists(os.path.join(self.fontes, "teste.lock.json")))
 
-    def test_aviso_everywhere(self):
-        index, _, _ = self.historia()
-        comp = self.ler("historias", "teste.json")
-        self.assertIn("com ajuda de uma ferramenta automática", comp["aviso"])
-        self.assertEqual(index["historias"][0]["aviso"], comp["aviso"])
-        partilha.construir(self.out, False, fonte=self.partilha_src(), desenhar_imagens=False)
-        pagina = open(os.path.join(self.tmp, "app", "p", "historia", "teste", "index.html"), encoding="utf-8").read()
-        self.assertIn(comp["aviso"], pagina)
+    def test_index_images_and_anchors(self):
+        index, msgs, _ = self.historia()
+        self.assertEqual([m for m in msgs if not m.startswith("aviso")], [])
+        h = index["historias"][0]
+        self.assertEqual(h["slug"], "teste")
+        self.assertGreaterEqual(h["minutos"], 1)
+        self.assertEqual(index["artigos"]["lei-teste/artigo-1"], [{"historia": "teste", "seccao": "fig-prazo"}])
+        self.assertTrue(os.path.exists(os.path.join(self.out, "historias", "img", "pagina-exemplo.png")))
         if contrato:
             self.assertEqual(contrato.validar_historias_index(index), [])
+        # Old outputs disappear.
+        with open(os.path.join(self.out, "historias", "velha.json"), "w") as f:
+            f.write("{}")
+        self.historia()
+        self.assertFalse(os.path.exists(os.path.join(self.out, "historias", "velha.json")))
 
+    def test_share_page(self):
+        self.historia()
+        partilha.construir(self.out, False, fonte=self.partilha_src(), desenhar_imagens=False)
+        pagina = open(os.path.join(self.tmp, "app", "p", "historia", "teste", "index.html"), encoding="utf-8").read()
+        comp = self.ler("historias", "teste.json")
+        self.assertIn(comp["aviso"], pagina)
+        self.assertIn('property="og:type" content="article"', pagina)
+        self.assertIn('property="article:published_time" content="2026-10-30"', pagina)
+        self.assertIn('property="article:modified_time"', pagina)
+        desc = re.search(r'og:description" content="([^"]+)"', pagina).group(1)
+        self.assertTrue(desc.startswith("As alterações à Lei de teste"))
+        self.assertTrue(desc.endswith("Preparada a 30 de outubro de 2026. Texto não oficial."))
+        t = partilha.texto_historia({"titulo": "T", "resumo": "Uma frase. " + "palavra " * 60, "preparado_em": "2026-11-15"})
+        self.assertLessEqual(len(t["descricao"]), 200)
+        self.assertEqual(t["linhas"], ["T", "Uma frase", "Redação · 15 de novembro de 2026"])
+
+
+class Sintaxe(unittest.TestCase):
+    """The data-free checks (--sintaxe): no app/data needed."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        shutil.copytree(os.path.join(HISTORIAS_FIX, "img"), os.path.join(self.tmp, "img"))
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def check(self, texto, nome="teste"):
+        p = os.path.join(self.tmp, nome + ".md")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(texto)
+        return historias.sintaxe([p])
+
+    def regras(self, texto, nome="teste"):
+        erros, avisos = self.check(texto, nome)
+        return {re.search(r"\[(\w+)\]", e).group(1) for e in erros}, {re.search(r"\[(\w+)\]", a).group(1) for a in avisos}
+
+    def test_fixtures_are_clean(self):
+        for nome in ("teste", "exemplo"):
+            with self.subTest(nome=nome):
+                erros, _ = historias.sintaxe([os.path.join(HISTORIAS_FIX, nome + ".md")])
+                self.assertEqual(erros, [])
+
+    def test_front_matter(self):
+        self.assertIn("F1", self.regras(HISTORIA.replace("autoria: Redação\n", ""))[0])
+        self.assertIn("F1", self.regras(HISTORIA, nome="outro")[0])                       # slug ≠ file name
+        self.assertIn("F1", self.regras(HISTORIA.replace("data: 2026-10-30", "data: 30/10/2026"))[0])
+        self.assertIn("F1", self.regras(HISTORIA.replace("preparacao: assistida", "preparacao: sozinha"))[0])
+        self.assertIn("F1", self.regras(HISTORIA.replace("autoria: Redação", "autoria: Redação\ncor: azul"))[0])
+        self.assertIn("F1", self.regras(HISTORIA.replace("resumo: As", "resumo: " + "x " * 170 + "As"))[0])
+        self.assertIn("F1", self.regras(HISTORIA.replace("---\nslug", "slug"))[0])
+
+    def test_markdown_subset(self):
+        for mau in ("Um texto com <b>HTML</b>[^dr].", "Um texto em **negrito**[^dr].", "Veja https://dre.pt[^dr].",
+                    "Veja [o DR](https://dre.pt)[^dr].", "Veja [isto](foo:bar).", "- uma lista", "| a | b |",
+                    "# Título", "Veja [](artigo:lei-teste/artigo-1@hoje)."):
+            with self.subTest(mau=mau):
+                self.assertIn("F2", self.regras(com_paragrafo(mau))[0])
+        for antes, depois in (("id: prazo\n", "id: prazo\ncor: azul\n"), ("```figura diff", "```figura mapa"),
+                              ("mostrar: 2\n", "mostrar: dois\n"), ("id: ficha\n", "id: ficha\ncampos: tudo\n"),
+                              ("largura: lado", "largura: enorme"), ("id: prazo\n", "id: prazo\nvista: lado\n")):
+            with self.subTest(depois=depois):
+                self.assertIn("F2", self.regras(HISTORIA.replace(antes, depois, 1))[0])
+
+    def test_notes(self):
+        self.assertIn("N1", self.regras(com_paragrafo("Um facto[^nada]."))[0])
+        self.assertIn("N1", self.regras(HISTORIA + "[^solta]: Uma nota. https://dre.pt/x\n")[0])
+        self.assertIn("N2", self.regras(HISTORIA.replace("I série. https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000", "I série."))[0])
+        self.assertIn("N2", self.regras(HISTORIA.replace("I série. https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000", "I série. http://dre.pt/x"))[0])
+        self.assertIn("N3", self.regras(HISTORIA.replace("I série. https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000", "I série. https://blog.exemplo.pt/x"))[1])
+        self.assertIn("N4", self.regras(com_paragrafo("O texto diz «o prazo é de dez anos» e mais nada."))[0])
+        self.assertNotIn("N4", self.regras(com_paragrafo("O texto diz «o prazo é de dez anos»[^dr]."))[0])
+        self.assertIn("N4", self.regras(HISTORIA.replace("— Lei n.º 901/2020, artigo 1.º[^dr]", "— Lei n.º 901/2020, artigo 1.º"))[0])
+        self.assertIn("N5", self.regras(com_paragrafo("Um parágrafo sem fonte."))[1])
+        sem_data = HISTORIA.replace("consultado: 2026-10-30\n", "")
+        self.assertIn("F1", self.regras(sem_data)[0])
+        self.assertIn("N2", self.regras(sem_data)[0])
+
+    def test_neutrality_vendor_and_motives(self):
+        self.assertIn("P1", self.regras(com_paragrafo("O Parlamento chumbou a proposta[^dr]."))[0])
+        self.assertNotIn("P1", self.regras(com_paragrafo("O jornal escreveu «o Parlamento chumbou a proposta»[^dr]."))[0])
+        self.assertIn("P1", self.regras(HISTORIA.replace("titulo: Como mudou", "titulo: A geringonça e"))[0])
+        self.assertIn("P2", self.regras(com_paragrafo("Feito com o " + codecs.decode("PungTCG", "rot13") + "[^dr]."))[0])
+        self.assertIn("P2", self.regras(com_paragrafo("Ele disse «uso o " + codecs.decode("Pynhqr", "rot13") + "»[^dr]."))[0])
+        self.assertIn("P3", self.regras(com_paragrafo("O Governo quis travar a lei[^dr]."))[1])
+        self.assertNotIn("P3", self.regras(com_paragrafo("Na exposição de motivos, o Governo argumentou que a lei era polémica[^dr]."))[1])
+
+    def test_lengths(self):
+        legenda = ("legenda: O voto de cada grupo na generalidade da proposta, e depois a votação final global, o veto e a\n"
+                   "  confirmação do decreto pelo Parlamento.")
+        self.assertIn(legenda, HISTORIA)
+        _, av = self.regras(HISTORIA.replace(legenda, "legenda: Curta demais."))
+        self.assertIn("P4", av)
+        _, av = self.regras(HISTORIA.replace("[](fig:pagina) mostra", "imagem mostra"))
+        self.assertIn("P4", av)
+
+    def test_image_checks(self):
+        self.assertIn("R2", self.regras(HISTORIA.replace("img/pagina-exemplo.png", "img/nada.png"))[0])
+        with open(os.path.join(self.tmp, "img", "grande.png"), "wb") as f:
+            with open(os.path.join(HISTORIAS_FIX, "img", "pagina-exemplo.png"), "rb") as g:
+                f.write(g.read() + b"\0" * 310000)
+        self.assertIn("R2", self.regras(HISTORIA.replace("img/pagina-exemplo.png", "img/grande.png"))[0])
+        self.assertEqual(historias.tamanho_imagem(os.path.join(HISTORIAS_FIX, "img", "pagina-exemplo.png")), ("png", 1400, 420))
+        # imagem_partilha must be 1200×630
+        self.assertIn("F1", self.regras(HISTORIA.replace("imagem_partilha:", "imagem_partilha: img/pagina-exemplo.png"))[0])
+
+    def test_command_line(self):
+        p = os.path.join(self.tmp, "teste.md")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(HISTORIA)
+        self.assertEqual(historias.main(["--sintaxe", p]), 0)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(com_paragrafo("O Parlamento chumbou a proposta[^dr]."))
+        import contextlib
+        import io
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(historias.main(["--sintaxe", p]), 1)
+        self.assertIn("teste.md:", out.getvalue())
 
 
 # ---------------------------------------------------------------------------------------------
@@ -570,14 +671,6 @@ class Estilo(unittest.TestCase):
         self.assertNotIn("8.2", self.regras("O sumário diz «chumbou a proposta do PS»."))
         self.assertEqual(self.regras("A lei mudou o artigo sobre a união de facto."), set())
 
-    def test_story_lints(self):
-        r = lambda t: {x for _, x, _ in estilo.check_historia(t)}  # noqa: E731
-        self.assertIn("H2", r("Em 2020 a lei mudou."))
-        self.assertIn("H2", r("O PS apresentou X."))
-        self.assertIn("H2b", r("A lei reduziu o prazo."))
-        self.assertIn("H4", r("Uma lei mais dura."))
-        self.assertEqual(r("A X mudou o X. Na redação nova, diz: X."), set())
-
     def test_json_input(self):
         src = json.dumps({"titulo": "T", "seccoes": [{"paragrafos": ["A {ato:lei-1-2020|lei nova} mudou o {redacao:a/b@c}."]}],
                           "outro": "não é texto"})
@@ -586,10 +679,8 @@ class Estilo(unittest.TestCase):
     def test_estilo_md_lists_the_same_words(self):
         doc = open(os.path.join(ROOT, "docs", "ESTILO.md"), encoding="utf-8").read()
         sec = doc[doc.index("### 8.2."):]
-        palavras = list(estilo.VOTO) + list(estilo.UNIDADES) + [w for w in estilo.COMPARATIVAS]
-        palavras += ["chumbou", "travou", "luz verde", "maioria de esquerda", "maioria de direita", "geringonça",
-                     "vencedores", "derrotados", "mais dura", "histórica", "restritiv-", "generos-", "polémic-",
-                     "controvers-", "escrito por", "dois", "vinte", "trinta", "mil", "primeiro", "décimo", "metade"]
+        palavras = ["chumbou", "travou", "luz verde", "maioria de esquerda", "maioria de direita", "geringonça",
+                     "vencedores", "derrotados", "escrito por"]
         for w in palavras:
             with self.subTest(w=w):
                 self.assertTrue(f"«{w}»" in sec, w)
@@ -607,30 +698,13 @@ class Estilo(unittest.TestCase):
 
 
 class FontesHistorias(unittest.TestCase):
-    """The committed story sources, without app/data: prose lints, sentence references, structure."""
+    """The committed story sources, without app/data: the checks that CI runs (--sintaxe)."""
 
     def test_sources(self):
-        vazio = tempfile.mkdtemp()
-        try:
-            for f in historias.fontes():
-                src = json.load(open(f, encoding="utf-8"))
-                with self.subTest(historia=os.path.basename(f)):
-                    self.assertTrue(src.get("preparado_em"))
-                    self.assertEqual(src.get("preparacao"), "assistida")
-                    self.assertIsNone(historias.VENDOR.search(json.dumps(src, ensure_ascii=False)))
-                    h = historias.Historia(src, historias.Dados(vazio))
-                    ids = [s["id"] for s in src["seccoes"]]
-                    for s in src["seccoes"]:
-                        for p in s.get("paragrafos", []):
-                            erros = [e for e in h.lint_paragrafo(p, s["tipo"], s["id"]) if not e.startswith("[14]")]
-                            self.assertEqual(erros, [], (s["id"], p[:80]))
-                        for it in s.get("itens", []):
-                            self.assertIn(it["alvo"], ids + ["todas", "em-numeros"])
-                    palavras = sum(estilo.word_count(h.prosa(p)) for s in src["seccoes"] for p in s.get("paragrafos", []))
-                    self.assertTrue(400 <= palavras <= 800, palavras)
-                    self.assertTrue(src.get("hashes"))
-        finally:
-            shutil.rmtree(vazio)
+        for f in historias.fontes():
+            with self.subTest(historia=os.path.basename(f)):
+                erros, _ = historias.sintaxe([f])
+                self.assertEqual(erros, [])
 
 
 # ---------------------------------------------------------------------------------------------
@@ -644,7 +718,8 @@ class DadosReais(unittest.TestCase):
         try:
             out = os.path.join(tmp, "app", "data")
             os.makedirs(out)
-            os.symlink(os.path.join(APP_DATA, "d"), os.path.join(out, "d"))
+            for pasta in ("d", "quem", "grupos"):   # the story figures read quem/<slug>.json
+                os.symlink(os.path.join(APP_DATA, pasta), os.path.join(out, pasta))
             for n in os.listdir(APP_DATA):
                 if n.endswith(".json"):
                     shutil.copyfile(os.path.join(APP_DATA, n), os.path.join(out, n))
