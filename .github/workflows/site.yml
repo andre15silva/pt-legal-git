@@ -34,6 +34,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Pillow, to draw the link preview images
+        # Into setup-python's interpreter (not --user): python -I still sees it.
+        run: python -m pip install pillow==11.3.0
       - name: pdftotext, to read the bills' texts
         run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils
 
@@ -48,6 +51,10 @@ jobs:
 
       - name: Date
         run: echo "REDACAO_HOJE=$(date -u +%F)" >> "$GITHUB_ENV"
+      - name: Strict checks on push only
+        # Daily runs withhold a story section or a glossary entry that fails a check and go on
+        # (see #/verificacao). A push fails instead. DESIGN-SPEC §6.0.
+        run: echo "REDACAO_ESTRITO=${{ github.event_name == 'push' && '1' || '0' }}" >> "$GITHUB_ENV"
       - name: Parlamento open data (all files once, then the current legislatura every day)
         run: |
           python -I pipeline/fetch_parlamento.py
@@ -59,6 +66,16 @@ jobs:
         run: python -I pipeline/fetch.py ${{ inputs.completo && ' ' || '--se-mudou' }}
       - name: Texts of the bills now in Parliament
         run: python -I pipeline/pendentes.py
+      - name: Signature blocks of new acts
+        # Only the acts that are in neither pipeline/assinaturas.json nor the cache. Exits 0 on
+        # network errors: the next run tries again.
+        run: python -I pipeline/assinaturas.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assinaturas
+          path: data/assinaturas.json
+          if-no-files-found: ignore
 
       - name: Drop DR responses older than a week (they hold old dates)
         if: always()
@@ -70,8 +87,23 @@ jobs:
           path: data
           key: dados-${{ github.run_id }}
 
+      # The preview images (app/p/**/og.png) are drawn only when their text changes. cache-og/ keeps
+      # them between runs, in its own cache entry, so «Save data» above does not wait for the build.
+      - name: Restore preview images
+        uses: actions/cache/restore@v4
+        with:
+          path: cache-og
+          key: og-${{ github.run_id }}
+          restore-keys: og-
       - name: Build
+        # Offline. Also builds the glossary, the stories and the share pages (pipeline/conteudo.py).
         run: python -I pipeline/build.py
+      - name: Save preview images
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: cache-og
+          key: og-${{ github.run_id }}
       - name: Check the data (tests, and the verification floors)
         run: |
           python -I -m unittest discover -s pipeline

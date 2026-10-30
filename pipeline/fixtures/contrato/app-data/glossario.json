@@ -1,0 +1,68 @@
+{
+ "preparado_em": "2026-10-30",
+ "grupos": [
+  {
+   "id": "texto",
+   "titulo": "O texto da lei"
+  },
+  {
+   "id": "tipos",
+   "titulo": "Tipos de diploma"
+  },
+  {
+   "id": "datas",
+   "titulo": "As datas"
+  },
+  {
+   "id": "parlamento",
+   "titulo": "No Parlamento"
+  },
+  {
+   "id": "quem",
+   "titulo": "Quem faz as leis"
+  }
+ ],
+ "termos": {
+  "decreto-lei": {
+   "id": "decreto-lei",
+   "termo": "decreto-lei",
+   "formas": [
+    "decreto-lei",
+    "decretos-leis"
+   ],
+   "grupo": "tipos",
+   "definicao": [
+    "Um diploma de teste aprovado pelo Governo de teste."
+   ],
+   "fonte": {
+    "rota": "#/d/lei-teste/artigo-3",
+    "texto": "Lei de teste, artigo 3.º"
+   },
+   "apoio": [
+    "O regime é o geral, salvo lei orgânica ou regulamento."
+   ],
+   "verificado_em": "2026-10-30",
+   "hash_fonte": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "votacao-final-global": {
+   "id": "votacao-final-global",
+   "termo": "votação final global",
+   "formas": [
+    "votação final global"
+   ],
+   "grupo": "parlamento",
+   "definicao": [
+    "A última votação de teste no Parlamento."
+   ],
+   "fonte": {
+    "url": "https://diariodarepublica.pt/dr/detalhe/lei/900-2020-900000",
+    "texto": "Lei de teste, artigo 1.º"
+   },
+   "apoio": [
+    "A presente lei regula o teste e a prova de teste."
+   ],
+   "verificado_em": "2026-10-30",
+   "hash_fonte": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  }
+ }
+}

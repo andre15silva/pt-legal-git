@@ -1,0 +1,812 @@
+{
+ "900101": {
+  "id": "900101",
+  "legislatura": "XIV",
+  "tipo": "Proposta de Lei",
+  "numero": "901",
+  "titulo": "Altera a Lei de teste.",
+  "autores": [
+   "Governo"
+  ],
+  "eventos": [
+   [
+    "2020-02-01",
+    "Entrada"
+   ],
+   [
+    "2020-03-05",
+    "Votação na generalidade"
+   ],
+   [
+    "2020-07-10",
+    "Votação final global"
+   ],
+   [
+    "2020-08-05",
+    "tribunal"
+   ],
+   [
+    "2020-08-20",
+    "veto"
+   ],
+   [
+    "2020-09-25",
+    "reapreciacao"
+   ],
+   [
+    "2020-10-05",
+    "Promulgação"
+   ],
+   [
+    "2020-10-15",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2020-03-05",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "contra",
+     "BE": "favor",
+     "PCP": "abstencao",
+     "CDS-PP": "contra",
+     "PAN": "favor",
+     "PEV": "abstencao",
+     "CH": "contra",
+     "IL": "contra",
+     "L": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-901-2020",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900101"
+ },
+ "900202": {
+  "id": "900202",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "901",
+  "titulo": "Altera a Lei de teste (projeto de teste).",
+  "autores": [
+   "BE"
+  ],
+  "eventos": [
+   [
+    "2018-03-01",
+    "Entrada"
+   ],
+   [
+    "2018-12-21",
+    "Votação na generalidade"
+   ],
+   [
+    "2019-01-18",
+    "Votação final global"
+   ],
+   [
+    "2019-02-05",
+    "Promulgação"
+   ],
+   [
+    "2019-02-12",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-12-13",
+    "fase": "Votação na generalidade",
+    "resultado": "Rejeitado",
+    "unanime": false,
+    "posicoes": {
+     "BE": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PS": "contra",
+     "PSD": "contra",
+     "CDS-PP": "contra",
+     "PAN": "abstencao"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-902-2019",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900202"
+ },
+ "900201": {
+  "id": "900201",
+  "legislatura": "XIII",
+  "tipo": "Proposta de Lei",
+  "numero": "902",
+  "titulo": "Altera a Lei de teste.",
+  "autores": [
+   "Governo"
+  ],
+  "eventos": [
+   [
+    "2018-04-30",
+    "Entrada"
+   ],
+   [
+    "2018-12-21",
+    "Votação na generalidade"
+   ],
+   [
+    "2019-01-18",
+    "Votação final global"
+   ],
+   [
+    "2019-02-05",
+    "Promulgação"
+   ],
+   [
+    "2019-02-12",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [],
+  "ato": "lei-902-2019",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900201"
+ },
+ "900203": {
+  "id": "900203",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "903",
+  "titulo": "Altera a Lei de teste e outra lei.",
+  "autores": [
+   "PSD"
+  ],
+  "eventos": [
+   [
+    "2018-10-01",
+    "Entrada"
+   ],
+   [
+    "2018-12-21",
+    "Votação na generalidade"
+   ],
+   [
+    "2019-01-18",
+    "Votação final global"
+   ],
+   [
+    "2019-02-05",
+    "Promulgação"
+   ],
+   [
+    "2019-02-12",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-12-13",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "posicoes": {
+     "PSD": "favor",
+     "CDS-PP": "favor",
+     "BE": "contra",
+     "PCP": "contra",
+     "PEV": "contra",
+     "PS": "abstencao",
+     "PAN": "abstencao"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-902-2019",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900203"
+ },
+ "900300": {
+  "id": "900300",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "910",
+  "titulo": "Altera a Lei de teste (PS).",
+  "autores": [
+   "PS"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900300"
+ },
+ "900301": {
+  "id": "900301",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "911",
+  "titulo": "Altera a Lei de teste (PSD).",
+  "autores": [
+   "PSD"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900301"
+ },
+ "900302": {
+  "id": "900302",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "912",
+  "titulo": "Altera a Lei de teste (BE).",
+  "autores": [
+   "BE"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900302"
+ },
+ "900303": {
+  "id": "900303",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "913",
+  "titulo": "Altera a Lei de teste (CDS-PP).",
+  "autores": [
+   "CDS-PP"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900303"
+ },
+ "900304": {
+  "id": "900304",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "914",
+  "titulo": "Altera a Lei de teste (PCP).",
+  "autores": [
+   "PCP"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900304"
+ },
+ "900305": {
+  "id": "900305",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "915",
+  "titulo": "Altera a Lei de teste (PEV).",
+  "autores": [
+   "PEV"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900305"
+ },
+ "900306": {
+  "id": "900306",
+  "legislatura": "XIII",
+  "tipo": "Projeto de Lei",
+  "numero": "916",
+  "titulo": "Altera a Lei de teste (PAN).",
+  "autores": [
+   "PAN"
+  ],
+  "eventos": [
+   [
+    "2017-10-02",
+    "Entrada"
+   ],
+   [
+    "2018-02-02",
+    "Votação na generalidade"
+   ],
+   [
+    "2018-05-25",
+    "Votação final global"
+   ],
+   [
+    "2018-06-20",
+    "veto"
+   ],
+   [
+    "2018-07-01",
+    "reapreciacao"
+   ],
+   [
+    "2018-07-04",
+    "Promulgação"
+   ],
+   [
+    "2018-07-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-organica-901-2018",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900306"
+ },
+ "900401": {
+  "id": "900401",
+  "legislatura": "VII",
+  "tipo": "Projeto de Revisão Constitucional",
+  "numero": "901",
+  "titulo": "Revisão de teste.",
+  "autores": [
+   "PS"
+  ],
+  "eventos": [
+   [
+    "1996-03-01",
+    "Entrada"
+   ],
+   [
+    "1997-06-05",
+    "Votação na generalidade"
+   ],
+   [
+    "1997-07-31",
+    "Votação final global"
+   ],
+   [
+    "1997-09-15",
+    "Promulgação"
+   ],
+   [
+    "1997-09-20",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "1997-06-05",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "CDS-PP": "contra",
+     "PCP": "contra"
+    },
+    "ausentes": [
+     "PEV"
+    ],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-constitucional-901-1997",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900401"
+ },
+ "900402": {
+  "id": "900402",
+  "legislatura": "VII",
+  "tipo": "Projeto de Revisão Constitucional",
+  "numero": "902",
+  "titulo": "Revisão de teste.",
+  "autores": [
+   "PSD"
+  ],
+  "eventos": [
+   [
+    "1996-03-02",
+    "Entrada"
+   ],
+   [
+    "1997-06-05",
+    "Votação na generalidade"
+   ],
+   [
+    "1997-07-31",
+    "Votação final global"
+   ],
+   [
+    "1997-09-15",
+    "Promulgação"
+   ],
+   [
+    "1997-09-20",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "1997-06-05",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "favor",
+     "CDS-PP": "contra",
+     "PCP": "contra"
+    },
+    "ausentes": [
+     "PEV"
+    ],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-constitucional-901-1997",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900402"
+ },
+ "900501": {
+  "id": "900501",
+  "legislatura": "XIV",
+  "tipo": "Proposta de Lei",
+  "numero": "903",
+  "titulo": "Aprova o Orçamento do Estado para 2022.",
+  "autores": [
+   "Governo"
+  ],
+  "eventos": [
+   [
+    "2021-10-11",
+    "Entrada"
+   ],
+   [
+    "2021-10-27",
+    "Votação na generalidade"
+   ],
+   [
+    "2021-11-25",
+    "Votação final global"
+   ],
+   [
+    "2021-12-30",
+    "Promulgação"
+   ],
+   [
+    "2022-01-10",
+    "Lei (Publicação DR)"
+   ]
+  ],
+  "conjuntas": [],
+  "votacoes": [
+   {
+    "data": "2021-10-27",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "posicoes": {
+     "PS": "favor",
+     "PSD": "contra",
+     "BE": "contra",
+     "PCP": "abstencao",
+     "CDS-PP": "contra",
+     "PAN": "abstencao",
+     "PEV": "abstencao",
+     "CH": "contra",
+     "IL": "contra",
+     "L": "abstencao"
+    },
+    "ausentes": [],
+    "descricao": null
+   }
+  ],
+  "ato": "lei-901-2022",
+  "link": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=900501"
+ }
+}

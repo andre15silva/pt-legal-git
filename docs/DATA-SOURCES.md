@@ -79,6 +79,23 @@ Both are implemented in [`tools/link_dr.py`](../tools/link_dr.py). The vote pars
 - **Many-to-one:** 789 of 4,188 laws come from several initiatives (texto final da comissão).
 - **Texts:** none are article-structured. Initiative texts, propostas de alteração, textos finais and decretos are DOCX/PDF (swap `doc.pdf` → `doc.docx` in a link for the Word original). Text links are missing before the VIII legislatura and for about 70 % of XIII/XIV.
 
+## Who made each act: signature blocks and official tables (2026-10-30)
+
+- **Signature blocks.** The act endpoint (`Conteudo_Detalhe`) returns each act's full `Texto`; its
+  block gives the dates of the Council of Ministers, the promulgation and the countersignature, and
+  the names. We fetched all 1054 acts of the corpus once (about 9 minutes, no errors) and keep only the
+  extracted fields in `pipeline/assinaturas.json`. Method and coverage: [QUEM.md](QUEM.md).
+- **Governments.** The DR publishes the President's decree appointing each Prime Minister on the day of
+  the posse («Assinado em …»), found through the 1.ª série listing of the day
+  (`Home/WB_Serie1_List`). The Government's historical archive,
+  <https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais.aspx>,
+  has one page per Government (I–XX) with the posse and reshuffle dates and a «Tomada de posse» page
+  that states the parties (I–XVI). Pages of Governments XXI–XXV on portugal.gov.pt load their content
+  with JavaScript.
+- **Presidents.** <https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/>,
+  one page per President.
+- **Party continuity.** CNE party pages (<https://www.cne.pt/content/partidos-politicos-1>).
+
 ## legalize-pt
 
 - `git clone https://github.com/legalize-dev/legalize-pt`. Layout: `pt/<year>/<identifier>.md`; regional legislation is in `pt-20` (Açores) and `pt-30` (Madeira). Front matter includes the ELI, `publication_date`, `rank`, `status`, `dre_id` and thesaurus subjects. Commit trailers: `Norm`, `Disposition`, `Source`, `Affected articles`, `Change`.

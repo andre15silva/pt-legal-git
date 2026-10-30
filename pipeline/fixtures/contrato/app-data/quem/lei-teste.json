@@ -1,0 +1,376 @@
+{
+ "slug": "lei-teste",
+ "ato_original": "decreto-lei-90001",
+ "desde": "1970-03-02",
+ "por_governo": [
+  {
+   "governo": 1,
+   "total": 1,
+   "listas": {
+    "decretos_leis": [
+     {
+      "ato": "decreto-lei-901-1977"
+     }
+    ],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "governo": 2,
+   "total": 1,
+   "listas": {
+    "decretos_leis": [
+     {
+      "ato": "decreto-lei-902-2010"
+     }
+    ],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "governo": 3,
+   "total": 3,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [
+     {
+      "ato": "lei-organica-901-2018",
+      "texto_comissao": true
+     },
+     {
+      "ato": "lei-902-2019",
+      "texto_comissao": true
+     }
+    ],
+    "publicados_sem_d_cm": [
+     {
+      "ato": "decreto-lei-903-2012"
+     }
+    ]
+   }
+  },
+  {
+   "governo": 4,
+   "total": 3,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [
+     {
+      "ato": "lei-901-2020"
+     },
+     {
+      "ato": "lei-901-2022"
+     }
+    ],
+    "outras": [
+     {
+      "ato": "lei-901-2023",
+      "sem_passagem": true
+     }
+    ],
+    "publicados_sem_d_cm": []
+   }
+  }
+ ],
+ "por_legislatura": [
+  {
+   "legislatura": "IA",
+   "governos": [
+    1
+   ],
+   "total": 1,
+   "listas": {
+    "decretos_leis": [
+     {
+      "ato": "decreto-lei-901-1977"
+     }
+    ],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "IB",
+   "governos": [
+    1
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "II",
+   "governos": [
+    1,
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "III",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "IV",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "V",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "VI",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "VII",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "VIII",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "IX",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "X",
+   "governos": [
+    2
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XI",
+   "governos": [
+    2,
+    3
+   ],
+   "total": 1,
+   "listas": {
+    "decretos_leis": [
+     {
+      "ato": "decreto-lei-902-2010"
+     }
+    ],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XII",
+   "governos": [
+    3
+   ],
+   "total": 1,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": [
+     {
+      "ato": "decreto-lei-903-2012"
+     }
+    ]
+   }
+  },
+  {
+   "legislatura": "XIII",
+   "governos": [
+    3
+   ],
+   "total": 2,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [
+     {
+      "ato": "lei-organica-901-2018",
+      "texto_comissao": true
+     },
+     {
+      "ato": "lei-902-2019",
+      "texto_comissao": true
+     }
+    ],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XIV",
+   "governos": [
+    3,
+    4
+   ],
+   "total": 2,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [
+     {
+      "ato": "lei-901-2020"
+     },
+     {
+      "ato": "lei-901-2022"
+     }
+    ],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XV",
+   "governos": [
+    4
+   ],
+   "total": 1,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [
+     {
+      "ato": "lei-901-2023",
+      "sem_passagem": true
+     }
+    ],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XVI",
+   "governos": [
+    4
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  },
+  {
+   "legislatura": "XVII",
+   "governos": [
+    4
+   ],
+   "total": 0,
+   "listas": {
+    "decretos_leis": [],
+    "propostas": [],
+    "outras": [],
+    "publicados_sem_d_cm": []
+   }
+  }
+ ],
+ "fora": {
+  "revisoes": [
+   {
+    "ato": "lei-constitucional-901-1997"
+   }
+  ],
+  "acordaos": [
+   {
+    "ato": "acordao-do-tribunal-constitucional-9001-2021"
+   }
+  ],
+  "antes_1976": [
+   {
+    "ato": "decreto-lei-90002"
+   }
+  ],
+  "retificacoes_soltas": [],
+  "outros": []
+ },
+ "retificacoes": {
+  "lei-901-2020": [
+   "declaracao-de-retificacao-901-2020"
+  ]
+ }
+}

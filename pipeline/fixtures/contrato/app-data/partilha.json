@@ -1,0 +1,16 @@
+{
+ "base": "https://andre15silva.github.io/pt-legal-git/",
+ "artigos": {
+  "lei-teste/artigo-1": [
+   "decreto-lei-90001",
+   "decreto-lei-90002",
+   "decreto-lei-901-1977",
+   "lei-901-2020",
+   "declaracao-de-retificacao-901-2020",
+   "lei-901-2022"
+  ]
+ },
+ "historias": [
+  "historia-teste"
+ ]
+}

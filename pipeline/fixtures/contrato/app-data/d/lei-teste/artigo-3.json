@@ -1,0 +1,116 @@
+{
+ "rotulo": "Artigo 3.º",
+ "epigrafe": "Regime",
+ "estado": "vigente",
+ "versoes": [
+  {
+   "ato": "decreto-lei-90001",
+   "tipo": "original",
+   "artigo_do_ato": null,
+   "publicacao": "1970-03-02",
+   "vigor": "1970-03-07",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "O regime é o geral."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "lei-constitucional-901-1997",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "1997-09-20",
+   "vigor": "1997-09-25",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "O regime é o geral"
+     ],
+     [
+      1,
+      ", salvo lei especial"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "decreto-lei-903-2012",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2012-03-01",
+   "vigor": null,
+   "vigor_conhecido": false,
+   "linhas": [
+    [
+     [
+      0,
+      "O regime é o geral"
+     ],
+     [
+      1,
+      ", salvo lei especial "
+     ],
+     [
+      2,
+      "ou regulamento"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ]
+  },
+  {
+   "ato": "lei-organica-901-2018",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2018-07-10",
+   "vigor": "2018-07-11",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "O regime é o geral"
+     ],
+     [
+      1,
+      ", salvo lei "
+     ],
+     [
+      3,
+      "orgânica"
+     ],
+     [
+      2,
+      " ou regulamento"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  }
+ ],
+ "notas": [],
+ "id": "artigo-3",
+ "diploma": "lei-teste",
+ "caminho": [
+  "Capítulo I"
+ ]
+}

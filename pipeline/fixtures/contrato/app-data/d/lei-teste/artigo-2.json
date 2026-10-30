@@ -1,0 +1,180 @@
+{
+ "rotulo": "Artigo 2.º",
+ "epigrafe": "Requisitos",
+ "estado": "vigente",
+ "versoes": [
+  {
+   "ato": "decreto-lei-90001",
+   "tipo": "original",
+   "artigo_do_ato": null,
+   "publicacao": "1970-03-02",
+   "vigor": "1970-03-07",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — São requisitos:"
+     ]
+    ],
+    [
+     [
+      0,
+      "a) A residência;"
+     ]
+    ],
+    [
+     [
+      0,
+      "b) A idade."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "decreto-lei-902-2010",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2010-06-20",
+   "vigor": "2010-06-25",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — São requisitos:"
+     ]
+    ],
+    [
+     [
+      0,
+      "a) A residência "
+     ],
+     [
+      1,
+      "legal"
+     ],
+     [
+      0,
+      ";"
+     ]
+    ],
+    [
+     [
+      0,
+      "b) A idade."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "lei-902-2019",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2019-02-12",
+   "vigor": "2019-02-13",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — São requisitos:"
+     ]
+    ],
+    [
+     [
+      0,
+      "a) A residência "
+     ],
+     [
+      1,
+      "legal"
+     ],
+     [
+      0,
+      ";"
+     ]
+    ],
+    [
+     [
+      0,
+      "b) A idade."
+     ]
+    ],
+    [
+     [
+      2,
+      "2 — O senhorio não pode opor-se."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "lei-901-2023",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2023-06-01",
+   "vigor": "2023-06-02",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — São requisitos:"
+     ]
+    ],
+    [
+     [
+      0,
+      "a) A residência "
+     ],
+     [
+      1,
+      "legal"
+     ],
+     [
+      0,
+      ";"
+     ]
+    ],
+    [
+     [
+      0,
+      "b) A idade "
+     ],
+     [
+      3,
+      "mínima"
+     ],
+     [
+      0,
+      "."
+     ]
+    ],
+    [
+     [
+      2,
+      "2 — O senhorio não pode opor-se."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  }
+ ],
+ "notas": [
+  {
+   "texto": "Declarada a inconstitucionalidade com força obrigatória geral da norma do n.º 2, na redação dada pela Lei n.º 902/2019, de 12 de fevereiro, com efeitos a partir de 2019-02-13.",
+   "fonte": "Acórdão do Tribunal Constitucional n.º 9001/2021 - Diário da República n.º 900/2021, Série I de 2021-03-01",
+   "artigo_do_ato": null,
+   "ato": "acordao-do-tribunal-constitucional-9001-2021"
+  }
+ ],
+ "id": "artigo-2",
+ "diploma": "lei-teste",
+ "caminho": [
+  "Capítulo I"
+ ]
+}

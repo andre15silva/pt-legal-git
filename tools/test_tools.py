@@ -20,6 +20,20 @@ class ParsePositions(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(parse_positions(None), {})
 
+    def test_absence_is_its_own_section(self):
+        # R-4: «Ausência: UDP» is not an abstention.
+        self.assertEqual(parse_positions("A Favor: <I>PS</I><BR>Abstenção:<I>PCP</I><BR>Ausência:<I>CDS</I>, <I> PEV</I>, <I>Carlos Macedo (Indep)</I>"),
+                         {"PS": "favor", "PCP": "abstencao", "CDS": "ausente", "PEV": "ausente", "Carlos Macedo (Indep)": "ausente"})
+
+    def test_event_note_and_vote_id(self):
+        ini = {"IniId": "1", "IniLeg": "XVII", "IniDescTipo": "Proposta de Lei", "IniNr": "1", "IniTitulo": "t",
+               "IniEventos": [{"DataFase": "2025-12-19", "Fase": "Veto (Receção)", "ObsFase": "Decreto n.º 17/XVII"},
+                              {"DataFase": "2026-04-01", "Fase": "Votação novo decreto", "ObsFase": "Votação do novo Decreto",
+                               "Votacao": [{"id": "9", "resultado": "Aprovado", "detalhe": "A Favor: PSD", "data": "2026-04-01"}]}]}
+        i = normalise(ini)
+        self.assertEqual(i.details[0], {"data": "2025-12-19", "fase": "Veto (Receção)", "obs": "Decreto n.º 17/XVII", "textos": []})
+        self.assertEqual((i.votes[0].id, i.votes[0].obs), ("9", "Votação do novo Decreto"))
+
 
 class Normalise(unittest.TestCase):
     def test_publication_and_link(self):

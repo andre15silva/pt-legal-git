@@ -121,7 +121,8 @@ There is no icon set. Status is a word, sometimes with a Unicode glyph next to i
 | `VersionTimeline` | "A história desta lei" (older pages) |
 | `ProcessTrack` | An iniciativa's path through Parliament |
 | `VoteBar` | A vote, by sentido and by grupo parlamentar (older pages) |
-| `Votacao` | A vote in words: the groups under A favor, Contra and Abstenção, dissent, absences and the seat check |
+| `Votacao` | A vote in words: the groups under A favor, Contra and Abstenção, dissent, absences and the seat check. With `nomes`, each sigla reads as the group's name |
+| `Termo` | A glossary word in interface copy: a dotted underline that opens the definition, the law that supports it and its source. Esc closes it; on a phone it opens a sheet |
 | `Citation` | Copyable citation of the exact version shown |
 | `SourceNote` | Provenance and the non-official notice |
 

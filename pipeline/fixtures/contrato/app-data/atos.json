@@ -1,0 +1,453 @@
+{
+ "decreto-lei-90001": {
+  "id": "decreto-lei-90001",
+  "designacao": "Decreto-Lei n.º 90001",
+  "publicacao": "1970-03-02",
+  "dr": "900/1970",
+  "serie": "Série I",
+  "link": null,
+  "sumario": "Aprova a Lei de teste.",
+  "alteracoes": [],
+  "tipo_ato": "pre1976"
+ },
+ "decreto-lei-90002": {
+  "id": "decreto-lei-90002",
+  "designacao": "Decreto-Lei n.º 90002",
+  "publicacao": "1974-02-01",
+  "dr": "900/1974",
+  "serie": "Série I",
+  "link": null,
+  "sumario": "Altera a Lei de teste antes de 1976.",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "rotulo": "Artigo 1.º",
+    "tipo": "alterado",
+    "vigor": "1974-02-06"
+   }
+  ],
+  "tipo_ato": "pre1976"
+ },
+ "decreto-lei-901-1977": {
+  "id": "decreto-lei-901-1977",
+  "designacao": "Decreto-Lei n.º 901/77",
+  "publicacao": "1977-06-01",
+  "dr": "900/1977",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-901-1977-900000",
+  "sumario": "Altera a Lei de teste (Governo sem partidos indicados).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "rotulo": "Artigo 1.º",
+    "tipo": "alterado",
+    "vigor": "1977-06-06"
+   }
+  ],
+  "tipo_ato": "decreto-lei"
+ },
+ "decreto-lei-902-2010": {
+  "id": "decreto-lei-902-2010",
+  "designacao": "Decreto-Lei n.º 902/2010",
+  "publicacao": "2010-06-20",
+  "dr": "900/2010",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-902-2010-900000",
+  "sumario": "Altera a Lei de teste (aprovado antes de uma posse com o mesmo Primeiro-Ministro).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-2",
+    "rotulo": "Artigo 2.º",
+    "tipo": "alterado",
+    "vigor": "2010-06-25"
+   }
+  ],
+  "tipo_ato": "decreto-lei"
+ },
+ "decreto-lei-903-2012": {
+  "id": "decreto-lei-903-2012",
+  "designacao": "Decreto-Lei n.º 903/2012",
+  "publicacao": "2012-03-01",
+  "dr": "900/2012",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-903-2012-900000",
+  "sumario": "Altera a Lei de teste (sem data do Conselho de Ministros).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-3",
+    "rotulo": "Artigo 3.º",
+    "tipo": "alterado",
+    "vigor": null
+   }
+  ],
+  "tipo_ato": "decreto-lei"
+ },
+ "lei-constitucional-901-1997": {
+  "id": "lei-constitucional-901-1997",
+  "designacao": "Lei Constitucional n.º 901/97",
+  "publicacao": "1997-09-20",
+  "dr": "900/1997",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/constitucional-901-1997-900000",
+  "sumario": "Revisão de teste da Constituição.",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-3",
+    "rotulo": "Artigo 3.º",
+    "tipo": "alterado",
+    "vigor": "1997-09-25"
+   }
+  ],
+  "tipo_ato": "lei-constitucional",
+  "ar": {
+   "legislatura": "VII",
+   "diploma_id": "900001"
+  },
+  "iniciativas": [
+   {
+    "id": "900401",
+    "designacao": "Projeto de Revisão Constitucional n.º 901/VII",
+    "titulo": "Revisão de teste.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PS"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900402",
+    "designacao": "Projeto de Revisão Constitucional n.º 902/VII",
+    "titulo": "Revisão de teste.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   }
+  ]
+ },
+ "lei-organica-901-2018": {
+  "id": "lei-organica-901-2018",
+  "designacao": "Lei Orgânica n.º 901/2018",
+  "publicacao": "2018-07-10",
+  "dr": "900/2018",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/organica-901-2018-900000",
+  "sumario": "Altera a Lei de teste (texto da comissão de 7 iniciativas; veto e novo decreto).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-3",
+    "rotulo": "Artigo 3.º",
+    "tipo": "alterado",
+    "vigor": "2018-07-11"
+   }
+  ],
+  "tipo_ato": "lei-organica",
+  "ar": {
+   "legislatura": "XIII",
+   "diploma_id": "900002"
+  },
+  "iniciativas": [
+   {
+    "id": "900300",
+    "designacao": "Projeto de Lei n.º 910/XIII",
+    "titulo": "Altera a Lei de teste (PS).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PS"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900301",
+    "designacao": "Projeto de Lei n.º 911/XIII",
+    "titulo": "Altera a Lei de teste (PSD).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900302",
+    "designacao": "Projeto de Lei n.º 912/XIII",
+    "titulo": "Altera a Lei de teste (BE).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "BE"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900303",
+    "designacao": "Projeto de Lei n.º 913/XIII",
+    "titulo": "Altera a Lei de teste (CDS-PP).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "CDS-PP"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900304",
+    "designacao": "Projeto de Lei n.º 914/XIII",
+    "titulo": "Altera a Lei de teste (PCP).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PCP"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900305",
+    "designacao": "Projeto de Lei n.º 915/XIII",
+    "titulo": "Altera a Lei de teste (PEV).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PEV"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900306",
+    "designacao": "Projeto de Lei n.º 916/XIII",
+    "titulo": "Altera a Lei de teste (PAN).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PAN"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    }
+   }
+  ]
+ },
+ "lei-902-2019": {
+  "id": "lei-902-2019",
+  "designacao": "Lei n.º 902/2019",
+  "publicacao": "2019-02-12",
+  "dr": "900/2019",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/902-2019-900000",
+  "sumario": "Altera a Lei de teste (texto da comissão de 3 iniciativas).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-2",
+    "rotulo": "Artigo 2.º",
+    "tipo": "alterado",
+    "vigor": "2019-02-13"
+   }
+  ],
+  "tipo_ato": "lei",
+  "ar": {
+   "legislatura": "XIII",
+   "diploma_id": "900003"
+  },
+  "iniciativas": [
+   {
+    "id": "900202",
+    "designacao": "Projeto de Lei n.º 901/XIII",
+    "titulo": "Altera a Lei de teste (projeto de teste).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "BE"
+     ],
+     "deputados": [
+      {
+       "nome": "Deputada de teste A",
+       "grupo": "BE"
+      }
+     ],
+     "tipo": "grupos"
+    }
+   },
+   {
+    "id": "900201",
+    "designacao": "Proposta de Lei n.º 902/XIII",
+    "titulo": "Altera a Lei de teste.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    }
+   },
+   {
+    "id": "900203",
+    "designacao": "Projeto de Lei n.º 903/XIII",
+    "titulo": "Altera a Lei de teste e outra lei.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [
+      {
+       "nome": "Deputado de teste B",
+       "grupo": "PSD"
+      }
+     ],
+     "tipo": "grupos"
+    }
+   }
+  ]
+ },
+ "lei-901-2020": {
+  "id": "lei-901-2020",
+  "designacao": "Lei n.º 901/2020",
+  "publicacao": "2020-10-15",
+  "dr": "900/2020",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000",
+  "sumario": "Altera a Lei de teste (proposta de lei; Tribunal Constitucional, veto e confirmação).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "rotulo": "Artigo 1.º",
+    "tipo": "alterado",
+    "vigor": "2020-10-16"
+   }
+  ],
+  "tipo_ato": "lei",
+  "ar": {
+   "legislatura": "XIV",
+   "diploma_id": "900004"
+  },
+  "iniciativas": [
+   {
+    "id": "900101",
+    "designacao": "Proposta de Lei n.º 901/XIV",
+    "titulo": "Altera a Lei de teste.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    }
+   }
+  ]
+ },
+ "declaracao-de-retificacao-901-2020": {
+  "id": "declaracao-de-retificacao-901-2020",
+  "designacao": "Declaração de Retificação n.º 901/2020",
+  "publicacao": "2020-11-10",
+  "dr": "900/2020",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/declaracao-retificacao/de-retificacao-901-2020-900000",
+  "sumario": "Retifica a Lei n.º 901/2020.",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "rotulo": "Artigo 1.º",
+    "tipo": "retificado",
+    "vigor": "2020-10-16"
+   }
+  ],
+  "tipo_ato": "retificacao"
+ },
+ "acordao-do-tribunal-constitucional-9001-2021": {
+  "id": "acordao-do-tribunal-constitucional-9001-2021",
+  "designacao": "Acórdão do Tribunal Constitucional n.º 9001/2021",
+  "publicacao": "2021-03-01",
+  "dr": "900/2021",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/acordao/do-tribunal-constitucional-9001-2021-900000",
+  "sumario": "Declara a inconstitucionalidade, com força obrigatória geral, de uma norma da Lei de teste.",
+  "alteracoes": [],
+  "tipo_ato": "acordao-tc"
+ },
+ "lei-901-2022": {
+  "id": "lei-901-2022",
+  "designacao": "Lei n.º 901/2022",
+  "publicacao": "2022-01-10",
+  "dr": "900/2022",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/901-2022-900000",
+  "sumario": "Orçamento do Estado para 2022",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-1",
+    "rotulo": "Artigo 1.º",
+    "tipo": "alterado",
+    "vigor": "2022-01-01"
+   }
+  ],
+  "tipo_ato": "lei",
+  "ar": {
+   "legislatura": "XIV",
+   "diploma_id": "900005"
+  },
+  "iniciativas": [
+   {
+    "id": "900501",
+    "designacao": "Proposta de Lei n.º 903/XIV",
+    "titulo": "Aprova o Orçamento do Estado para 2022.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    }
+   }
+  ]
+ },
+ "lei-901-2023": {
+  "id": "lei-901-2023",
+  "designacao": "Lei n.º 901/2023",
+  "publicacao": "2023-06-01",
+  "dr": "900/2023",
+  "serie": "Série I",
+  "link": "https://diariodarepublica.pt/dr/detalhe/lei/901-2023-900000",
+  "sumario": "Altera a Lei de teste (sem dados da passagem no Parlamento).",
+  "alteracoes": [
+   {
+    "diploma": "lei-teste",
+    "artigo": "artigo-2",
+    "rotulo": "Artigo 2.º",
+    "tipo": "alterado",
+    "vigor": "2023-06-02"
+   }
+  ],
+  "tipo_ato": "lei",
+  "ar": {
+   "legislatura": "XV",
+   "diploma_id": "900006"
+  }
+ }
+}

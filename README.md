@@ -43,6 +43,8 @@ Lei n.º 64/2025 rewrote the Código do IRC's general rate from 20 % to **17 %**
 
 [`app/`](app/) is a working visualizer built on real data from the DR and the AR. It covers the Constituição, Código do Trabalho, Código do IRC and NRAU: 1,282 articles, 85 amending acts and 142 parliamentary initiatives. It has the article view with the three date bases and the origin of each phrase, word-level comparison, and act and initiative pages. See [app/README.md](app/README.md) to build and run it.
 
+**Stories, glossary and share pages.** The build also compiles content from committed sources ([`pipeline/conteudo.py`](pipeline/conteudo.py)). Two stories ([`pipeline/historias/`](pipeline/historias/)) tell how the Lei da Nacionalidade and the rent rules changed; their prose holds typed references (`{ato:…}`, `{comparar:…}`, `{citacao:…}`, `{voto:…}`), so every date, designation, vote and quotation comes from the data, and lints keep numbers, siglas and judgements out of the prose. Each glossary entry ([`pipeline/glossario.json`](pipeline/glossario.json)) quotes the article of the law that supports it and is left out when that article changes. Both carry the line «com ajuda de uma ferramenta automática» and have not had an external legal review. For link previews, `app/p/` holds a static page with Open Graph tags (and a 1200×630 image drawn with Pillow and the OFL fonts in [`pipeline/fonts/`](pipeline/fonts/)) for each story, diploma, act and notable article redação ([`pipeline/partilha.json`](pipeline/partilha.json)). A daily build withholds what fails a check and lists it in `#/verificacao`; a push with `REDACAO_ESTRITO=1` fails instead.
+
 ## Tools
 
 ```bash

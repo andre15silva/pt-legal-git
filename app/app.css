@@ -369,8 +369,106 @@ details:not(.rd-pop)[open] > :not(summary) { animation: rd-abrir var(--dur-2) va
 
 .lado-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; font-size: 14px; line-height: 20px; color: var(--ink-muted); border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
 
+/* ---- Who made each law (act block, timeline, groups, stories, glossary) --------------------- */
+.foot-links { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 12px !important; }
+.so-estreito-nav { display: none; }
+/* «Como ler esta página»: a quiet fold under the title block. */
+.guia { max-width: 650px; }
+.guia > summary { cursor: pointer; width: fit-content; font-size: 15px; line-height: 22px; color: var(--ink-muted); padding: 4px 0; list-style: none; }
+.guia > summary::-webkit-details-marker { display: none; }
+.guia > summary::before { content: "+ "; }
+.guia[open] > summary::before { content: "− "; }
+.guia > summary:hover { color: var(--ink); }
+.guia-in { padding: 4px 0 0 14px; border-left: 3px solid var(--rule-strong); }
+.guia-in p { margin: 0 0 6px; font-size: 15px; line-height: 22px; }
+.guia-in p:last-child { margin-bottom: 0; }
+.artigo > .guia { margin-top: 16px; }
+.legenda { margin: 4px 0 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.lei-origem .legenda { margin-left: var(--hang); }
+.artigo > .legenda-regua { margin-top: 2px; }
+/* The act's «Quem fez» block: one fact per sentence, in the serif. */
+.quem-frases { display: flex; flex-direction: column; gap: 8px; }
+.quem-frases p, .quem-bloco-lista p { margin: 0; font-family: var(--font-serif); font-size: 17px; line-height: 28px; font-variant-numeric: lining-nums; max-width: 64ch; }
+.quem-lista { list-style: none; margin: 4px 0 0; padding: 0; border-top: 1px solid var(--rule); font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.quem-lista li { padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.dobra.quem-dobra { margin: 6px 0 0; }
+.dobra.como-sabemos { margin: 8px 0 0; }
+.como-lista { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 22px; }
+.factos-dr { margin: 0 0 16px; font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.governo, abbr.sigla { text-decoration: none; }
+abbr[title] { text-decoration: none; }
+.secao-mudou { max-width: 860px; }
+/* The sumário of a long act: four lines on a phone, then «Ler o sumário completo». */
+.sumario { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.sumario-mais { display: none; }
+/* Timeline */
+.subtitulo { margin: 0; font-family: var(--font-serif); font-size: 22px; line-height: 28px; }
+.quem-abas { margin-top: 32px; border-bottom: 1px solid var(--rule); max-width: 860px; }
+.periodos { display: flex; flex-direction: column; }
+.periodo { max-width: 860px; border-top: 1px solid var(--ink); padding-top: 20px; margin-top: 40px; display: flex; flex-direction: column; gap: 4px; }
+.periodo p { margin: 0; }
+.periodo-h { margin: 0 0 4px; font-family: var(--font-serif); font-size: 22px; line-height: 28px; font-weight: 600; font-variant-numeric: lining-nums; }
+.periodo-vazio { border-top-color: var(--rule); padding-top: 12px; margin-top: 24px; }
+.periodo-vazio .periodo-h { font-size: 18px; line-height: 24px; font-weight: 400; }
+.periodo-meta, .periodo-datas { font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.periodo-total { font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.sublista { margin-top: 16px; }
+.sublista-h { margin: 0 0 6px; font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 600; }
+.linhas-ato { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.linha-ato { padding: 12px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 2px; }
+.linha-ato p { margin: 0; }
+.linha-ato-nome { font-family: var(--font-serif); font-size: 18px; line-height: 26px; font-weight: 600; font-variant-numeric: lining-nums; }
+.linha-ato-mais { display: flex; flex-direction: column; gap: 2px; font-size: 15px; line-height: 22px; }
+.linha-ato-mais .voto { margin: 8px 0 12px; }
+.linha-ato-mais .regra-aviso { margin-top: 8px; }
+.linha-ato-mais .quem-bloco-lista p { font-family: var(--font-sans); font-size: 15px; line-height: 22px; }
+.linha-ato-mais .quem-lista { font-family: var(--font-sans); font-size: 15px; line-height: 22px; }
+/* Groups */
+.grupos-lista, .grupo-inis, .grupo-votos { max-width: 860px; margin-top: 32px; }
+.grupos-lista li, .grupo-inis li, .grupo-votos li { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; }
+.grupos-lista p, .grupo-inis p, .grupo-votos p { margin: 0; }
+.grupo-nome { font-family: var(--font-serif); font-size: 19px; line-height: 26px; font-weight: 600; }
+.grupo-ini, .grupo-ato { font-family: var(--font-serif); font-size: 17px; line-height: 26px; }
+.grupo-inis, .grupo-votos { margin-top: 0; }
+.grupo-notas { margin-top: 32px; max-width: 650px; display: flex; flex-direction: column; gap: 4px; }
+.grupo-escolha { display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 20px; color: var(--ink-muted); max-width: 420px; }
+.grupo-escolha select { min-height: 44px; font-size: 16px; color: var(--ink); }
+.pagina-grupo .secao, .pagina-glossario .secao { max-width: 860px; }
+/* Stories */
+.historias-lista li { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; }
+.historias-lista p { margin: 0; }
+.historia-titulo { font-family: var(--font-serif); font-size: 22px; line-height: 28px; font-weight: 600; }
+.dip-lado .historia-titulo { font-size: 19px; line-height: 26px; }
+.historia-resumo { font-family: var(--font-serif); font-size: 16px; line-height: 24px; }
+.historia-aviso { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); max-width: 64ch; }
+.historias-indice { max-width: 860px; margin-top: 32px; }
+.historia-topo { display: grid; grid-template-columns: minmax(0, 650px) 300px; grid-template-areas: "resumo perguntas" "numeros perguntas"; justify-content: space-between; column-gap: 64px; row-gap: 40px; margin-top: 40px; align-items: start; }
+.historia-resumo-sec { grid-area: resumo; }
+.historia-perguntas { grid-area: perguntas; }
+.historia-numeros { grid-area: numeros; }
+.historia-topo section, .historia-topo nav { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.historia-topo h2, .pagina-historia .secao h2 { margin: 0; font-family: var(--font-serif); font-size: 22px; line-height: 28px; font-weight: 600; }
+.historia-topo p, .historia-p { margin: 0; font-family: var(--font-serif); font-size: 18px; line-height: 29px; max-width: 64ch; font-variant-numeric: lining-nums; }
+.pagina-historia .secao { max-width: 760px; }
+.pagina-historia .secao > p { margin: 0; }
+.historia-mostrar ul, .historia-quem ul { margin-top: 8px; }
+.historia-mostrar li { display: flex; flex-direction: column; gap: 2px; }
+.historia-mostrar p { margin: 0; font-size: 15px; line-height: 22px; }
+.historia-mostrar [data-citacao] { font-family: var(--font-serif); font-size: 16px; }
+.mostrar-rot { font-weight: 600; }
+.todas li { font-size: 15px; line-height: 22px; }
+.todas-ret { margin: 2px 0 0 24px; color: var(--ink-muted); }
+.nota { margin: 0; }
+/* Glossary */
+.glossario-entrada { padding: 12px 0; border-bottom: 1px solid var(--rule); max-width: 650px; }
+.glossario-entrada h3 { margin: 0 0 4px; font-family: var(--font-serif); font-size: 19px; line-height: 26px; font-weight: 600; }
+.rd-termo-folha { display: flex; flex-direction: column; gap: 6px; }
+.rd-termo-folha p { margin: 0; }
+.folha .rd-termo-folha { padding-bottom: 8px; }
+
 @media (max-width: 1060px) {
   .art-corpo, .duas, .duas-largo { grid-template-columns: minmax(0, 1fr); row-gap: 48px; }
+  .historia-topo { grid-template-columns: minmax(0, 1fr); grid-template-areas: "resumo" "perguntas" "numeros"; }
   .art-registo { position: static; }
 }
 @media (max-width: 1100px) {
@@ -381,6 +479,16 @@ details:not(.rd-pop)[open] > :not(summary) { animation: rd-abrir var(--dur-2) va
   .lado-head { display: none; }
 }
 @media (max-width: 760px) {
+  .so-largo-nav { display: none; }
+  .so-estreito-nav { display: inline; }
+  .sumario.is-curto .lead { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .sumario.is-curto .sumario-mais { display: inline-flex; }
+  .top-nav { gap: 16px; }
+  /* Links in ledgers are at least 44 px tall on a phone. */
+  .linha-ato-nome a, .linha-ato-mais a, .como-lista a, .foot-links a, .grupo-inis a, .grupo-votos a, .historias-lista a { display: inline-block; padding-block: 10px; margin-block: -10px; }
+  .linha-ato { padding: 14px 0; }
+  .periodo { margin-top: 32px; }
+  .subtitulo { font-size: 19px; line-height: 26px; }
   .fases li { grid-template-columns: minmax(0, 1fr); row-gap: 2px; }
   .so-largo-b { display: none; }
   .so-estreito-b { display: block; }

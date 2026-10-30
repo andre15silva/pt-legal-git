@@ -9,12 +9,15 @@
   // Loaded files stay in memory. A page whose files are all loaded renders at once, without a
   // loading state, so moving between pages never flashes "A carregar…".
   var cache = {}, valores = {};
+  // A path that starts with "?" is optional: a missing file gives null (files the pipeline adds
+  // later, or that a lenient build left out).
   function load(path) {
     if (!cache[path]) {
-      cache[path] = fetch('data/' + path).then(function (r) {
-        if (!r.ok) throw new Error(path + ': ' + r.status);
+      var opcional = path.charAt(0) === '?', f = opcional ? path.slice(1) : path;
+      cache[path] = fetch('data/' + f).then(function (r) {
+        if (!r.ok) { if (opcional) return null; throw new Error(f + ': ' + r.status); }
         return r.json();
-      }).then(function (j) { valores[path] = j; return j; });
+      }).then(function (j) { valores[path] = j; return j; }, function (e) { if (opcional) { valores[path] = null; return null; } throw e; });
     }
     return cache[path];
   }
@@ -82,6 +85,519 @@
   function diaAntes(iso) { var d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); }
   function abrev(iso) { if (!iso) return ''; var p = iso.split('-'); return Number(p[2]) + ' ' + MESES[Number(p[1]) - 1].slice(0, 3) + '. ' + p[0]; }
 
+  // ---- Who made each law: the copy ----------------------------------------------------------
+  // One source of sentences for the act page, the register, the timeline, the group pages and the
+  // stories. The functions return partes: strings and small objects that render() turns into
+  // elements and textoDe() into plain text (node tests read that). The pipeline writes facts and
+  // reason codes; the words are here.
+  // partes: string | {t:'link', href, texto} | {t:'termo', id, texto} | {t:'sigla', sigla, nome}
+  //   | {t:'governo', numero} | {t:'forte', texto} | {t:'lista', itens: [partes], dobra?} | {t:'votos', ato}
+  // ref: {atos, quem, governos, passagem, index}, any of them possibly missing.
+  var MOTIVOS = {
+    sem_d_cm: 'Não encontrámos a data do Conselho de Ministros no texto do decreto-lei.',
+    sem_link: 'Não temos a ligação ao Diário da República deste ato.',
+    sem_texto: 'O Diário da República não tem o texto deste ato em formato que possamos ler.',
+    por_ler: 'Ainda não lemos as assinaturas deste ato no Diário da República.',
+    sessao_em_falta: 'Os dados abertos do Parlamento não incluem esta sessão legislativa.',
+    sem_ar: 'Não encontrámos esta lei nos dados abertos do Parlamento.',
+    antes_1976: 'Antes da Constituição de 1976.',
+    antes_governo_constitucional: 'Aprovado antes do I Governo Constitucional.',
+    tabela_aberta: 'Ainda não confirmámos este facto na nossa tabela.',
+    conflito: 'As fontes não concordam. Ainda não confirmámos este facto.',
+    voto_ambiguo: 'A mesma iniciativa deu origem a vários decretos. Não sabemos qual destes votos é o desta lei.',
+    passos_descartados: 'As datas do Parlamento para esta lei não estão em ordem. Por isso, não as mostramos.',
+    sem_registo_vfg: 'Não temos o registo da votação final global.',
+    sem_generalidade: 'Não temos o registo da votação na generalidade.'
+  };
+  // The sentence of a reason code and the link that explains the limits of the data.
+  function motivo(code) { return MOTIVOS[code] ? [MOTIVOS[code], ' ', lig('#/sobre/limites', 'Porquê?')] : []; }
+  function lig(href, texto) { return { t: 'link', href: href, texto: texto }; }
+  function gov(n) { return { t: 'governo', numero: n }; }
+  function textoDe(partes) {
+    return (partes || []).map(function (x) {
+      if (typeof x === 'string') return x;
+      if (!x) return '';
+      if (x.t === 'governo' && x.numero != null) return romano(x.numero) + ' Governo Constitucional';
+      if (x.t === 'sigla') return x.sigla;
+      if (x.t === 'lista') return ' ' + x.itens.map(textoDe).join(' · ');
+      if (x.partes) return textoDe(x.partes);
+      return x.texto || '';
+    }).join('');
+  }
+  function romano(n) {
+    var r = '';
+    [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]
+      .forEach(function (x) { while (n >= x[0]) { r += x[1]; n -= x[0]; } });
+    return r;
+  }
+  // "décimo quinto": how a screen reader says the number of a Government (1 to 39).
+  var UNIDADES = ['', 'primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto', 'sétimo', 'oitavo', 'nono'];
+  var DEZENAS = ['', 'décimo', 'vigésimo', 'trigésimo'];
+  function ordinalExtenso(n) { return [DEZENAS[Math.floor(n / 10)], UNIDADES[n % 10]].filter(Boolean).join(' '); }
+  // "a Lei n.º 2/2020", "o Decreto-Lei n.º 10/2024": the article that goes with a designation.
+  function feminino(des) { return !/^(Decreto|Acórdão|Despacho|Projeto|Texto|Aviso|Regulamento|Código|Assento)/.test(des || ''); }
+  function aDe(des) { return feminino(des) ? 'a' : 'o'; }
+  function daDe(des) { return feminino(des) ? 'da' : 'do'; }
+  // "Lei n.º 31/2012, de 14 de agosto"; "Decreto-Lei n.º 47344, de 25 de novembro de 1966" (no year in the number).
+  function nomeCompleto(ato) {
+    if (!ato || !ato.publicacao) return ato ? ato.designacao : '';
+    return ato.designacao + ', de ' + (/\/\d{2,4}(\/\d+)?$/.test(ato.designacao) ? semAno(ato.publicacao) : extenso(ato.publicacao));
+  }
+  // The kind of act, when quem.json does not say it (before the pipeline writes tipo_ato).
+  function tipoDe(des) {
+    des = des || '';
+    if (/^Lei Constitucional/.test(des)) return 'lei-constitucional';
+    if (/^Lei Orgânica/.test(des)) return 'lei-organica';
+    if (/^Lei\b/.test(des)) return 'lei';
+    if (/^Decreto-Lei/.test(des)) return 'decreto-lei';
+    if (/Retifica|Rectifica/.test(des)) return 'retificacao';
+    if (/^Acórdão do Tribunal Constitucional/.test(des)) return 'acordao-tc';
+    if (/^Acórdão/.test(des)) return 'acordao-outro';
+    if (/^Decreto de Aprovação da Constituição/.test(des)) return 'aprovacao-constituicao';
+    return 'outro';
+  }
+  var LEIS = { lei: 1, 'lei-organica': 1, 'lei-constitucional': 1 };
+  function governoDe(ref, n) { return n == null || !ref.governos ? null : (ref.governos.governos || []).filter(function (g) { return g.numero === n; })[0] || null; }
+  function presidenteDe(ref, id) { return id == null || !ref.governos ? null : (ref.governos.presidentes || []).filter(function (p) { return p.id === id; })[0] || null; }
+  // The group a sigla named in one legislatura, and its name in the Assembleia's records.
+  function nomeGrupo(sigla, leg, gj) {
+    if (!gj || !sigla) return null;
+    var grupos = gj.grupos || {}, id = ((gj.siglas || {})[leg] || {})[sigla];
+    if (!id) Object.keys(grupos).forEach(function (k) { if (!id && (grupos[k].nomes || []).some(function (x) { return x.sigla === sigla; })) id = k; });
+    if (!id || !grupos[id]) return null;
+    var ns = grupos[id].nomes || [];
+    var n = ns.filter(function (x) { return x.sigla === sigla && (x.legislaturas || []).indexOf(leg) >= 0; })[0] || ns.filter(function (x) { return x.sigla === sigla; })[0];
+    return { id: id, nome: n ? n.nome : sigla };
+  }
+  // {sigla: name} for the groups of one legislatura, for R.Votacao.
+  function nomesDe(ref, leg) {
+    var out = {}, gj = ref.governos;
+    if (!gj) return out;
+    Object.keys((gj.siglas || {})[leg] || {}).forEach(function (s) { var g = nomeGrupo(s, leg, gj); if (g) out[s] = g.nome; });
+    return out;
+  }
+  function legDe(designacao) { var m = /\/([IVXLC]+|Constituinte)$/.exec(designacao || ''); return m ? m[1] : null; }
+  // "do Bloco de Esquerda", "da Iniciativa Liberal".
+  var GRUPO_F = /^(Iniciativa|Ac?ção|União|Intervenção|Aliança|Frente|Associação|Coligação|Nova|Renovação)\b/;
+  function doGrupo(nome) { return (GRUPO_F.test(nome) ? 'da ' : 'do ') + nome; }
+  function grupoComNome(g, leg, ref) {
+    var n = nomeGrupo(g.sigla, leg, ref.governos);
+    return n && n.nome !== g.sigla ? doGrupo(n.nome) + ' (' + g.sigla + ')' : 'do ' + g.sigla;
+  }
+  function nomesSemGrupo(p) { return (p.sem_grupo || []).map(function (x) { return typeof x === 'string' ? x : x.nome; }).filter(Boolean); }
+  // Who presented one initiative: as the subject of a sentence, and after a designation ("do …", "de …").
+  function autorIni(p, ref, leg) {
+    leg = legDe(p.designacao) || leg;
+    if (p.tipo === 'governo') return p.governo != null ? { sujeito: ['O ', gov(p.governo)], de: ['do ', gov(p.governo)] } : { sujeito: ['O Governo'], de: ['do Governo'] };
+    if (p.tipo === 'cidadaos') return { sujeito: ['Um grupo de cidadãos'], de: ['de um grupo de cidadãos'] };
+    if (p.tipo === 'regiao') { var r = p.nome || 'Assembleia Legislativa de uma Região Autónoma'; return { sujeito: ['A ' + r], de: ['da ' + r] }; }
+    if (p.tipo === 'comissao') return { sujeito: ['Uma comissão do Parlamento'], de: ['de uma comissão do Parlamento'] };
+    if (p.tipo === 'mesa') return /Presidente/.test(p.nome || '') ? { sujeito: ['O Presidente da Assembleia da República'], de: ['do Presidente da Assembleia da República'] }
+      : { sujeito: ['A Mesa da Assembleia da República'], de: ['da Mesa da Assembleia da República'] };
+    var gs = (p.grupos || []).map(function (g) { return grupoComNome(g, leg, ref); }), sem = nomesSemGrupo(p);
+    var semTxt = sem.length ? lista(sem) + ' (sem grupo parlamentar)' : '';
+    if (!gs.length && sem.length) return { sujeito: [semTxt], de: ['de ' + semTxt], singular: sem.length === 1 };
+    var dep = 'deputados' + (gs.length ? ' ' + lista(gs) : '') + (semTxt ? ' e ' + semTxt : '');
+    return { sujeito: ['D' + dep.slice(1)], de: ['de ' + dep] };
+  }
+  function hrefIni(id, p) {
+    return p && (p.iniciativas || []).some(function (i) { return i.id === id; }) ? link(['iniciativa', id])
+      : 'https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=' + encodeURIComponent(id);
+  }
+  function ligIni(id, des, p) { var h0 = hrefIni(id, p); return lig(h0, /^https/.test(h0) ? des + ' ↗' : des); }
+  // A provisional record from passagem.json alone, until the pipeline writes quem.json.
+  function quemProvisorio(ato, p) {
+    return { tipo_ato: tipoDe(ato && ato.designacao), proponentes: p ? p.iniciativas.map(function (i) {
+      var a = i.autores || {}, t = a.tipo === 'deputados' ? 'grupos' : a.tipo;
+      return { iniciativa: i.id, designacao: i.designacao, tipo: t, governo: null, grupos: (a.grupos || []).map(function (s) { return { id: null, sigla: s }; }),
+        sem_grupo: (a.deputados || []).filter(function (d) { return SEM_GRUPO[d.grupo]; }).map(function (d) { return d.nome; }), nome: a.nome };
+    }) : [], texto_comissao: null, vfg: null, eventos: [], motivos: {}, provisorio: true };
+  }
+  function registo(ref, id) {
+    var ato = (ref.atos || {})[id] || { id: id, designacao: id, alteracoes: [] }, p = (ref.passagem || {})[id] || null;
+    return { ato: ato, p: p, quem: (ref.quem || {})[id] || quemProvisorio(ato, p) };
+  }
+
+  // «O XV Governo Constitucional apresentou a Proposta de Lei n.º 71/XV.» One sentence per
+  // initiative, in the order of entry, with equal weight. A committee text: a lead sentence and the
+  // list of the initiatives its text names (in a fold when there are more than three).
+  function frasesProponentes(quem, ref, p) {
+    var out = [], leg = quem.legislatura;
+    var porId = {};
+    (quem.proponentes || []).forEach(function (x) { porId[x.iniciativa] = x; });
+    if (quem.tipo_ato === 'lei-constitucional' && (quem.proponentes || []).length) {
+      var gs = [], vistos = {};
+      quem.proponentes.forEach(function (x) { (x.grupos || []).forEach(function (g) { if (!vistos[g.sigla]) { vistos[g.sigla] = 1; gs.push(grupoComNome(g, legDe(x.designacao) || leg, ref)); } }); });
+      var n = quem.proponentes.length;
+      out.push(['Deputados' + (gs.length ? ' ' + lista(gs) : '') + ' apresentaram ' + n + (n === 1 ? ' projeto de revisão constitucional.' : ' projetos de revisão constitucional.')]);
+      return out;
+    }
+    var tc = quem.texto_comissao;
+    if (tc && (tc.iniciativas || []).length) {
+      var k = tc.n_iniciativas || tc.iniciativas.length;
+      var itens = tc.iniciativas.map(function (i) {
+        var a = porId[i.iniciativa], des = ligIni(i.iniciativa, i.designacao, p);
+        var antes = i.parte ? ['o ' + i.parte + ' ' + daDe(i.designacao) + ' ', des] : [des];
+        return a ? antes.concat([', ']).concat(autorIni(a, ref, leg).de) : antes;
+      });
+      out.push([k === 1 ? 'Uma comissão do Parlamento escreveu o texto final a partir de uma iniciativa:' : 'Uma comissão do Parlamento juntou ' + k + ' iniciativas num só texto:',
+        { t: 'lista', itens: itens, dobra: itens.length > 3 ? 'Ver as ' + itens.length + ' iniciativas' : null }]);
+      return out;
+    }
+    (quem.proponentes || []).forEach(function (x) {
+      var a = autorIni(x, ref, leg), plural = x.tipo === 'grupos' && !a.singular;
+      var f = a.sujeito.concat([' ' + (plural ? 'apresentaram ' : 'apresentou ') + aDe(x.designacao) + ' ', ligIni(x.iniciativa, x.designacao, p), '.']);
+      if (x.tipo === 'governo' && x.governo == null && (quem.motivos || {}).governo) f = f.concat([' ']).concat(motivo(quem.motivos.governo));
+      out.push(f);
+    });
+    return out;
+  }
+  // «Votação final global: o Parlamento aprovou o texto a 19 de julho de 2023.» No group list.
+  function linhaVfg(vfg, code, href) {
+    if (!vfg) return code && MOTIVOS[code] ? motivo(code) : ['Não temos o registo da votação final global.'];
+    var d = href ? lig(href, extenso(vfg.data)) : extenso(vfg.data);
+    return ['Votação final global: o Parlamento ' + (vfg.resultado === 'Rejeitado' ? 'rejeitou' : 'aprovou') + ' o texto a ', d, vfg.unanime ? ', por unanimidade.' : '.'];
+  }
+  // Veto, Constitutional Court, confirmation, new decree: between the final vote and publication.
+  function linhasEventos(eventos, ref, href) {
+    var out = [];
+    (eventos || []).slice().sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; }).forEach(function (e) {
+      var d = href ? lig(href, extenso(e.data)) : extenso(e.data);
+      if (e.tipo === 'veto') {
+        if (e.acordao_tc) out.push(['O Tribunal Constitucional decidiu sobre o decreto (Acórdão n.º ' + e.acordao_tc + ').']);
+        var pr = presidenteDe(ref, e.presidente);
+        out.push(['O Parlamento recebeu o veto do Presidente da República' + (pr ? ', ' + pr.nome + ',' : '') + ' a ', d, '.']);
+      } else if (e.tipo === 'tribunal') out.push(['O Tribunal Constitucional decidiu sobre o decreto a ', d, '.']);
+      else if (e.tipo === 'confirmacao') out.push(['O Parlamento confirmou o decreto a ', d, '.']);
+      else if (e.tipo === 'novo_decreto') out.push(['O Parlamento aprovou um novo decreto a ', d, '.']);
+    });
+    return out;
+  }
+  function fonteDR(quem, ato) { return (quem.assinatura && quem.assinatura.url) || (ato && ato.link) || null; }
+  function data(href, iso) { return href ? lig(href, extenso(iso)) : extenso(iso); }
+  // «O Presidente da República, Jorge Sampaio, promulgou a lei a 6 de agosto de 2003.»
+  function linhaPresidente(quem, ref, ato, objeto) {
+    var pr = quem.presidente, dr = fonteDR(quem, ato);
+    if (!pr || !pr.d_promulgacao) return ['Não temos a data da promulgação.'].concat((quem.motivos || {}).presidente ? [' '].concat(motivo(quem.motivos.presidente)) : []);
+    var row = presidenteDe(ref, pr.id), nome = (row && row.nome) || pr.nome;
+    if (!nome) return ['O Presidente da República promulgou ' + objeto + ' a ', data(dr, pr.d_promulgacao), '.'];
+    return [pr.interino ? 'O Presidente da República Interino, ' : 'O Presidente da República, ', row && row.fonte ? lig(row.fonte, nome) : nome, ', promulgou' + (objeto === 'o' ? '-o' : ' ' + objeto) + ' a ', data(dr, pr.d_promulgacao), '.'];
+  }
+  // «Partidos no Governo: Partido Social Democrata (PSD), CDS – Partido Popular (CDS-PP).»
+  function frasePartidos(g, ref, leg) {
+    if (!g || g.partidos == null) return null;
+    if (!g.partidos.length) return g.nota_partidos ? ['Os partidos não indicaram os ministros deste Governo. ', lig(g.nota_partidos.fonte, 'Fonte ↗')] : null;
+    var grupos = (ref.governos || {}).grupos || {};
+    var nomes = g.partidos.map(function (id) {
+      var ns = (grupos[id] || {}).nomes || [];
+      var n = ns.filter(function (x) { return (x.legislaturas || []).indexOf(leg) >= 0; })[0] || ns[ns.length - 1];
+      return n ? n.nome + ' (' + n.sigla + ')' : id;
+    });
+    var f = [(nomes.length === 1 ? 'Partido no Governo: ' : 'Partidos no Governo: ') + nomes.join(', ') + '.'];
+    return g.fontes && g.fontes.partidos ? f.concat([' ', lig(g.fontes.partidos, 'Fonte ↗')]) : f;
+  }
+  function frasesDL(quem, ref, ato) {
+    var out = [], m = quem.motivos || {}, dr = fonteDR(quem, ato);
+    if (quem.governo && quem.governo.numero != null && quem.d_cm) {
+      var g = governoDe(ref, quem.governo.numero);
+      out.push(['O ', gov(quem.governo.numero), ' aprovou este decreto-lei em Conselho de Ministros a ', data(dr, quem.d_cm), '.']);
+      if (g && g.primeiro_ministro) out.push(['Primeiro-Ministro: ', g.fontes && g.fontes.primeiro_ministro ? lig(g.fontes.primeiro_ministro, g.primeiro_ministro) : g.primeiro_ministro, '.']);
+      var pt = frasePartidos(g, ref, quem.legislatura);
+      if (pt) out.push(pt);
+      if (quem.em_gestao && quem.em_gestao.fonte) out.push(['Nesta data, o Governo estava demitido. A Constituição limita os atos de um Governo demitido à gestão corrente. ', lig(quem.em_gestao.fonte, 'Fonte ↗')]);
+    } else {
+      var f = ['Não sabemos que Governo aprovou este decreto-lei.'], c = m.governo || m.d_cm;
+      if (c) f = f.concat([' ']).concat(motivo(c));
+      if (quem.governo_publicacao != null) f = f.concat([' Publicado durante o ', gov(quem.governo_publicacao), '.']);
+      out.push(f);
+    }
+    out.push(['O Parlamento não votou este texto.']);
+    out.push(linhaPresidente(quem, ref, ato, 'o'));
+    return out;
+  }
+  // «Publicada no Diário da República a 6 de outubro de 2023.» and the entry into force.
+  function frasesPublicacao(ato) {
+    var out = [];
+    if (ato.publicacao) out.push([(feminino(ato.designacao) ? 'Publicada' : 'Publicado') + ' no Diário da República a ', data(ato.link, ato.publicacao), '.']);
+    var vs = [];
+    (ato.alteracoes || []).forEach(function (c) { if (c.vigor && vs.indexOf(c.vigor) < 0) vs.push(c.vigor); });
+    vs.sort();
+    if (vs.length > 1) out.push(['Entrou em vigor em datas diferentes. Veja cada artigo.']);
+    else if (vs.length === 1) out.push([(vs[0] > hoje() ? 'Entra em vigor a ' : 'Entrou em vigor a ') + extenso(vs[0]) + '.']);
+    else out.push(['O Diário da República não indica a data de entrada em vigor.']);
+    return out;
+  }
+  // "artigo-1067-a" -> "1067.º-A"
+  function numArtigo(a) { return String(a || '').replace(/^artigo-/, '').replace(/^(\d+)(?:-([a-z]+))?$/, function (m, n, l) { return n + '.º' + (l ? '-' + l.toUpperCase() : ''); }); }
+  function frasesAcordao(quem, ref, ato) {
+    var t = quem.tribunal || {}, out = [], nomes = {};
+    ((ref.index || {}).diplomas || []).forEach(function (d) { nomes[d.slug] = d; });
+    var dt = t.data || ato.publicacao;
+    if (dt) out.push([t.data_base === 'decisao' ? 'O Tribunal Constitucional decidiu a ' : 'O Tribunal Constitucional publicou este acórdão a ', data(ato.link, dt), '.']);
+    (t.normas || []).forEach(function (n) {
+      var d = nomes[n.diploma], ns = n.numeros || [];
+      var onde = ns.length ? (ns.length === 1 ? 'o n.º ' + ns[0] : 'os n.os ' + lista(ns)) + ' do ' : 'o ';
+      out.push(['Declarou ' + (n.tipo === 'ilegal' ? 'ilegal' : 'inconstitucional') + ', com força obrigatória geral, ' + onde, lig(link(['d', n.diploma, n.artigo]), 'artigo ' + numArtigo(n.artigo)),
+        ' ' + (d ? (d.genitivo || 'de ' + d.titulo) : 'de ' + n.diploma) + '.']);
+      var e = n.escrito_por && (ref.atos || {})[n.escrito_por];
+      if (e) out.push([aDe(e.designacao).toUpperCase() + ' ', lig(link(['ato', n.escrito_por]), e.designacao), ' escreveu esse texto.']);
+      if (n.efeitos_desde) out.push(['A decisão produz efeitos desde ' + extenso(n.efeitos_desde) + '.']);
+    });
+    out.push(['Não é um ato do Governo nem do Parlamento.']);
+    return out;
+  }
+  // Atenção: the act has a transitional norm. It may change how the text applies to a case.
+  function avisoTransitorias(quem, ato) {
+    var ts = quem.transitorias || [];
+    if (!ts.length) return null;
+    var tipo = quem.tipo_ato || tipoDe(ato.designacao);
+    var este = LEIS[tipo] ? 'esta lei tem ' : tipo === 'decreto-lei' ? 'este decreto-lei tem ' : 'este diploma tem ';
+    var arts = lista(ts.map(function (x) { return x.artigo; }));
+    var f = [{ t: 'forte', texto: 'Atenção: ' }, este + (ts.length === 1 ? 'uma norma transitória (artigo ' : 'normas transitórias (artigos ') + arts + ' ' + daDe(ato.designacao) + ' ' + ato.designacao +
+      '). Leia a norma antes de aplicar o texto a um pedido ou a um contrato. '];
+    if (ato.link) f.push(lig(ato.link, 'Ler o ato no Diário da República ↗'), ' ');
+    f.push('Para um caso concreto, fale com um advogado, um solicitador ou um serviço de apoio jurídico.');
+    f.classe = 'aviso';
+    return f;
+  }
+  // The heading of the «Quem fez» block, by kind of act.
+  function tituloQuem(tipo) {
+    return { lei: 'Quem fez esta lei', 'lei-organica': 'Quem fez esta lei', 'decreto-lei': 'Quem fez este decreto-lei', 'lei-constitucional': 'Quem fez esta revisão da Constituição',
+      retificacao: 'Quem publicou esta retificação', 'acordao-tc': 'Quem decidiu', 'acordao-outro': 'Quem decidiu', pre1976: 'Quem assinou este diploma' }[tipo] || 'Quem fez este diploma';
+  }
+  function hrefAR(quem, p) {
+    if (quem.ar_url) return quem.ar_url;
+    var i = (quem.proponentes || [])[0];
+    return i ? hrefIni(i.iniciativa, null) : null;
+  }
+  // The whole «Quem fez» block of an act, one fact per sentence, in the order of events.
+  function frasesQuem(quem, p, ato, ref) {
+    quem = quem || quemProvisorio(ato, p);
+    var tipo = quem.tipo_ato || tipoDe(ato.designacao), m = quem.motivos || {}, out = [];
+    if (quem.oe) out.push(['Lei do Orçamento do Estado para ' + quem.oe.ano + '. Uma lei do Orçamento do Estado também pode alterar outras leis.']);
+    if (tipo === 'decreto-lei') out = out.concat(frasesDL(quem, ref, ato));
+    else if (LEIS[tipo]) {
+      if ((quem.proponentes || []).length || quem.texto_comissao) {
+        out = out.concat(frasesProponentes(quem, ref, p));
+        if (m.passos) out.push(motivo(m.passos));
+        var ar = hrefAR(quem, p);
+        if (!quem.provisorio) out.push(linhaVfg(quem.vfg, m.vfg, ar));
+        out = out.concat(linhasEventos(quem.eventos, ref, ar));
+      } else {
+        var f = m.passagem ? motivo(m.passagem) : ['Não temos os dados da passagem desta lei no Parlamento.'];
+        if (quem.ar_url) f = f.concat([' ', lig(quem.ar_url, 'Ver na Assembleia da República ↗')]);
+        out.push(f);
+      }
+      if (!quem.provisorio) out.push(linhaPresidente(quem, ref, ato, 'a lei'));
+      if (tipo === 'lei-constitucional') out.push(['O Presidente não pode recusar a promulgação de uma revisão constitucional.']);
+    } else if (tipo === 'retificacao') {
+      var c = quem.retifica && (ref.atos || {})[quem.retifica];
+      out.push(c ? ['Esta declaração corrige erros do texto publicado ' + daDe(c.designacao) + ' ', lig(link(['ato', quem.retifica]), c.designacao), '. Não tem votação.'] : ['Esta declaração corrige erros do texto publicado de outro diploma. Não tem votação.']);
+      if (c) out.push(['Ver quem fez ' + aDe(c.designacao) + ' ', lig(link(['ato', quem.retifica]), c.designacao), '.']);
+      if (ato.publicacao) out.push(['Publicada no Diário da República a ', data(ato.link, ato.publicacao), '.']);
+      return out;
+    } else if (tipo === 'acordao-tc' || tipo === 'acordao-outro') return out.concat(frasesAcordao(quem, ref, ato));
+    else if (tipo === 'pre1976') {
+      out.push(['Antes da Constituição de 1976.']);
+      var ss = (quem.pre1976 || {}).signatarios || [];
+      out.push(ss.length ? ['Assinaram este diploma:', { t: 'lista', itens: ss.map(function (s) { return [s]; }) }] : ['Não lemos as assinaturas deste diploma.']);
+    } else if (quem.presidente) out.push(linhaPresidente(quem, ref, ato, 'o'));
+    return out.concat(frasesPublicacao(ato));
+  }
+  // R-23: one short line about the people behind an act, for the register and the timeline.
+  function linhaPessoas(quem, ref, id) {
+    var ato = id ? registo(ref, id).ato : {};
+    quem = quem || registo(ref, id).quem;
+    var tipo = quem.tipo_ato || tipoDe(ato.designacao);
+    if (tipo === 'decreto-lei') {
+      if (!quem.governo || quem.governo.numero == null) return ['Decreto-lei. Não sabemos que Governo o aprovou.'];
+      var g = governoDe(ref, quem.governo.numero);
+      return ['Decreto-lei do ', gov(quem.governo.numero), g && g.primeiro_ministro ? ' (' + g.primeiro_ministro + ')' : ''];
+    }
+    if (tipo === 'retificacao') return ['Declaração de retificação. Não tem votação.'];
+    if (tipo === 'acordao-tc') return ['Acórdão do Tribunal Constitucional.'];
+    if (tipo === 'pre1976') return ['Antes da Constituição de 1976.'];
+    if (!LEIS[tipo]) return ato.publicacao ? [(feminino(ato.designacao) ? 'Publicada a ' : 'Publicado a ') + curta(ato.publicacao)] : ['Não sabemos quem propôs.'];
+    var quando = function (f) { return quem.vfg ? ' · ' + (f ? 'aprovada' : 'aprovado') + ' a ' + curta(quem.vfg.data) : ato.publicacao ? ' · publicada a ' + curta(ato.publicacao) : ''; };
+    var ps = quem.proponentes || [], leg = quem.legislatura;
+    if (tipo === 'lei-constitucional') return ['Revisão da Constituição' + quando(true)];
+    if (quem.texto_comissao) { var n = quem.texto_comissao.n_iniciativas || quem.texto_comissao.iniciativas.length; return ['Texto da comissão (' + n + (n === 1 ? ' iniciativa)' : ' iniciativas)') + quando(false)]; }
+    if (!ps.length) return ['Não sabemos quem propôs.'];
+    var tipos = ps.map(function (x) { return x.tipo; }).filter(function (x, k, a) { return a.indexOf(x) === k; });
+    var mais = ps.length > 1 ? 's' : '';
+    if (tipos.length > 1) return ['Lei de ' + ps.length + ' iniciativas' + quando(true)];
+    var x = ps[0];
+    if (tipos[0] === 'governo') {
+      var gs = ps.map(function (y) { return y.governo; }).filter(function (y, k, a) { return a.indexOf(y) === k; });
+      return gs.length === 1 && gs[0] != null ? ['Proposta' + mais + ' de lei do ', gov(gs[0]), quando(true)] : ['Proposta' + mais + ' de lei do Governo' + quando(true)];
+    }
+    if (tipos[0] === 'grupos') {
+      var sg = [];
+      ps.forEach(function (y) { (y.grupos || []).forEach(function (g) { if (sg.indexOf(g.sigla) < 0) sg.push(g.sigla); }); });
+      if (!sg.length) { var sem = nomesSemGrupo(x); return ['Projeto' + mais + ' de lei de ' + (sem.length ? lista(sem) + ' (sem grupo parlamentar)' : 'deputados') + quando(false)]; }
+      if (sg.length > 3) return ['Projeto' + mais + ' de lei de deputados de ' + sg.length + ' grupos parlamentares' + quando(false)];
+      var f = ['Projeto' + mais + ' de lei de deputados do '];
+      sg.forEach(function (s, k) { if (k) f.push(', '); var n = nomeGrupo(s, legDe(x.designacao) || leg, ref.governos); f.push({ t: 'sigla', sigla: s, nome: n ? n.nome : null }); });
+      f.push(quando(false));
+      return f;
+    }
+    var a = autorIni(x, ref, leg).de;
+    return [(/^Proposta/.test(x.designacao) ? 'Proposta' + mais + ' de lei ' : 'Projeto' + mais + ' de lei ')].concat(a).concat([quando(/^Proposta/.test(x.designacao))]);
+  }
+  // R-22: an Orçamento do Estado act changed this article. Who proposed this redação is not known.
+  function fraseOE(quem) {
+    var n = (quem.proponentes || []).filter(function (x) { return x.tipo === 'governo' && x.governo != null; })[0];
+    return ['Lei do Orçamento do Estado para ' + quem.oe.ano].concat(n ? [', proposta pelo ', gov(n.governo)] : []).concat(['. Não sabemos ainda quem propôs a redação deste artigo.']);
+  }
+  // One act as a row of the timeline or a block of a story. Expanded: the whole story of the act.
+  // o: {expandida, slug, governoPeriodo (the Government of the timeline row), semDcm, retificacoes}
+  function linhaAto(id, ref, o) {
+    o = o || {};
+    var r = registo(ref, id), ato = r.ato, p = r.p, quem = r.quem, m = quem.motivos || {};
+    var tipo = quem.tipo_ato || tipoDe(ato.designacao), out = [];
+    out.push([lig(link(['ato', id]), nomeCompleto(ato))]);
+    var pessoas = linhaPessoas(quem, ref, id);
+    var ppl = (quem.proponentes || []).filter(function (x) { return x.tipo === 'governo' && x.governo != null; });
+    if (o.semDcm) pessoas = ['Não sabemos que Governo o aprovou.'];
+    else if (o.governoPeriodo != null && LEIS[tipo] && !quem.texto_comissao && ppl.length && ppl.length === (quem.proponentes || []).length && ppl[0].governo !== o.governoPeriodo)
+      pessoas = ['Proposta de lei do ', gov(ppl[0].governo), '. Votada durante o ', gov(o.governoPeriodo), '.'];
+    out.push(pessoas);
+    if (quem.oe && o.expandida) out.push(['Lei do Orçamento do Estado para ' + quem.oe.ano + '. Uma lei do Orçamento do Estado também pode alterar outras leis.']);
+    if (tipo === 'decreto-lei' && o.expandida) out = out.concat(frasesDL(quem, ref, ato).slice(0, -1));
+    if (LEIS[tipo]) {
+      if ((quem.proponentes || []).length || quem.texto_comissao) {
+        if (o.expandida) out = out.concat(frasesProponentes(quem, ref, p));
+        // Before quem.json exists (quemProvisorio) the final vote and the President are unknown to the app, not to the data.
+        var v = quem.provisorio ? [] : linhaVfg(quem.vfg, m.vfg).concat([' ']);
+        if (p || v.length) out.push(p ? v.concat([lig(link(['ato', id], { ir: 'generalidade' }), 'Ver a votação de todos os grupos')]) : v);
+        if (o.expandida && p) out.push([{ t: 'votos', ato: id }]);
+        out = out.concat(linhasEventos(quem.eventos, ref));
+      } else {
+        var f = ['Não temos os dados da passagem desta lei no Parlamento.'].concat(m.passagem ? [' '].concat(motivo(m.passagem)) : []);
+        if (quem.ar_url) f = f.concat([' ', lig(quem.ar_url, 'Ver na Assembleia da República ↗')]);
+        out.push(f);
+      }
+      if (o.slug && quem.periodo && quem.periodo.base === 'publicacao') out.push(['Não temos a data da votação. Contamos a partir da publicação.']);
+    }
+    if ((tipo === 'decreto-lei' || LEIS[tipo]) && !quem.provisorio) out.push(linhaPresidente(quem, ref, ato, tipo === 'decreto-lei' ? 'o' : 'a lei'));
+    else if (tipo === 'acordao-tc' && o.expandida) out = out.concat(frasesAcordao(quem, ref, ato).slice(1, -1));
+    if (o.slug) {
+      var cs = (ato.alteracoes || []).filter(function (c) { return c.diploma === o.slug && c.tipo !== 'sem_alteracao'; });
+      if (cs.length) {
+        var vs = cs.map(function (c) { return c.vigor || ato.publicacao; }).filter(Boolean).sort();
+        out.push(['Alterou ' + cs.length + (cs.length === 1 ? ' artigo deste diploma. ' : ' artigos deste diploma. '),
+          vs.length ? lig(link(['alteracoes', o.slug], { de: diaAntes(vs[0]), ate: vs[vs.length - 1] }), 'Ver o que mudou') : '']);
+      }
+    }
+    (o.retificacoes || quem.retificado_por || []).forEach(function (rid) {
+      var ra = (ref.atos || {})[rid];
+      if (ra) out.push([feminino(ato.designacao) ? 'Retificada pela ' : 'Retificado pela ', lig(link(['ato', rid]), nomeCompleto(ra)), '.']);
+    });
+    if (o.expandida) {
+      // The period's own date: «Nesta data» would read as the promulgation date of the line above.
+      if (LEIS[tipo] && quem.periodo && quem.periodo.governo != null) out.push([quem.periodo.data ? 'A ' + extenso(quem.periodo.data) + ', estava em funções o ' : 'Estava em funções o ', gov(quem.periodo.governo), '.']);
+      out = out.concat(frasesPublicacao(ato));
+      var av = avisoTransitorias(quem, ato);
+      if (av) out.push(av);
+    }
+    return out;
+  }
+  // R-31: «296 artigos · alterado 7 vezes».
+  function metaDiploma(d) {
+    var n = d.n_atos || 0;
+    return d.n_artigos + (d.n_artigos === 1 ? ' artigo · ' : ' artigos · ') + (n === 0 ? 'nunca alterado' : n === 1 ? 'alterado uma vez' : 'alterado ' + n + ' vezes');
+  }
+
+  // ---- Glossary marks ---------------------------------------------------------------------------
+  // The terms a place may mark, with the forms to look for: {id: [formas]}. Only ids of the built
+  // glossary, so a term the build left out is never marked.
+  function termosPara(glossario, candidatos) {
+    var out = {}, ts = (glossario && glossario.termos) || {};
+    candidatos.forEach(function (id) { if (ts[id]) out[id] = (ts[id].formas || []).concat([ts[id].termo]).filter(Boolean); });
+    return out;
+  }
+  function escapar(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  // Marks the first occurrence of each term in the plain strings of partes. vistos holds the terms
+  // already marked in this section. Links, quotations and other objects stay as they are.
+  function marcarTermos(partes, vistos, ids) {
+    var out = [];
+    (partes || []).forEach(function (x) {
+      if (x && x.t === 'termo') { if (ids[x.id] && !vistos.has(x.id)) { vistos.add(x.id); out.push(x); } else out.push(x.texto); return; }
+      if (x && x.t === 'lista') { out.push(Object.assign({}, x, { itens: x.itens.map(function (i) { return marcarTermos(i, vistos, ids); }) })); return; }
+      if (typeof x !== 'string') { out.push(x); return; }
+      marcarTexto(x, vistos, ids).forEach(function (y) { out.push(y); });
+    });
+    if (partes && partes.classe) out.classe = partes.classe;
+    return out;
+  }
+  function marcarTexto(s, vistos, ids) {
+    var melhor = null;
+    Object.keys(ids).forEach(function (id) {
+      if (vistos.has(id)) return;
+      ids[id].forEach(function (f) {
+        var m = new RegExp('(^|[^\\p{L}\\p{N}-])(' + escapar(f) + ')(?![\\p{L}\\p{N}-])', 'iu').exec(s);
+        if (!m) return;
+        var i = m.index + m[1].length;
+        if (!melhor || i < melhor.i || (i === melhor.i && m[2].length > melhor.n)) melhor = { i: i, n: m[2].length, id: id };
+      });
+    });
+    if (!melhor) return [s];
+    vistos.add(melhor.id);
+    return [s.slice(0, melhor.i), { t: 'termo', id: melhor.id, texto: s.substr(melhor.i, melhor.n) }]
+      .concat(marcarTexto(s.slice(melhor.i + melhor.n), vistos, ids)).filter(function (x) { return x !== ''; });
+  }
+  // Candidate terms per place (§3.9). marcarTermos keeps only those in the built glossary.
+  var TERMOS = {
+    quem: ['decreto-lei', 'conselho-de-ministros', 'promulgacao', 'veto', 'votacao-final-global', 'texto-de-substituicao', 'governo-em-gestao', 'tribunal-constitucional', 'retificacao', 'lei-organica'],
+    voto: ['votacao-na-generalidade', 'grupo-parlamentar', 'legislatura'],
+    artigo: ['redacao', 'entrada-em-vigor', 'republicacao', 'revogado', 'norma-transitoria'],
+    periodo: ['decreto-lei', 'proposta-de-lei', 'projeto-de-lei', 'grupo-parlamentar', 'legislatura']
+  };
+  // Marks a list of sentences as one section.
+  function marcarFrases(frases, onde) {
+    var ids = termosPara(glossarioAtual, TERMOS[onde] || []), vistos = new Set();
+    return frases.map(function (f) { return marcarTermos(f, vistos, ids); });
+  }
+
+  // ---- Sharing --------------------------------------------------------------------------------
+  // The share key of a redação: the act, or act-k when that act made several redações of the
+  // article (k counts that act's redações from 1). It does not change when another act's redação
+  // is added before it.
+  function chavePartilha(art, i) {
+    var a = art.versoes[i].ato, mesmas = [];
+    art.versoes.forEach(function (v, k) { if (v.ato === a) mesmas.push(k); });
+    return mesmas.length === 1 ? a : a + '-' + (mesmas.indexOf(i) + 1);
+  }
+  // The address to share: the page with a link preview when the build made one, else the app's.
+  function partilhaUrl(base, pj, slug, artigo, chave, atual) {
+    var l = pj && pj.artigos && pj.artigos[slug + '/' + artigo];
+    if (l && l.indexOf(chave) >= 0) return base + 'p/d/' + slug + '/' + artigo + '/' + chave + '/';
+    return atual || base + link(['d', slug, artigo], { redacao: chave });
+  }
+
+  // ---- Page titles (R-63) ---------------------------------------------------------------------
+  // dados: the files the page has loaded ({index, atos, grupo, historia, titulo}).
+  function tituloDe(segs, dados) {
+    var s = segs || [], x = dados || {}, ds = (x.index && x.index.diplomas) || [];
+    var dip = function (slug) { var d = ds.filter(function (y) { return y.slug === slug; })[0]; return d ? d.titulo : slug; };
+    var t = x.titulo || null;
+    if (!t) {
+      if (!s.length) return 'Redação';
+      if (s[0] === 'd' && s[1] && !s[2]) t = dip(s[1]);
+      else if (s[0] === 'ato' && s[1]) t = x.atos && x.atos[s[1]] ? x.atos[s[1]].designacao : s[1];
+      else if (s[0] === 'quem' && s[1]) t = 'Quem fez cada alteração · ' + dip(s[1]);
+      else if (s[0] === 'grupo' && s[1]) t = 'Grupo parlamentar: ' + (x.grupo ? x.grupo.nome : s[1]);
+      else if (s[0] === 'grupos') t = 'Grupos parlamentares';
+      else if (s[0] === 'historias') t = 'Histórias';
+      else if (s[0] === 'historia' && s[1]) t = x.historia ? x.historia.titulo : 'Histórias';
+      else if (s[0] === 'glossario') t = 'Glossário';
+      else if (s[0] === 'sobre') t = 'Sobre os dados';
+      else if (s[0] === 'verificacao') t = 'Verificação';
+      else t = null;
+    }
+    return t ? t + ' · Redação' : 'Redação';
+  }
+
   // ---- The law in time --------------------------------------------------------------------
   // The date a version counts from, for the chosen basis. A version with no known entry date
   // counts from its publication, and the result is flagged as uncertain.
@@ -110,6 +626,13 @@
     if (validDate(value)) { var p = pick(art.versoes, value, base || 'vigor'); return p ? p.i : -1; }
     var i = art.versoes.map(function (v) { return v.ato; }).lastIndexOf(value);
     if (i >= 0) return i;
+    // A share key (chavePartilha): the k-th redação of an act that made several.
+    var mk = /^(.+)-(\d+)$/.exec(value);
+    if (mk) {
+      var mesmas = [];
+      art.versoes.forEach(function (v, k) { if (v.ato === mk[1]) mesmas.push(k); });
+      if (mesmas.length > 1 && +mk[2] >= 1 && +mk[2] <= mesmas.length) return mesmas[+mk[2] - 1];
+    }
     // An act that left the text as it was (a republication) names the redação it kept.
     for (var k = art.versoes.length - 1; k >= 0; k--) if ((art.versoes[k].sem_alteracao || []).some(function (x) { return x.ato === value; })) return k;
     return -1;
@@ -343,14 +866,17 @@
           h('a', { className: 'brand', href: '#/' }, 'Redação'),
           props.casa ? null : h(Pesquisa),
           h('nav', { 'aria-label': 'Principal', className: 'top-nav' },
-            h('a', { href: '#/' }, 'Diplomas'),
-            h('a', { href: '#/verificacao' }, 'Verificação'),
+            h('a', { href: '#/' }, 'Leis e códigos'),
+            h('a', { href: '#/historias' }, 'Histórias'),
+            h('a', { href: '#/verificacao', className: 'so-largo-nav' }, 'Verificação'),
             h('a', { href: '#/sobre' }, 'Sobre os dados')))),
       h('main', { id: 'conteudo', className: 'page' }, props.children),
       h('footer', { className: 'foot' },
         h('div', { className: 'foot-in' },
           h('p', null, h('strong', null, 'Texto não oficial. Só a publicação no Diário da República faz fé.')),
-          h('p', null, 'Fontes: Diário da República (legislação consolidada) e Assembleia da República (dados abertos). Esta página não é aconselhamento jurídico.'))));
+          h('p', null, 'Fontes: Diário da República (legislação consolidada) e Assembleia da República (dados abertos). Esta página não é aconselhamento jurídico.'),
+          h('p', { className: 'foot-links' }, h('a', { href: '#/glossario' }, 'Glossário'), h('a', { href: '#/grupos' }, 'Grupos parlamentares'),
+            h('a', { href: '#/verificacao', className: 'so-estreito-nav' }, 'Verificação')))));
   }
   function Loading(props) {
     if (props.error) return h('div', { className: 'state' }, h('p', null, 'Não foi possível carregar os dados. Confirme que correu pipeline/build.py.'), h('p', { className: 'muted' }, String(props.error.message || props.error)));
@@ -368,6 +894,107 @@
     var a = props.atos[props.id];
     if (!a) return h('span', null, props.id);
     return h('a', { href: link(['ato', props.id]) }, a.designacao);
+  }
+
+  // ---- Partes on screen ------------------------------------------------------------------------
+  // The built glossary (glossario.json) and the phone sheet that shows a term: set by App.
+  var glossarioAtual = null, abrirTermo = null;
+  function externo(href) { return /^https?:/.test(href || ''); }
+  // A Government by its number: seen as «XV Governo Constitucional», heard as «décimo quinto».
+  function Governo(props) {
+    var t = romano(props.n) + ' Governo Constitucional';
+    return h('span', { className: 'governo' }, h('span', { 'aria-hidden': 'true' }, t), h('span', { className: 'rd-sr' }, ordinalExtenso(props.n) + ' Governo Constitucional'));
+  }
+  // A group's sigla: seen as the sigla, heard as the group's name.
+  function Sigla(props) {
+    if (!props.nome) return props.sigla;
+    return h('abbr', { title: props.nome, className: 'sigla' }, h('span', { 'aria-hidden': 'true' }, props.sigla), h('span', { className: 'rd-sr' }, props.nome));
+  }
+  // ctx: {votos(id) -> element} for {t:'votos'}; ref and slug for story segments.
+  function render(partes, ctx) {
+    ctx = ctx || {};
+    return (partes || []).map(function (x, k) {
+      if (typeof x === 'string' || x == null) return x;
+      if (x.t === 'termo') {
+        var def = glossarioAtual && glossarioAtual.termos && glossarioAtual.termos[x.id];
+        return def ? h(R.Termo, { key: k, id: x.id, texto: x.texto, def: def, onAbrirFolha: abrirTermo }) : x.texto;
+      }
+      if (x.t === 'governo' && x.numero != null) return h(Governo, { key: k, n: x.numero });
+      if (x.t === 'sigla') return h(Sigla, { key: k, sigla: x.sigla, nome: x.nome });
+      if (x.t === 'forte') return h('strong', { key: k }, x.texto);
+      if (x.t === 'votos') return ctx.votos ? h(React.Fragment, { key: k }, ctx.votos(x.ato)) : null;
+      if (x.t === 'lista') return h('ul', { key: k, className: 'quem-lista' }, x.itens.map(function (it, j) { return h('li', { key: j }, render(it, ctx)); }));
+      if (x.t === 'citacao') return h('a', { key: k, href: x.href }, h('span', { 'data-citacao': '' }, /^«/.test(x.texto) ? x.texto : '«' + x.texto + '»'));
+      // Story segments the app writes from the data (pipeline/historias, §2.13).
+      // The build may add an href to these; the text is still the app's.
+      if (x.ato && (!x.href || /^(voto|vfg|governo|presidente)$/.test(x.t)) && ctx.ref) return h(React.Fragment, { key: k }, render(segmentoApp(x, ctx), ctx));
+      if (x.href) {
+        var txt = x.partes ? render(x.partes, ctx) : x.texto;
+        return externo(x.href) ? h('a', { key: k, href: x.href, target: '_blank', rel: 'noopener' }, txt) : h('a', { key: k, href: x.href }, txt);
+      }
+      return x.texto || null;
+    });
+  }
+  // A sentence on screen. A list or a votes block makes it a block; frase.classe 'aviso' an Atenção note.
+  function Frases(props) {
+    var ctx = props.ctx || {};
+    return h(React.Fragment, null, (props.frases || []).map(function (f, k) {
+      if (f.classe === 'aviso') return h('aside', { key: k, className: 'regra regra-aviso' }, h('p', null, render(f, ctx)));
+      var bloco = f.filter(function (x) { return x && (x.t === 'lista' || x.t === 'votos'); })[0];
+      if (!bloco) return h('p', { key: k, className: k === 0 && props.primeira ? props.primeira : props.classe || null }, render(f, ctx));
+      var i = f.indexOf(bloco), antes = f.slice(0, i);
+      var corpo = render([bloco], ctx);
+      return h('div', { key: k, className: 'quem-bloco-lista' }, antes.length ? h('p', null, render(antes, ctx)) : null,
+        bloco.dobra ? h('details', { className: 'dobra quem-dobra' }, h('summary', null, bloco.dobra), corpo) : corpo,
+        f.length > i + 1 ? h('p', null, render(f.slice(i + 1), ctx)) : null);
+    }));
+  }
+  // «Como ler esta página»: open on the first visit to a kind of page, then closed.
+  var GUIAS = {
+    artigo: 'Esta página mostra um artigo e todas as redações que teve. A linha em itálico diz que diploma escreveu o texto que está a ver. Para ver o artigo noutra data, escolha «Data» ou uma linha em «Redações». Para ver o que mudou, escolha «Alterações». Para ver que diploma escreveu cada frase, escolha «Origem do texto».',
+    'ato-lei': 'Esta página mostra um diploma que mudou outros diplomas. Em cima, vê quem propôs, aprovou e promulgou o texto. Em «O que este ato mudou», escolha um artigo para ver o texto antes e depois. Em «Primeira votação: na generalidade», vê como votou cada grupo parlamentar. Cada facto tem uma ligação à fonte.',
+    'ato-dl': 'Esta página mostra um decreto-lei que mudou outros diplomas. Em cima, vê que Governo o aprovou e que Presidente da República o promulgou. O Parlamento não vota os decretos-leis. Em «O que este ato mudou», escolha um artigo para ver o texto antes e depois. Cada facto tem uma ligação à fonte.',
+    diploma: 'Esta página mostra um diploma inteiro. No índice, cada linha é um artigo. Cada traço na linha é uma redação. Em «Atos que o alteraram», vê os diplomas que mudaram este diploma. Para ver quem fez cada mudança, escolha «Quem fez cada alteração».',
+    iniciativa: 'Esta página mostra uma iniciativa: um texto que alguém propôs ao Parlamento. Uma iniciativa ainda não é lei. Passa a lei depois da votação final global, da promulgação e da publicação no Diário da República. Em «Todas as fases», vê cada passo no Parlamento, com a data.',
+    alteracoes: 'Esta página mostra os artigos que mudaram entre duas datas. Para mudar o período, escolha as datas «De» e «Até». O texto acrescentado tem um traço por baixo. O texto eliminado tem um traço por cima. Escolha um artigo para ver o artigo inteiro.',
+    historia: 'Esta página conta como mudou uma lei, ato a ato. Cada frase tem uma ligação ao ato ou ao artigo no site. As datas, os nomes e as votações vêm dos dados do site. Em «Todas as alterações neste período», vê a lista completa. Em «Como fizemos esta história», vê as fontes e a data.',
+    quem: 'Esta página mostra todos os atos que mudaram este diploma, por período. Escolha «Por Governo» ou «Por legislatura». Em cada período, os decretos-leis vêm primeiro e as leis do Parlamento depois. Uma lei fica no período da votação que a decidiu. Um período sem alterações também aparece.',
+    grupo: 'Esta página mostra as iniciativas de um grupo parlamentar que deram origem a leis deste site. Também mostra como o grupo votou as alterações a um diploma. Escolha o diploma na lista. Para ver os votos de todos os grupos, abra o ato.'
+  };
+  // tipo: the kind of page (the key in this browser); texto: the GUIAS entry, when it is another.
+  function Guia(props) {
+    var chave = 'redacao-guia-' + props.tipo;
+    var st = useState(function () {
+      if (props.fechada) return false;
+      try { return localStorage.getItem(chave) == null; } catch (e) { return false; }
+    });
+    useEffect(function () { try { localStorage.setItem(chave, '1'); } catch (e) { /* private window */ } }, []);
+    return h('details', { className: 'guia', open: st[0], onToggle: function (e) { st[1](e.currentTarget.open); } },
+      h('summary', null, 'Como ler esta página'),
+      h('div', { className: 'guia-in' }, h('p', null, GUIAS[props.texto || props.tipo]), h('p', null, h('a', { href: '#/glossario' }, 'Ver o glossário'))));
+  }
+  // Segments of a story that the app writes from the data, with the act page's functions.
+  function segmentoApp(x, ctx) {
+    var ref = ctx.ref, r = registo(ref, x.ato), q = r.quem;
+    if (x.t === 'vfg') return [lig(link(['ato', x.ato]), textoDe(linhaVfg(q.vfg, (q.motivos || {}).vfg)))];
+    if (x.t === 'presidente') { var pr = q.presidente && (presidenteDe(ref, q.presidente.id) || q.presidente); return [lig(link(['ato', x.ato]), pr ? pr.nome : 'o Presidente da República')]; }
+    if (x.t === 'governo') {
+      var n = q.governo && q.governo.numero != null ? q.governo.numero : ((q.proponentes || []).filter(function (y) { return y.governo != null; })[0] || {}).governo;
+      return n == null ? ['o Governo'] : [{ t: 'link', href: link(['quem', ctx.slug], { ir: 'governo-' + n }), partes: ['o ', gov(n)] }];
+    }
+    if (x.t === 'voto') {
+      var nomes = nomesDe(ref, (r.p || {}).legislatura), itens = r.p ? itensGeneralidade(r.p) : [];
+      var t = itens.map(function (it) {
+        var v = it.voto, ordem = ordemDe(r.p, [v]), cab = itens.length > 1 ? it.titulo + ': ' : '';
+        if (v.unanime) return cab + (v.resultado || 'Aprovado') + ' por unanimidade.';
+        return cab + [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']].map(function (s) {
+          var gs = ordem.filter(function (g) { return v.grupos[g] === s[0]; }).map(function (g) { return nomes[g] || g; });
+          return gs.length ? s[1] + ': ' + lista(gs) + '.' : '';
+        }).filter(Boolean).join(' ');
+      }).join(' ');
+      return [lig(link(['ato', x.ato], { ir: 'generalidade' }), t || 'Não temos o registo da votação na generalidade.')];
+    }
+    return [x.texto || ''];
   }
 
   // ---- Home ---------------------------------------------------------------------------------
@@ -424,17 +1051,19 @@
       if (num && fold(r[2]).replace(/[º.]/g, '').replace(/\s+/g, ' ').trim() !== 'artigo ' + num) return false;
       var e = fold(r[3]);
       return rest.every(function (alt) { return alt.some(function (w) { return e.indexOf(w) >= 0; }); });
-    }).sort(function (a, b) { return (a[4] === 'revogado') - (b[4] === 'revogado'); }).slice(0, 30);
+    // Revoked articles last; copies of another diploma's articles (the NRAU's annex, R-7) after them.
+    }).sort(function (a, b) { return (a[4] === 'revogado') - (b[4] === 'revogado') || (!!a[5]) - (!!b[5]); }).slice(0, 30);
   }
   function epigrafe(e) { return (e || '').replace(/^\((.*)\)$/, '$1'); }
   var AREAS = ['Constituição e sistema político', 'Direitos e cidadania', 'Civil e comercial', 'Trabalho e segurança social', 'Fiscal',
     'Penal', 'Tribunais e processo', 'Administração pública'];
   function Home() {
-    var r = useData(['index.json', 'atos.json']);
+    var r = useData(['index.json', 'atos.json', '?historias/index.json']);
     var qs = useState('');
     var rp = useData(qs[0] ? ['pesquisa.json'] : []);
     if (!r.data) return h(Loading, { error: r.error });
-    var index = r.data[0], atos = r.data[1], carregada = !qs[0] || (rp.data && rp.data[0]);
+    document.title = tituloDe([]);
+    var index = r.data[0], atos = r.data[1], historias = ((r.data[2] || {}).historias || []), carregada = !qs[0] || (rp.data && rp.data[0]);
     var nomes = {};
     index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
     var results = carregada && qs[0] ? search(comPesquisa(index, rp.data[0]), qs[0]) : [];
@@ -457,7 +1086,7 @@
           }))) : null),
       h('div', { className: 'duas duas-largo' },
         h('section', { 'aria-labelledby': 'dipl' },
-          h('h2', { id: 'dipl', className: 'h2' }, index.diplomas.length + ' diplomas'),
+          h('h2', { id: 'dipl', className: 'h2' }, index.diplomas.length + ' leis e códigos'),
           AREAS.concat(['Outros']).map(function (area) {
             var ds = index.diplomas.filter(function (d) { return (AREAS.indexOf(d.area) >= 0 ? d.area : 'Outros') === area; });
             if (!ds.length) return null;
@@ -466,9 +1095,13 @@
               h('ul', { className: 'cards' }, ds.map(function (d) {
                 return h('li', { key: d.slug, className: 'card' },
                   h('a', { className: 'card-title', href: link(['d', d.slug]) }, d.titulo),
-                  h('p', null, (fold(d.designacao).replace(/[^a-z0-9]/g, '').indexOf(fold(d.sigla).replace(/[^a-z0-9]/g, '')) >= 0 ? '' : d.sigla + ' · ') + d.designacao + ' · ' + d.n_artigos + ' artigos · ' + d.n_atos + (d.n_atos === 1 ? ' alteração' : ' alterações')));
+                  h('p', null, (fold(d.designacao).replace(/[^a-z0-9]/g, '').indexOf(fold(d.sigla).replace(/[^a-z0-9]/g, '')) >= 0 ? '' : d.sigla + ' · ') + d.designacao + ' · ' + metaDiploma(d)));
               })));
           })),
+        h('div', { className: 'dip-lado' },
+        historias.length ? h('section', { 'aria-labelledby': 'hist' },
+          h('h2', { id: 'hist', className: 'h2' }, 'Histórias'),
+          h(ListaHistorias, { historias: historias, curta: true })) : null,
         h('section', { 'aria-labelledby': 'rec' },
           h('h2', { id: 'rec', className: 'h2' }, 'Alterações mais recentes'),
           h('ol', { className: 'list' }, recent.map(function (a) {
@@ -477,7 +1110,18 @@
             return h('li', { key: a.id, className: 'recente' }, h('a', { href: link(['ato', a.id]) }, a.designacao),
               h('span', { className: 'muted' }, ' · ' + curta(a.publicacao) + ' · ' + Object.keys(ds).map(function (k) { return nomes[k].sigla + ' (' + ds[k] + ')'; }).join(', ')),
               a.sumario ? h('span', { className: 'recente-sum' }, a.sumario) : null);
-          })))));
+          }))))));
+  }
+  // The stories: title, summary and the line that says how they were prepared.
+  function avisoHistoria(hx) { return hx.aviso || 'Texto preparado a partir dos dados do site, com ajuda de uma ferramenta automática. Data: ' + extenso(hx.preparado_em) + '. Ainda sem revisão jurídica externa.'; }
+  function avisoCurto(hx) { return 'Preparada a ' + extenso(hx.preparado_em) + '. Ainda sem revisão jurídica externa.'; }
+  function ListaHistorias(props) {
+    return h('ul', { className: 'list historias-lista' }, props.historias.map(function (hx) {
+      return h('li', { key: hx.slug },
+        h('a', { className: 'historia-titulo', href: link(['historia', hx.slug]) }, hx.titulo),
+        hx.resumo && !props.semResumo ? h('p', { className: 'historia-resumo' }, hx.resumo) : null,
+        h('p', { className: 'historia-aviso' }, props.curta ? avisoCurto(hx) : avisoHistoria(hx)));
+    }));
   }
 
   // ---- The whole diploma between two dates ------------------------------------------------------
@@ -523,7 +1167,7 @@
       .filter(function (x) { return x[0]; }).map(function (x) { return x[0] + ' ' + (x[0] === 1 ? x[1] : x[2]); });
     var atalhos = [['Último ano', ano(1)], ['Últimos 5 anos', ano(5)], ['Desde o início', d.publicacao]];
     return h('div', { className: 'pagina-ato mudancas' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [d.titulo, link(['d', slug])], ['O que mudou']] }),
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [d.titulo, link(['d', slug])], ['O que mudou']] }),
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, 'O que mudou ' + (d.genitivo ? d.genitivo.replace(/^d([ao]s?) /, 'n$1 ') : 'no diploma')),
         h('form', { className: 'mud-datas', onSubmit: function (e) { e.preventDefault(); } },
@@ -534,7 +1178,8 @@
           }))),
         h('p', { className: 'lead', 'aria-live': 'polite' }, 'De ' + extenso(de) + ' a ' + extenso(ate) + ': ',
           mud.length ? lista(partesResumo) + ', por ' + idsAtos.length + (idsAtos.length === 1 ? ' ato.' : ' atos.') : 'nenhum artigo mudou.'),
-        h('p', { className: 'muted small' }, 'Contamos cada redação da data de entrada em vigor, ou da publicação quando o Diário da República não indica a data.')),
+        h('p', { className: 'muted small' }, 'Contamos cada redação da data de entrada em vigor, ou da publicação quando o Diário da República não indica a data.'),
+        h(Guia, { tipo: 'alteracoes' })),
       idsAtos.length ? h('details', { className: 'dobra mud-atos' },
         h('summary', null, idsAtos.length === 1 ? 'O ato' : 'Os ' + idsAtos.length + ' atos, do mais antigo para o mais recente'),
         h('ol', { className: 'list' }, idsAtos.map(function (id) {
@@ -565,17 +1210,20 @@
 
   // ---- Diploma -------------------------------------------------------------------------------
   function Diploma(props) {
-    var r = useData(['d/' + props.slug + '.json', 'atos.json', 'pendentes.json']);
+    var r = useData(['d/' + props.slug + '.json', 'atos.json', 'pendentes.json', '?historias/index.json', 'index.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var d = r.data[0], atos = r.data[1], propostas = pendentesDe(r.data[2], props.slug, null);
+    document.title = tituloDe(['d', d.slug], { index: r.data[4] });
+    var historias = ((r.data[3] || {}).historias || []).filter(function (x) { return (x.diplomas || []).indexOf(d.slug) >= 0; });
     var emCurso = {};
     propostas.forEach(function (i) { i.diplomas[d.slug].artigos.forEach(function (a) { emCurso[a] = true; }); });
     var em = validDate(props.q.em), base = props.q.base;
+    var copiaDe = d.copia ? r.data[4].diplomas.filter(function (x) { return x.slug === d.copia.diploma; })[0] : null;
     var acts = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; });
     return h('div', { className: 'pagina-ato' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [d.titulo]] }),
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [d.titulo]] }),
       em ? h('div', { className: 'note note-data', role: 'region', 'aria-label': 'Data escolhida' },
         h('p', null, 'Os artigos abrem como estavam a ', h('strong', null, extenso(em)), '. ', h('a', { href: link(['d', d.slug]) }, 'Voltar a hoje'))) : null,
       h('header', { className: 'ato-cabeca' },
@@ -588,7 +1236,9 @@
           h('div', null, h('dt', null, 'Publicação'), h('dd', null, extenso(d.publicacao))),
           d.vigor_original ? h('div', null, h('dt', null, 'Entrada em vigor'), h('dd', null, extenso(d.vigor_original.data), h('span', { className: 'factos-sub' }, d.vigor_original.fonte))) : null,
           d.link ? h('div', null, h('dt', null, 'Fonte'), h('dd', null, h('a', { href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗'))) : null),
-        h('p', { className: 'dip-acoes' }, h('a', { className: 'rd-btn', href: link(['alteracoes', d.slug]) }, 'O que mudou entre duas datas'))),
+        h('p', { className: 'dip-acoes' }, h('a', { className: 'rd-btn', href: link(['alteracoes', d.slug]) }, 'O que mudou entre duas datas'),
+          h('a', { className: 'rd-btn', href: link(['quem', d.slug]) }, 'Quem fez cada alteração')),
+        h(Guia, { tipo: 'diploma' })),
       h('div', { className: 'duas duas-largo' },
         h('nav', { className: 'toc', 'aria-label': 'Índice' },
           h('h2', { className: 'h2' }, 'Índice'),
@@ -615,6 +1265,17 @@
                 h('span', { className: 'toc-meta' }, faixa(n), h('span', { className: n.n > 1 || rev ? '' : 'rd-sr' }, rev ? 'Revogado' : n.n > 1 ? n.n + ' redações' : '1 redação'))));
             };
             // When the code sits in an annex (the CIRC), the approving law's own articles fold away.
+            // R-7: the NRAU's annex copies the Código Civil. Its own articles stay open; the copy folds.
+            if (d.copia) {
+              var ci = d.copia.inicio, copiados = d.arvore.slice(ci).filter(function (n) { return n.tipo === 'artigo'; });
+              var nr = function (n) { return n ? n.rotulo.replace(/^Artigo\s*/, '') : ''; };
+              return h(React.Fragment, null, regua, cab, h('ul', { className: 'toc-list' }, d.arvore.slice(0, ci).map(linha)),
+                h('details', { className: 'dobra toc-lei toc-copia' },
+                  h('summary', null, 'A cópia dos artigos ' + nr(copiados[0]) + ' a ' + nr(copiados[copiados.length - 1]) + ' ' + (copiaDe ? copiaDe.genitivo || 'de ' + copiaDe.titulo : '') + ', publicada com o ' + d.sigla + ' (' + copiados.length + ' artigos)'),
+                  h('p', { className: 'regra' }, h('strong', null, 'Nota: '), 'esta cópia vem da republicação publicada com o ' + d.sigla + ' e pode não ter alterações posteriores. O texto em vigor está no ' + (copiaDe ? copiaDe.titulo : d.copia.diploma) + '. ',
+                    h('a', { href: link(['d', d.copia.diploma]) }, 'Ver estes artigos ' + (copiaDe ? copiaDe.genitivo || 'no diploma' : 'no diploma'))),
+                  h('ul', { className: 'toc-list' }, d.arvore.slice(ci).map(function (n, i) { return linha(n, ci + i); }))));
+            }
             var anexo = d.inicio_codigo != null ? d.inicio_codigo : d.arvore.map(function (n) { return /^Anexo/i.test(n.rotulo || ''); }).indexOf(true);
             var regua = h('div', { className: 'regua-atos', 'aria-hidden': 'true' },
               h('div', { className: 'ra-linha' }, acts.map(function (a, k) { return h('span', { key: k, className: 'ra-t' + (/Retifica/.test(a.designacao) ? ' ra-ret' : ''), style: { left: pos(a.publicacao) + '%' }, title: a.designacao }); })),
@@ -648,6 +1309,9 @@
               h('ul', { className: 'parl-lista' }, propostas.slice(4).map(item))) : null);
           })(),
           h('p', { className: 'fonte' }, 'Fonte: Assembleia da República, dados abertos, e o texto de cada iniciativa.')) : null,
+        historias.length ? h('section', { 'aria-labelledby': 'hist' },
+          h('h2', { id: 'hist', className: 'h2' }, 'Histórias'),
+          h(ListaHistorias, { historias: historias, curta: true, semResumo: true })) : null,
         h('section', { 'aria-labelledby': 'alt' },
           h('h2', { id: 'alt', className: 'h2' }, 'Atos que o alteraram'),
           h('ol', { className: 'list' }, acts.map(function (a) {
@@ -905,7 +1569,8 @@
     // The diploma's index first; the article's own file only when the index lists it.
     var ri = useData(['d/' + props.slug + '.json']);
     var existe = ri.data && ri.data[0].arvore.some(function (x) { return x.artigo === props.id; });
-    var r = useData(existe ? ['d/' + props.slug + '.json', 'atos.json', 'passagem.json', 'd/' + props.slug + '/' + props.id + '.json', 'pendentes.json'] : []);
+    var r = useData(existe ? ['d/' + props.slug + '.json', 'atos.json', 'passagem.json', 'd/' + props.slug + '/' + props.id + '.json', 'pendentes.json',
+      '?quem.json', '?governos.json', '?historias/index.json', '?partilha.json', 'index.json'] : []);
     var cp = useState(0);
     var df = useState(0);   // the change in focus in Alterações
     var fl = useState(false);  // the phone sheet
@@ -915,6 +1580,10 @@
     var atos = existe ? r.data[1] : {}, ps = existe ? r.data[2] : {}, q = props.q;
     var art = existe ? r.data[3] : null;
     var propostas = existe ? pendentesDe(r.data[4], props.slug, props.id) : [];
+    var ref = existe ? { atos: atos, passagem: ps, quem: r.data[5] || {}, governos: r.data[6], index: r.data[9] } : {};
+    var historias = existe ? r.data[7] : null, pj = existe ? r.data[8] : null;
+    // R-23 and R-22: who made a redação, in one short line.
+    var pessoas = function (v) { var q = registo(ref, v.ato).quem; return q.oe ? fraseOE(q) : linhaPessoas(q, ref, v.ato); };
     if (!art) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este artigo. Volte ao índice do diploma.'), h('a', { href: link(['d', d.slug]) }, d.titulo));
     var n = art.versoes.length, last = n - 1;
     var base = { vigor: 1, publicacao: 1 }[q.base] ? q.base : 'vigor';
@@ -958,7 +1627,10 @@
     // Neighbouring articles in the diploma.
     var ordem = d.arvore.filter(function (x) { return x.tipo === 'artigo'; });
     var pos = ordem.map(function (x) { return x.artigo; }).indexOf(art.id);
-    var vizinho = function (k) { var x = ordem[pos + k]; return x ? h('a', { href: link(['d', d.slug, x.artigo]) }, (k < 0 ? '‹ ' : '') + x.rotulo.replace(/^Artigo\s*/, '') + (k > 0 ? ' ›' : '')) : null; };
+    var vizinho = function (k) {
+      var x = ordem[pos + k], nr = x ? ' (' + x.rotulo.replace(/^Artigo\s*/, '') + ')' : '';
+      return x ? h('a', { href: link(['d', d.slug, x.artigo]) }, k < 0 ? '‹ Artigo anterior' + nr : 'Artigo seguinte' + nr + ' ›') : null;
+    };
     // For diplomas with few acts (the Constitution), say which acts did not change this article.
     var doDiploma = Object.keys(atos).map(function (k) { return atos[k]; }).filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); });
     var naoAlteraram = doDiploma.length <= 10 ? doDiploma.filter(function (a) { return !art.versoes.some(function (v) { return v.ato === a.id || (v.sem_alteracao || []).some(function (x) { return x.ato === a.id; }); }); })
@@ -987,9 +1659,11 @@
         var o = a.versao;
         if (o > 0) { a.diffHref = versionHref(o, { ver: 'mudou' }); a.beforeHref = versionHref(o - 1); }
         var v = o != null ? art.versoes[o] : null;
-        if (v && v.tipo !== 'original') a.nota = ps[v.ato] ? 'No Parlamento: ' + resumoParlamento(ps[v.ato]) : /^Decreto-Lei/.test((atos[v.ato] || {}).designacao || '') ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.' : null;
+        if (v && v.tipo !== 'original' && atos[v.ato]) a.nota = textoDe(pessoas(v));
       });
-      corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts, margem: true }));
+      corpo = h('div', { className: 'lei lei-origem' }, h(R.TextOrigin, { key: art.id + sel.i, paragraphs: model.paragraphs, acts: model.acts, margem: true }),
+        // R-30: what the colours mean.
+        h('p', { className: 'legenda' }, 'Cada cor é um diploma que escreveu parte do texto.' + (model.acts.some(function (x) { return x.index === 7 && x.versao == null; }) ? ' Os diplomas mais antigos têm a mesma cor.' : '')));
     } else if (cur && ver === 'mudou' && n > 1 && (sel.i > 0 || q.com)) {
       // Compare with the redação before, or with the one the reader chose ("Comparar com").
       var com = q.com ? resolve(art, q.com, base) : -1;
@@ -1037,7 +1711,7 @@
     var dataPop = h(R.Popover, { label: 'Data', title: 'Ver o artigo noutra data', className: 'pop-data' },
       h(R.DateLens, { date: date, basis: base, today: hoje(), id: 'lente', onChange: go, bases: ['vigor', 'publicacao'] }));
     var f = cur ? formula(art, sel.i, atos, d) : null;
-    var status = cur ? h(React.Fragment, null, h('strong', null, ordinal(sel.i) + ' de ' + n), ' · ' + nomeAto(cur, atos, d) + ' · ', h('span', { className: 'muted' }, intervaloCurto(art, sel.i, base, hojeIdx))) : 'Sem texto nesta data';
+    var status = cur ? h(React.Fragment, null, h('strong', null, h('span', { 'aria-hidden': 'true' }, ordinal(sel.i) + ' de ' + n), h('span', { className: 'rd-sr' }, 'redação ' + (sel.i + 1) + ' de ' + n)), ' · ' + nomeAto(cur, atos, d) + ' · ', h('span', { className: 'muted' }, intervaloCurto(art, sel.i, base, hojeIdx))) : 'Sem texto nesta data';
 
     // The register's rows, in the right column and in the phone sheet.
     var itensRegisto = art.versoes.map(function (v, i) {
@@ -1051,32 +1725,67 @@
                   var ax = atos[x.ato] || { designacao: x.ato };
                   return SEM_ALT[x.tipo] ? SEM_ALT[x.tipo](ax.designacao) + ' (' + curta(x.publicacao) + '). ' : ax.designacao + ' abrangeu este artigo sem mudar o texto (' + curta(x.publicacao) + '). ';
                 })) : null,
-                ps[v.ato] ? h('p', { key: 'p', className: 'reg-parl' }, resumoParlamento(ps[v.ato])) : a && /^Decreto-Lei/.test(a.designacao) ? h('p', { key: 'p' }, 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.') : null,
+                a && v.tipo !== 'original' ? h('p', { key: 'p', className: 'reg-parl' }, h('a', { href: link(['ato', v.ato]) }, render(pessoas(v)))) : null,
                 h('p', { key: 'l' }, i > 0 ? h('a', { href: versionHref(i, { ver: 'mudou' }) }, 'Ver as alterações') : null, i > 0 && a ? ' · ' : null,
-                  a ? h('a', { href: link(['ato', v.ato]) }, ps[v.ato] ? 'Ver a votação no Parlamento' : 'Ver o ato') : null)
+                  a ? h('a', { href: link(['ato', v.ato]) }, 'Ver o ato') : null)
               ] : null };
           });
+    // Terms of the glossary on this page: the status line and the register.
+    var termosArt = termosPara(glossarioAtual, TERMOS.artigo), termosVistos = new Set();
+    // R-7: an article of the NRAU's annex is a copy of the Código Civil.
+    var copia = null;
+    if (art.copia_de) {
+      var dc = ((ref.index || {}).diplomas || []).filter(function (x) { return x.slug === art.copia_de.diploma; })[0];
+      copia = { nome: dc ? dc.titulo : art.copia_de.diploma, genitivo: dc ? (dc.genitivo || 'de ' + dc.titulo) : '' };
+    }
+    // R-61: share the redação on screen. A page with a link preview when the build made one.
+    var chave = cur ? chavePartilha(art, sel.i) : null;
+    var urlPartilha = cur ? partilhaUrl((pj && pj.base) || location.href.split('#')[0], pj, d.slug, art.id, chave, permalink) : '';
+    var estadoTxt = !cur ? '' : passada ? (per.fim === 'mesma' ? 'Substituída no mesmo dia' : 'Esteve em vigor de ' + extenso(per.inicio) + ' a ' + extenso(per.fim))
+      : futura ? 'Entra em vigor a ' + extenso(per.inicio) : (cur.tipo === 'revogado' ? 'Revogado desde ' : 'Em vigor desde ') + extenso(per.inicio);
+    var textoPartilha = d.titulo + ' · ' + art.rotulo + (epigrafe ? ' — ' + epigrafe : '') + '. ' + estadoTxt + '.';
+    function partilhar() {
+      if (estreito() && navigator.share) { navigator.share({ title: d.titulo + ' · ' + art.rotulo, text: textoPartilha, url: urlPartilha }).catch(function () { }); return; }
+      copiar(textoPartilha + '\n' + urlPartilha, function () { copiado.chave = urlPartilha; cp[1](cp[0] + 1); });
+    }
+    // R-62 (a shared link to an older redação) and R-46 (a story cites this article).
+    var notas62 = [];
+    if (q.de === 'partilha' && sel && sel.i !== last) notas62.push(h('p', { key: 'p', className: 'regra' }, h('strong', null, 'Nota: '), 'há uma redação mais recente deste artigo. ', h('a', { href: link(['d', d.slug, art.id]) }, 'Ver o texto de hoje')));
+    // One note per story: the section about the redação on screen, else the first one listed.
+    var atoSel = sel && art.versoes[sel.i] ? art.versoes[sel.i].ato : null, porHistoria = {};
+    ((historias && historias.artigos && historias.artigos[d.slug + '/' + art.id]) || []).forEach(function (x) {
+      if (!porHistoria[x.historia] || x.seccao === atoSel) porHistoria[x.historia] = x;
+    });
+    Object.keys(porHistoria).map(function (s) { return porHistoria[s]; }).forEach(function (x, k) {
+      var hx = (historias.historias || []).filter(function (y) { return y.slug === x.historia; })[0];
+      if (hx) notas62.push(h('p', { key: 'h' + k, className: 'regra' }, h('strong', null, 'Nota: '), 'este artigo aparece na história «' + hx.titulo + '». ', h('a', { href: link(['historia', hx.slug], { ir: x.seccao }) }, 'Ler a história')));
+    });
     return h('div', { className: 'artigo', 'data-dir': vista.dir, 'data-passada': passada ? '' : undefined },
       h('div', { className: 'corrida' },
-        h('p', null, h('a', { href: link(['d', d.slug]) }, d.sigla), art.caminho.length ? ' · ' + art.caminho[art.caminho.length - 1] : ''),
+        h('p', null, h('a', { href: link(['d', d.slug]) }, h('abbr', { title: d.titulo }, h('span', { 'aria-hidden': 'true' }, d.sigla), h('span', { className: 'rd-sr' }, d.titulo))),
+          art.caminho.length ? ' · ' + art.caminho[art.caminho.length - 1] : ''),
         h('nav', { className: 'vizinhos', 'aria-label': 'Artigos vizinhos' }, vizinho(-1), vizinho(1))),
       h('header', { className: 'art-head' },
         h('h1', { className: 'art-titulo' }, h('span', { className: 'art-num' }, art.rotulo), epigrafe ? h('span', { className: 'art-ep' }, epigrafe) : null),
         cur ? h('div', { className: 'art-acoes' },
           h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } }, h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')),
+          h('button', { type: 'button', className: 'rd-btn', onClick: partilhar }, h('span', { key: copiado.chave === urlPartilha ? 'c' : 'n', className: 'troca' }, copiado.chave === urlPartilha ? 'Ligação copiada' : 'Partilhar')),
           curAto && curAto.link ? h('a', { className: 'rd-link', href: curAto.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : d.link ? h('a', { className: 'rd-link', href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null) : null),
       cur ? h('div', { className: 'estado' },
-        h('p', { className: 'estado-formula' }, h('em', null, f[0], atos[f[2]] ? h('a', { href: link(['ato', f[2]]) }, f[1]) : f[1])),
+        h('p', { className: 'estado-formula' }, h('em', null, render(marcarTermos([f[0]], termosVistos, termosArt)), atos[f[2]] ? h('a', { href: link(['ato', f[2]]) }, f[1]) : f[1])),
         passada ? h('p', { className: 'estado-passada' }, (per.fim === 'mesma' ? 'Substituída no mesmo dia pela redação seguinte' : 'Esteve em vigor de ' + extenso(per.inicio) + ' a ' + extenso(per.fim)) + ' · ', h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ir para hoje'))
           : futura ? h('p', { className: 'estado-futura' }, 'Ainda não está em vigor. Entra em vigor a ' + extenso(per.inicio) + '. ', hojeIdx != null ? h('a', { href: link(['d', d.slug, art.id], { ver: q.ver }) }, 'Ir para hoje') : null)
           : h('p', null, (cur.tipo === 'revogado' ? 'Revogado desde ' : 'Em vigor desde ') + extenso(per.inicio) + (sel.incerta ? ' (data de publicação)' : '') + '.'),
         sel.i !== last && epigrafe ? h('p', { className: 'muted small' }, 'Epígrafe de hoje. A desta redação pode ser outra.') : null,
-        linhaVerificacao(cur, d, atos)) : null,
+        linhaVerificacao(cur, d, atos),
+        notas62.length ? notas62 : null) : null,
+      h(Guia, { tipo: 'artigo', fechada: estreito() }),
       sel ? h(R.TimeRuler, { id: 'regua', current: sel.i, today: hoje(), onGo: function (k) { substituir(versionHref(k)); },
         versions: art.versoes.map(function (v, i) {
           return { start: startOf(v, base), technical: v.tipo === 'retificado' || periodo(art, i, base).fim === 'mesma', pending: hojeIdx == null || i > hojeIdx,
             label: ordinal(i) + ' redação: ' + nomeAto(v, atos, d) + ', ' + intervalo(art, i, base, hojeIdx) };
         }) }) : null,
+      sel ? h('p', { className: 'legenda legenda-regua' }, 'Cada traço é uma redação.') : null,
       h(R.VersionBar, { id: 'barra', current: sel ? sel.i : -1, count: n, status: status,
         onGo: function (k) { substituir(versionHref(k)); },
         onStatus: function () { if (estreito()) { fl[1](true); return; } var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } } },
@@ -1085,6 +1794,8 @@
       // Side by side and the margin notes of Origem do texto need the full width: the register moves under the text.
       h('div', { className: 'art-corpo' + ((ver === 'mudou' && q.lado === '1') || ver === 'origem' ? ' corpo-largo' : '') },
         h('div', { className: 'art-texto' },
+          copia ? h('aside', { className: 'regra' }, h('p', null, h('strong', null, 'Nota: '), 'esta cópia vem da republicação publicada com o ' + d.sigla + ' e pode não ter alterações posteriores. O texto em vigor está no ' + copia.nome + '. ',
+            h('a', { href: link(['d', art.copia_de.diploma, art.copia_de.artigo]) }, 'Ver o artigo ' + numArtigo(art.copia_de.artigo) + ' ' + copia.genitivo))) : null,
           transitorias.length ? h('aside', { className: 'regra regra-aviso', 'aria-labelledby': 'transit' },
             h('p', { id: 'transit' }, h('strong', null, 'Atenção: '), 'uma norma ', pela(curAto ? curAto.designacao : '') === 'pelo' ? 'do ' : 'da ', h(ActLink, { id: cur.ato, atos: atos }),
               transitorias[0].artigo_do_ato ? ' (' + transitorias[0].artigo_do_ato.toLowerCase() + ')' : '', ' muda a aplicação deste artigo no tempo. Leia a norma antes de aplicar o texto.'),
@@ -1119,6 +1830,7 @@
                 : 'Ainda não o comparámos com o ato publicado. ', 'Só o Diário da República faz fé.')) : null),
         h('aside', { className: 'art-registo', 'aria-labelledby': 'historia' },
           h('h2', { id: 'historia', tabIndex: -1 }, 'Redações'),
+          h('p', { className: 'muted small' }, 'Redações, da mais antiga para a mais recente.'),
           h(R.Register, { label: 'Redações do ' + art.rotulo.replace('Artigo', 'artigo'), items: itensRegisto }),
           h('p', { className: 'muted small' }, 'Data de entrada em vigor de cada redação.'),
           naoFrase ? h('p', { className: 'nao-alteraram' }, naoFrase) : null)),
@@ -1145,11 +1857,12 @@
     document.title = ini.designacao + ' · Redação';
     var p = { ordem_grupos: ini.ordem_grupos };
     return h('div', { className: 'pagina-ato' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [ini.designacao]] }),
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [ini.designacao]] }),
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, ini.designacao),
         h('p', { className: 'lead', 'data-citacao': '' }, ini.titulo),
-        h('p', { className: 'parl-estado' }, h(R.StatusPill, { status: 'pendente' }, 'Em curso'), ' ', ini.fase_texto + ' ' + desdeFase(ini))),
+        h('p', { className: 'parl-estado' }, h(R.StatusPill, { status: 'pendente' }, 'Em curso'), ' ', ini.fase_texto + ' ' + desdeFase(ini)),
+        h(Guia, { tipo: 'iniciativa' })),
       h('div', { className: 'duas' },
         h('div', { className: 'coluna' },
           h('section', { className: 'secao', 'aria-labelledby': 'muda' },
@@ -1164,7 +1877,7 @@
             })),
             h('p', { className: 'fonte' }, 'Lemos os artigos no texto da iniciativa. Confirme no texto, que é o que conta.')),
           h('section', { className: 'secao', 'aria-labelledby': 'geral-h' },
-            h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
+            h('h2', { id: 'geral-h' }, 'Primeira votação: na generalidade'),
             ini.generalidade ? h(BlocoVoto, { v: ini.generalidade, ordem: ordemDe(p, [ini.generalidade]), titulo: ini.designacao, designacao: ini.designacao })
               : h('p', { className: 'lede' }, ini.fase === 'sem_votacao' ? 'Esta iniciativa voltou à comissão sem votação na generalidade.' : 'Ainda não foi votada na generalidade.'))),
         h('aside', { className: 'factos', 'aria-label': 'Autores e fontes' },
@@ -1243,12 +1956,21 @@
     votos.forEach(function (v) { Object.keys(v.grupos).concat(v.ausentes || []).forEach(function (g) { if (out.indexOf(g) < 0) out.push(g); }); });
     return out.filter(function (g) { return votos.some(function (v) { return v.grupos[g] || (v.ausentes || []).indexOf(g) >= 0; }); });
   }
-  // The vote that opened the text that became law: the committee text, or the main initiative's own.
-  function votoDoTexto(p) {
-    if (p.texto_comissao && p.texto_comissao.length) return { voto: p.texto_comissao[p.texto_comissao.length - 1], comissao: true };
-    var ini = principalDe(p);
-    return ini.generalidade ? { voto: ini.generalidade, ini: ini } : null;
+  // The generalidade votes of an act (passagem.generalidade, §2.7): the committee text the act
+  // came from, or each initiative's own vote. Never "the last committee text" (R-1).
+  function itensGeneralidade(p) {
+    if (!p) return [];
+    if (p.generalidade) return p.generalidade.map(function (g) {
+      if (g.origem === 'texto_comissao') { var v = (p.texto_comissao || [])[g.indice]; return v ? { voto: v, titulo: tituloTexto(v), comissao: true } : null; }
+      var i = p.iniciativas.filter(function (x) { return x.id === g.id; })[0];
+      return i && i.generalidade ? { voto: i.generalidade, titulo: i.designacao, ini: i } : null;
+    }).filter(Boolean);
+    // Data from before passagem.generalidade: every committee text and every initiative's own vote.
+    return (p.texto_comissao || []).map(function (v) { return { voto: v, titulo: tituloTexto(v), comissao: true }; })
+      .concat(p.iniciativas.filter(function (i) { return i.generalidade; }).map(function (i) { return { voto: i.generalidade, titulo: i.designacao, ini: i }; }));
   }
+  function tituloTexto(v) { return /texto final/i.test(v.descricao || '') ? 'Texto final da comissão' : 'Texto de substituição da comissão'; }
+  function desIni(p, id) { var i = p.iniciativas.filter(function (x) { return x.id === id; })[0]; return i ? i.designacao : id; }
   function sentidos(v, ordem) {
     var out = '';
     [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']].forEach(function (x) {
@@ -1257,48 +1979,39 @@
     });
     return out;
   }
-  // For the register and the Origem do texto popover:
-  // "Proposta de Lei n.º 16/XVII, do Governo. Aprovada na generalidade a 19 de setembro de 2025. A favor: …"
-  function resumoParlamento(p) {
-    if (!p) return null;
-    var t = votoDoTexto(p), ini = principalDe(p);
-    if (!t) return ini.designacao + ', ' + dePropos(ini) + '. Não temos o registo da votação na generalidade.';
-    var v = t.voto, gn = t.comissao ? genero('Texto') : genero(ini.designacao);
-    var res = v.resultado === 'Aprovado' ? gn.ado : v.resultado === 'Rejeitado' ? gn.ejeitado : v.resultado;
-    return (t.comissao ? 'Texto de substituição da comissão, que junta ' + p.iniciativas.length + (p.iniciativas.length === 1 ? ' iniciativa' : ' iniciativas') : ini.designacao + ', ' + dePropos(ini)) + '. ' +
-      (res ? res + ' na generalidade' : 'Votação na generalidade') + ' a ' + extenso(v.data) + (v.unanime ? ', por unanimidade.' : '.') + (v.unanime ? '' : sentidos(v, ordemDe(p, [v])));
-  }
-  // The lede: one fact per sentence, pretérito perfeito, active voice.
-  function ledeGeneralidade(p) {
-    var ini = principalDe(p), n = p.iniciativas.length, out = [];
-    var proprios = p.iniciativas.filter(function (i) { return i.generalidade; });
-    var texto = p.texto_comissao && p.texto_comissao.length ? p.texto_comissao[p.texto_comissao.length - 1] : null;
+  // The lede of the vote section: one fact per sentence, pretérito perfeito, active voice. With
+  // several initiatives, no initiative is singled out (R-6).
+  function ledeGeneralidade(p, q) {
+    var itens = itensGeneralidade(p), com = itens.filter(function (x) { return x.comissao; }), inis = itens.filter(function (x) { return x.ini; });
+    var n = p.iniciativas.length, out = [];
     var aprovou = function (v, lo) { return 'O Parlamento ' + (v.resultado === 'Rejeitado' ? 'rejeitou' : 'aprovou') + lo + ' na generalidade a ' + extenso(v.data) + (v.unanime ? ', por unanimidade.' : '.'); };
-    if (/^Projeto de Revisão/.test(ini.designacao)) {
+    if (p.iniciativas.some(function (i) { return /^Projeto de Revisão/.test(i.designacao); })) {
       var gs = [];
       p.iniciativas.forEach(function (i) { gruposDe(i).forEach(function (g) { if (gs.indexOf(g) < 0) gs.push(g); }); });
       gs = p.ordem_grupos.filter(function (g) { return gs.indexOf(g) >= 0; }).concat(gs.filter(function (g) { return p.ordem_grupos.indexOf(g) < 0; }));
       out.push('Deputados ' + (gs.length ? 'do ' + lista(gs) + ' ' : '') + 'apresentaram ' + n + (n === 1 ? ' projeto de revisão constitucional.' : ' projetos de revisão constitucional.'));
-      if (!proprios.length && !texto) out.push('Não temos votações destes projetos na generalidade.');
-    } else if (texto) {
-      out.push('A lei vem de um texto de substituição da comissão parlamentar. O texto junta ' + (n === 1 ? 'uma iniciativa.' : n + ' iniciativas.'));
-      out.push(aprovou(texto, '-o'));
-      if (proprios.length) out.push(proprios.length === n ? 'Antes, o Parlamento votou cada iniciativa na generalidade.' : 'Antes, o Parlamento votou ' + proprios.length + ' destas iniciativas na generalidade.');
+      out.push(itens.length ? (com.length ? aprovou(com[0].voto, '-o') : 'O Parlamento votou cada projeto na generalidade.') : 'Não temos votações destes projetos na generalidade.');
+    } else if (com.length) {
+      var k = (q && q.texto_comissao && q.texto_comissao.n_iniciativas) || (com[0].voto.citadas || []).length || n;
+      out.push(k === 1 ? 'Uma comissão do Parlamento escreveu o texto final a partir de uma iniciativa.' : 'Uma comissão do Parlamento juntou ' + k + ' iniciativas num só texto.');
+      out.push(aprovou(com[0].voto, '-o'));
+      if (inis.length) out.push(inis.length === n ? 'Antes, o Parlamento votou cada iniciativa na generalidade.' : 'Antes, o Parlamento votou ' + (inis.length === 1 ? 'uma destas iniciativas' : inis.length + ' destas iniciativas') + ' na generalidade.');
+    } else if (inis.length === 1 && n === 1) {
+      var i = inis[0].ini, qp = quemPropos(i), gn = genero(i.designacao);
+      out.push(qp + ' ' + plural(qp) + ' ' + gn.o + ' ' + i.designacao + '.');
+      out.push(aprovou(i.generalidade, gn.lo));
+    } else if (inis.length) {
+      var dias = inis.map(function (x) { return x.voto.data; }).filter(function (x, j, a) { return a.indexOf(x) === j; });
+      out.push((inis.length === n ? 'O Parlamento votou cada uma das ' + n + ' iniciativas' : 'O Parlamento votou ' + inis.length + ' das ' + n + ' iniciativas') + ' na generalidade' + (dias.length === 1 ? ' a ' + extenso(dias[0]) + '.' : '.'));
     } else {
-      var q = quemPropos(ini), gn = genero(ini.designacao);
-      out.push(q + ' ' + plural(q) + ' ' + gn.o + ' ' + ini.designacao + '.');
-      if (n > 1) out.push('O Parlamento discutiu' + gn.lo + ' com ' + (n === 2 ? 'outra iniciativa.' : 'outras ' + (n - 1) + ' iniciativas.'));
-      if (n === 1 && ini.generalidade) out.push(aprovou(ini.generalidade, gn.lo));
-      else if (proprios.length) {
-        var dias = proprios.map(function (i) { return i.generalidade.data; }).filter(function (x, k, a) { return a.indexOf(x) === k; });
-        out.push('Votou cada uma na generalidade' + (dias.length === 1 ? ' a ' + extenso(dias[0]) + '.' : '.'));
-      } else out.push('Não temos o registo da votação na generalidade.');
+      var c = q && q.motivos && q.motivos.generalidade;
+      return c && MOTIVOS[c] ? motivo(c) : [MOTIVOS.sem_generalidade];
     }
-    return out.join(' ');
+    return [out.join(' ')];
   }
   function Voto(props) {
     var v = props.v;
-    return h(R.Votacao, { grupos: v.grupos, ordem: props.ordem, contagens: v.contagens, dissidencia: v.dissidencia, foraDeGrupo: v.fora_de_grupo,
+    return h(R.Votacao, { grupos: v.grupos, ordem: props.ordem, contagens: v.contagens, dissidencia: v.dissidencia, foraDeGrupo: v.fora_de_grupo, nomes: props.nomes,
       ausentes: v.ausentes, semRegisto: v.sem_registo, unanime: v.unanime, resultado: v.resultado, verificacao: v.verificacao, mostrarConta: props.conta !== false });
   }
   // One vote with its heading: what was voted, the date and the result.
@@ -1311,12 +2024,12 @@
         h('p', { className: 'voto-data' }, extenso(v.data))),
       props.sub ? h('p', { className: 'voto-sub' }, props.sub) : null,
       res && !v.unanime ? h('p', { className: 'voto-res' }, res) : null,
-      h(Voto, { v: v, ordem: props.ordem }));
+      h(Voto, { v: v, ordem: props.ordem, nomes: props.nomes, conta: props.conta }));
   }
   var CELULA = { favor: 'A favor', contra: 'Contra', abstencao: 'Abstenção' };
   // Several initiatives: one row each, one column per group, so the reader can compare.
   function TabelaIniciativas(props) {
-    var p = props.p, inis = p.iniciativas;
+    var p = props.p, inis = p.iniciativas, nomes = props.nomes || {};
     var votos = inis.filter(function (i) { return i.generalidade; }).map(function (i) { return i.generalidade; });
     var ordem = ordemDe(p, votos);
     // Deputies outside any group, counted per sentido: "2 a favor".
@@ -1334,14 +2047,14 @@
         return h('li', { key: i.id },
           h('p', { className: 'iv-nome' }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao)),
           h('p', { className: 'tv-quem' }, quemPropos(i) + (v ? ' · ' + (v.resultado || '') + ' a ' + curta(v.data) : '')),
-          v ? h(Voto, { v: v, ordem: ordem, conta: false }) : h('p', { className: 'muted small' }, i.baixa_sem_votacao ? 'Baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação.'));
+          v ? h(Voto, { v: v, ordem: ordem, conta: false, nomes: nomes }) : h('p', { className: 'muted small' }, i.baixa_sem_votacao ? 'Baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação.'));
       })));
     return h(React.Fragment, null, estreito, h('div', { className: 'tabela-caixa so-largo-b', tabIndex: 0, role: 'region', 'aria-labelledby': 'tab-ini' },
       h('table', { className: 'tabela-votos' },
         h('caption', { id: 'tab-ini' }, props.titulo),
         h('thead', null, h('tr', null,
           h('th', { scope: 'col' }, 'Iniciativa'), h('th', { scope: 'col' }, 'Resultado'),
-          ordem.map(function (g) { return h('th', { key: g, scope: 'col', className: 'tv-g' }, g); }),
+          ordem.map(function (g) { return h('th', { key: g, scope: 'col', className: 'tv-g' }, h(Sigla, { sigla: g, nome: nomes[g] })); }),
           semGrupo ? h('th', { scope: 'col', className: 'tv-g' }, 'Sem grupo') : null)),
         h('tbody', null, inis.map(function (i) {
           var v = i.generalidade, meus = gruposDe(i);
@@ -1357,101 +2070,165 @@
         }))),
       h('p', { className: 'tabela-nota' }, 'A negrito: o grupo que apresentou a iniciativa.')));
   }
-  function Generalidade(props) {
-    var p = props.p, ini = principalDe(p), n = p.iniciativas.length;
-    var texto = p.texto_comissao && p.texto_comissao.length ? p.texto_comissao[p.texto_comissao.length - 1] : null;
-    var proprios = p.iniciativas.filter(function (i) { return i.generalidade; });
-    return h('section', { className: 'secao geral', id: 'generalidade', 'aria-labelledby': 'geral-h' },
-      h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
-      h('p', { className: 'lede' }, ledeGeneralidade(p)),
-      texto ? h(BlocoVoto, { v: texto, ordem: ordemDe(p, [texto]), titulo: 'Texto de substituição da comissão', sub: 'Junta ' + lista(p.iniciativas.map(function (i) { return i.designacao; })) + '.' }) : null,
-      !texto && n === 1 && ini.generalidade ? h(BlocoVoto, { v: ini.generalidade, ordem: ordemDe(p, [ini.generalidade]), titulo: ini.designacao, designacao: ini.designacao, sub: h('span', { 'data-citacao': '' }, ini.titulo) }) : null,
-      n > 1 && proprios.length ? h(TabelaIniciativas, { p: p, titulo: texto ? 'Votação de cada iniciativa, antes do texto da comissão' : 'Votação de cada iniciativa' }) : null,
-      n > 1 && !proprios.length ? h('ul', { className: 'inis' }, p.iniciativas.map(function (i) {
+  // R-34: what «Ausente» and «Sem registo» mean, under the votes that use them.
+  function NotasVoto(props) {
+    var vs = props.votos;
+    var aus = vs.some(function (v) { return (v.ausentes || []).length; }), sem = vs.some(function (v) { return !v.unanime && (v.sem_registo || []).length; });
+    return h(React.Fragment, null,
+      aus ? h('p', { className: 'fonte' }, 'Ausente: o grupo não estava na votação, segundo o registo da Assembleia da República.') : null,
+      sem ? h('p', { className: 'fonte' }, 'Sem registo do voto: os dados da Assembleia da República não indicam o voto deste grupo.') : null);
+  }
+  // The generalidade votes of one act, as blocks (the act page and the stories).
+  function VotosAto(props) {
+    var p = props.p, q = props.quem || {}, ref = props.dados, itens = itensGeneralidade(p);
+    var com = itens.filter(function (x) { return x.comissao; }), inis = itens.filter(function (x) { return x.ini; });
+    // Siglas are those of the vote's legislatura (R-5): each vote carries it.
+    var nomesV = function (v) { return nomesDe(ref, v.legislatura || p.legislatura); };
+    var nomes = nomesV(itens[0] ? itens[0].voto : {}), n = p.iniciativas.length, tc = q.texto_comissao;
+    var junta = tc && tc.iniciativas ? tc.iniciativas.map(function (i) { return (i.parte ? i.parte + ' ' + daDe(i.designacao) + ' ' : '') + i.designacao; }) : null;
+    return h(React.Fragment, null,
+      com.map(function (x, k) {
+        return h(BlocoVoto, { key: 'c' + k, v: x.voto, ordem: ordemDe(p, [x.voto]), nomes: nomesV(x.voto), titulo: x.titulo, conta: props.conta,
+          sub: 'Junta ' + lista(junta || (x.voto.citadas || []).map(function (id) { return desIni(p, id); })) + '.' });
+      }),
+      !com.length && n === 1 && inis.length === 1 ? h(BlocoVoto, { v: inis[0].voto, ordem: ordemDe(p, [inis[0].voto]), nomes: nomes, titulo: inis[0].titulo, designacao: inis[0].titulo, conta: props.conta,
+        sub: h('span', { 'data-citacao': '' }, inis[0].ini.titulo) }) : null,
+      n > 1 && inis.length ? h(TabelaIniciativas, { p: p, nomes: nomes, titulo: com.length ? 'Votação de cada iniciativa, antes do texto da comissão' : 'Votação de cada iniciativa' }) : null,
+      n > 1 && !inis.length && !com.length ? h('ul', { className: 'inis' }, p.iniciativas.map(function (i) {
         return h('li', { key: i.id }, h('a', { href: link(['iniciativa', i.id]) }, i.designacao), ', ' + dePropos(i) + (i.baixa_sem_votacao ? '. Baixou à comissão sem votação.' : '.'));
       })) : null,
+      h(NotasVoto, { votos: itens.map(function (x) { return x.voto; }) }));
+  }
+  function Generalidade(props) {
+    var p = props.p, q = props.quem || {};
+    var frases = marcarFrases([linhaVfg(q.vfg, (q.motivos || {}).vfg), ledeGeneralidade(p, q)], 'voto');
+    return h('section', { className: 'secao geral', id: 'generalidade', 'aria-labelledby': 'geral-h' },
+      h('h2', { id: 'geral-h' }, 'Primeira votação: na generalidade'),
+      q.provisorio ? null : h('p', { className: 'lede' }, render(frases[0])),
+      h('p', { className: 'lede' }, render(frases[1])),
+      h(VotosAto, { p: p, quem: q, dados: props.dados }),
       h('p', { className: 'fonte' }, 'Ordem dos grupos: a da Assembleia da República nessa legislatura. Fonte: Assembleia da República, dados abertos.'));
   }
 
   // ---- Act (the "commit") -----------------------------------------------------------------------
+  // How we know each fact of the «Quem fez» block: the sources, with links.
+  function comoSabemos(quem, p, a, ref) {
+    var out = [], ini = (quem.proponentes || []).map(function (x) { return { id: x.iniciativa, designacao: x.designacao }; });
+    if (!ini.length && p) ini = p.iniciativas.map(function (i) { return { id: i.id, designacao: i.designacao }; });
+    if (a.link) out.push([lig(a.link, 'Texto ' + daDe(a.designacao) + ' ' + a.designacao + ' no Diário da República ↗'),
+      quem.assinatura && quem.assinatura.obtido_em ? ' Lemos as assinaturas a ' + extenso(quem.assinatura.obtido_em) + '.' : '']);
+    ini.forEach(function (i) { out.push([lig(hrefIni(i.id, null), i.designacao + ' na Assembleia da República ↗')]); });
+    var ns = [];
+    if (quem.governo && quem.governo.numero != null) ns.push(quem.governo.numero);
+    (quem.proponentes || []).forEach(function (x) { if (x.governo != null && ns.indexOf(x.governo) < 0) ns.push(x.governo); });
+    var consultado = null;
+    ns.forEach(function (n) {
+      var g = governoDe(ref, n);
+      if (!g) return;
+      consultado = consultado || g.consultado_em;
+      var f = (g.fontes || {}).inicio;
+      out.push(['Tabela de Governos: ', gov(n), '.'].concat(f ? [' ', lig(f, 'Fonte ↗')] : []));
+    });
+    var pr = quem.presidente && presidenteDe(ref, quem.presidente.id);
+    if (pr) out.push(['Tabela de Presidentes da República: ' + pr.nome + '.'].concat(pr.fonte ? [' ', lig(pr.fonte, 'Fonte ↗')] : []));
+    consultado = consultado || (ref.index || {}).consultado_em;
+    if (consultado) out.push(['Consultámos os dados a ' + extenso(consultado) + '.']);
+    out.push([lig('https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro: ' + a.designacao), 'Reportar um erro ↗')]);
+    return out;
+  }
   function Ato(props) {
-    var r = useData(['atos.json', 'index.json', 'passagem.json']);
+    var r = useData(['atos.json', 'index.json', 'passagem.json', '?quem.json', '?governos.json']);
+    var sum = useState(false);
     if (!r.data) return h(Loading, { error: r.error });
     var atos = r.data[0], index = r.data[1], ps = r.data[2], a = atos[props.id];
+    // An old id of an act (a merged id the pipeline split, a heading prefix) opens the act it became.
+    var alias = (index.aliases_atos || {})[props.id];
+    if (!a && alias && atos[alias]) { setTimeout(function () { substituir(link(['ato', alias], props.q)); }, 0); return h(Loading, {}); }
     if (!a) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos este ato.'));
+    var ref = { atos: atos, index: index, passagem: ps, quem: r.data[3] || {}, governos: r.data[4] };
+    var rg = registo(ref, a.id), quem = rg.quem, p = rg.p, tipo = quem.tipo_ato || tipoDe(a.designacao);
     var nomes = {};
     index.diplomas.forEach(function (d) { nomes[d.slug] = d; });
-    var vigor = {};
-    a.alteracoes.forEach(function (c) { if (c.vigor) vigor[c.vigor] = (vigor[c.vigor] || 0) + 1; });
-    var datas = Object.keys(vigor).sort();
     var by = {};
     a.alteracoes.forEach(function (c) { (by[c.diploma] = by[c.diploma] || []).push(c); });
-    var p = ps[a.id], dl = /^Decreto-Lei/.test(a.designacao);
-    document.title = a.designacao + ' · Redação';
+    document.title = tituloDe(['ato', a.id], { atos: atos });
+    var frases = marcarFrases(frasesQuem(quem, p, a, ref), 'quem');
+    var aviso = avisoTransitorias(quem, a);
+    var inis = (quem.proponentes || []).length ? quem.proponentes.map(function (x) { return { id: x.iniciativa, designacao: x.designacao }; }) : p ? p.iniciativas : [];
     // The changes as an amending law writes them: "Alterou os artigos 14.º, 15.º e 15.º-A."
     var VERBO = { alterado: 'Alterou', aditado: 'Aditou', revogado: 'Revogou', retificado: 'Retificou', sem_alteracao: 'Abrangeu, sem mudar o texto,' };
-    var facto = function (k, v) { return [h('dt', { key: k + 't' }, k), h('dd', { key: k + 'd' }, v)]; };
+    var longo = a.sumario && a.sumario.length > 150;
     return h('div', { className: 'pagina-ato' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [a.designacao]] }),
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [a.designacao]] }),
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, a.designacao + (a.publicacao ? ', de ' + semAno(a.publicacao) : '')),
-        a.sumario ? h('p', { className: 'lead', 'data-citacao': '' }, a.sumario) : null),
+        a.sumario ? h('div', { className: 'sumario' + (longo && !sum[0] ? ' is-curto' : '') },
+          h('p', { className: 'lead', 'data-citacao': '' }, a.sumario),
+          longo && !sum[0] ? h('button', { type: 'button', className: 'rd-btn sumario-mais', onClick: function () { sum[1](true); } }, 'Ler o sumário completo') : null) : null,
+        LEIS[tipo] || tipo === 'decreto-lei' || tipo === 'outro' ? h(Guia, { tipo: 'ato', texto: tipo === 'decreto-lei' ? 'ato-dl' : 'ato-lei' }) : null),
       h('div', { className: 'duas' },
-        h('section', { className: 'secao secao-1', 'aria-labelledby': 'alterou' },
-          h('h2', { id: 'alterou' }, 'O que este ato mudou'),
-          Object.keys(by).map(function (slug) {
-            var porTipo = {};
-            by[slug].forEach(function (c) { (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c); });
-            return h('div', { key: slug, className: 'mudou' },
-              h('p', { className: 'mudou-diploma' }, nomes[slug] ? nomes[slug].titulo : slug),
-              ['alterado', 'aditado', 'revogado', 'retificado', 'sem_alteracao'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
-                var cs = porTipo[t];
-                return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
-                  cs.map(function (c, i) {
-                    return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
-                      // An article the act left as it was has no redação of this act: open it at that date.
-                      h('a', { href: t === 'sem_alteracao' ? link(['d', slug, c.artigo], { em: c.vigor || a.publicacao }) : link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null, ato: a.id }) }, c.rotulo.replace(/^Artigo\s*/, '')));
-                  }), '.');
-              }));
-          })),
-        h('aside', { className: 'factos', 'aria-label': 'Datas e fontes' },
-          h('dl', null,
-            facto('Publicação', [a.publicacao ? extenso(a.publicacao) : 'não indicada', a.dr ? h('span', { key: 'dr', className: 'factos-sub' }, 'Diário da República n.º ' + a.dr) : null]),
-            facto('Entrada em vigor', datas.length ? datas.map(function (dt) { return h('span', { key: dt, className: 'factos-linha' }, extenso(dt) + (datas.length > 1 ? ' (' + vigor[dt] + (vigor[dt] === 1 ? ' artigo)' : ' artigos)') : '')); }) : 'não indicada'),
-            p ? facto(p.iniciativas.length === 1 ? 'Iniciativa' : 'Iniciativas', p.iniciativas.slice(0, 3).map(function (i) { return h('a', { key: i.id, className: 'factos-linha', href: link(['iniciativa', i.id]) }, i.designacao); })
-              .concat(p.iniciativas.length > 3 ? [h('span', { key: 'mais', className: 'factos-sub' }, 'e mais ' + (p.iniciativas.length - 3))] : [])) : null),
+        h('section', { className: 'secao secao-1 quem-fez', id: 'quem', 'aria-labelledby': 'quem-h' },
+          h('h2', { id: 'quem-h' }, tituloQuem(tipo)),
+          h('div', { className: 'quem-frases' }, h(Frases, { frases: frases })),
+          aviso ? h(Frases, { frases: [aviso] }) : null,
+          h('details', { className: 'dobra como-sabemos' }, h('summary', null, 'Como sabemos isto'),
+            h('ul', { className: 'como-lista' }, comoSabemos(quem, p, a, ref).map(function (f, k) { return h('li', { key: k }, render(f)); })))),
+        h('aside', { className: 'factos', 'aria-label': 'Fontes' },
+          a.dr ? h('p', { className: 'factos-dr' }, 'Diário da República n.º ' + a.dr) : null,
+          inis.length ? h('dl', null,
+            h('dt', null, inis.length === 1 ? 'Iniciativa' : 'Iniciativas'),
+            h('dd', null, inis.slice(0, 3).map(function (i) { return h('a', { key: i.id, className: 'factos-linha', href: hrefIni(i.id, p) }, i.designacao + (externo(hrefIni(i.id, p)) ? ' ↗' : '')); })
+              .concat(inis.length > 3 ? [h('span', { key: 'mais', className: 'factos-sub' }, 'e mais ' + (inis.length - 3))] : []))) : null,
           h('p', { className: 'factos-links' },
             a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null))),
-      p ? h(Generalidade, { p: p })
-        : h('section', { className: 'secao', 'aria-labelledby': 'geral-h' },
-          h('h2', { id: 'geral-h' }, dl ? 'Aprovação' : 'Votação na generalidade'),
-          h('p', { className: 'lede' }, dl ? 'O Governo aprovou este decreto-lei. O Parlamento não votou este texto.'
-            : /^Declaração de Retificação/.test(a.designacao) ? 'Uma declaração de retificação corrige erros do texto publicado. Não tem votação.'
-            : a.ar ? 'Não encontrámos a iniciativa nos dados abertos da Assembleia da República.' : 'Não temos dados deste ato no Parlamento.')));
+      a.alteracoes.length ? h('section', { className: 'secao secao-mudou', 'aria-labelledby': 'alterou' },
+        h('h2', { id: 'alterou' }, 'O que este ato mudou'),
+        Object.keys(by).map(function (slug) {
+          var porTipo = {};
+          by[slug].forEach(function (c) { (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c); });
+          return h('div', { key: slug, className: 'mudou' },
+            h('p', { className: 'mudou-diploma' }, nomes[slug] ? nomes[slug].titulo : slug),
+            ['alterado', 'aditado', 'revogado', 'retificado', 'sem_alteracao'].concat(Object.keys(porTipo)).filter(function (t, i, all) { return porTipo[t] && all.indexOf(t) === i; }).map(function (t) {
+              var cs = porTipo[t];
+              return h('p', { key: t, className: 'mudou-frase' }, (VERBO[t] || t) + (cs.length === 1 ? ' o ' : ' os ') + (cs.length === 1 ? 'artigo ' : 'artigos '),
+                cs.map(function (c, i) {
+                  return h(React.Fragment, { key: i }, i ? (i === cs.length - 1 ? ' e ' : ', ') : '',
+                    // An article the act left as it was has no redação of this act: open it at that date.
+                    h('a', { href: t === 'sem_alteracao' ? link(['d', slug, c.artigo], { em: c.vigor || a.publicacao }) : link(['d', slug, c.artigo], { redacao: a.id, ver: t === 'alterado' ? 'mudou' : null, ato: a.id }) }, c.rotulo.replace(/^Artigo\s*/, '')));
+                }), '.');
+            }));
+        })) : null,
+      p ? h(Generalidade, { p: p, quem: quem, dados: ref }) : null);
   }
 
   // ---- Initiative (the "pull request") ---------------------------------------------------------
   function Iniciativa(props) {
-    var r = useData(['iniciativas.json', 'atos.json', 'passagem.json', 'pendentes.json', 'index.json']);
+    var r = useData(['iniciativas.json', 'atos.json', 'passagem.json', 'pendentes.json', 'index.json', '?quem.json', '?governos.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var ini = r.data[0][props.id], atos = r.data[1], ps = r.data[2];
+    var ref = { atos: atos, passagem: ps, index: r.data[4], quem: r.data[5] || {}, governos: r.data[6] };
     if (!ini && r.data[3].iniciativas[props.id]) return h(IniciativaPendente, { ini: r.data[3].iniciativas[props.id], diplomas: r.data[4].diplomas });
     if (!ini) return h('div', { className: 'state' }, h('p', null, 'Não encontrámos esta iniciativa.'));
     var p = ps[ini.ato], ato = atos[ini.ato], nome = ini.tipo + ' n.º ' + ini.numero + '/' + ini.legislatura;
     var esta = p ? p.iniciativas.filter(function (i) { return i.id === props.id; })[0] : null;
-    var texto = p && p.texto_comissao ? p.texto_comissao.filter(function (t) { return t.citadas.indexOf(props.id) >= 0; }).pop() : null;
+    // The committee texts of this act that include this initiative (the act's own, R-1).
+    var textos = p ? itensGeneralidade(p).filter(function (x) { return x.comissao && (x.voto.citadas || []).indexOf(props.id) >= 0; }) : [];
+    var q = p ? registo(ref, ini.ato).quem : null, nomes = p ? nomesDe(ref, p.legislatura) : {};
     document.title = nome + ' · Redação';
     return h('div', { className: 'pagina-ato' },
-      h(Crumbs, { items: [['Diplomas', '#/'], [nome]] }),
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [nome]] }),
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, nome),
-        h('p', { className: 'lead', 'data-citacao': '' }, ini.titulo)),
+        h('p', { className: 'lead', 'data-citacao': '' }, ini.titulo),
+        h(Guia, { tipo: 'iniciativa' })),
       h('div', { className: 'duas' },
         h('section', { className: 'secao secao-1', 'aria-labelledby': 'geral-h' },
-          h('h2', { id: 'geral-h' }, 'Votação na generalidade'),
-          esta && esta.generalidade ? h(BlocoVoto, { v: esta.generalidade, ordem: ordemDe(p, [esta.generalidade]), titulo: nome, designacao: nome })
+          h('h2', { id: 'geral-h' }, 'Primeira votação: na generalidade'),
+          q && !q.provisorio ? h('p', { className: 'lede' }, render(marcarFrases([linhaVfg(q.vfg, (q.motivos || {}).vfg)], 'voto')[0])) : null,
+          esta && esta.generalidade ? h(BlocoVoto, { v: esta.generalidade, ordem: ordemDe(p, [esta.generalidade]), titulo: nome, designacao: nome, nomes: nomes })
             : h('p', { className: 'lede' }, esta && esta.baixa_sem_votacao ? 'Esta iniciativa baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação desta iniciativa na generalidade.'),
-          texto ? h(BlocoVoto, { v: texto, ordem: ordemDe(p, [texto]), titulo: 'Texto de substituição da comissão', sub: 'Inclui esta iniciativa.' }) : null),
+          textos.map(function (x, k) { return h(BlocoVoto, { key: k, v: x.voto, ordem: ordemDe(p, [x.voto]), nomes: nomes, titulo: x.titulo, sub: 'Inclui esta iniciativa.' }); }),
+          h(NotasVoto, { votos: (esta && esta.generalidade ? [esta.generalidade] : []).concat(textos.map(function (x) { return x.voto; })) })),
         h('aside', { className: 'factos', 'aria-label': 'Autores e fontes' },
           h('dl', null,
             esta ? [h('dt', { key: 'qt' }, 'Apresentada por'), h('dd', { key: 'qd' }, quemPropos(esta))] : null,
@@ -1463,6 +2240,317 @@
         h('ol', { className: 'fases' }, ini.eventos.map(function (e, i) { return h('li', { key: i }, h('span', { className: 'fase-data' }, curta(e[0])), h('span', null, e[1])); }))));
   }
 
+  // ---- Who made each change: the timeline of a diploma (#/quem/<slug>) -------------------------------
+  // Every act that changed the diploma, by Government or by legislatura, in date order. Empty
+  // periods stay, in two lines. No counts by actor, no colours, no bars (R-53).
+  var LISTAS = {
+    governo: [['decretos_leis', 'Decretos-leis deste Governo'], ['propostas', 'Leis que vêm de propostas deste Governo'],
+      ['outras', 'Leis que vêm de iniciativas de deputados ou de textos da comissão'], ['publicados_sem_d_cm', 'Decretos-leis publicados neste período, sem data do Conselho de Ministros']],
+    legislatura: [['decretos_leis', 'Decretos-leis'], ['propostas', 'Leis que vêm de propostas do Governo'],
+      ['outras', 'Leis que vêm de iniciativas de deputados ou de textos da comissão'], ['publicados_sem_d_cm', 'Decretos-leis publicados nesta legislatura, sem data do Conselho de Ministros']]
+  };
+  var FORA = [['revisoes', 'Revisões da Constituição'], ['acordaos', 'Acórdãos do Tribunal Constitucional'], ['antes_1976', 'Antes da Constituição de 1976'],
+    ['retificacoes_soltas', 'Retificações'], ['outros', 'Outros diplomas']];
+  function idAto(x) { return typeof x === 'string' ? x : x.ato; }
+  function nomeLeg(sigla) { return sigla === 'Constituinte' ? 'Assembleia Constituinte' : 'Legislatura ' + sigla; }
+  // «De 23 de julho de 1976 a 1 de janeiro de 1983.» / «Desde …»
+  function deA(inicio, fim) { return fim ? 'De ' + extenso(inicio) + ' a ' + extenso(fim) + '.' : 'Desde ' + extenso(inicio) + '.'; }
+  // The legislaturas a Government overlapped.
+  function legislaturasDe(g, gj) {
+    return ((gj && gj.legislaturas) || []).filter(function (l) { return (!g.fim || l.inicio < g.fim) && (!l.fim || l.fim > g.inicio); }).map(function (l) { return l.sigla; });
+  }
+  function juntarPartes(ps) {
+    var out = [];
+    ps.forEach(function (p, k) { if (k) out.push(k === ps.length - 1 ? ' e ' : ', '); out = out.concat(p); });
+    return out;
+  }
+  function LinhaAto(props) {
+    var fs = props.frases;
+    return h('li', { className: 'linha-ato' },
+      props.semNome ? null : h('p', { className: 'linha-ato-nome' }, render(fs[0], props.ctx)),
+      h('div', { className: 'linha-ato-mais' }, h(Frases, { frases: fs.slice(1), ctx: props.ctx })));
+  }
+  function Quem(props) {
+    var slug = props.slug, por = props.q.por === 'legislatura' ? 'legislatura' : 'governo';
+    var r = useData(['quem/' + slug + '.json', 'd/' + slug + '.json', 'atos.json', 'passagem.json', 'quem.json', 'governos.json', 'index.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var t = r.data[0], d = r.data[1], gj = r.data[5];
+    var ref = { atos: r.data[2], passagem: r.data[3], quem: r.data[4], governos: gj, index: r.data[6] };
+    document.title = tituloDe(['quem', slug], { index: ref.index });
+    var legs = {};
+    (gj.legislaturas || []).forEach(function (l) { legs[l.sigla] = l; });
+    var linhas = function (lista, k, governo) {
+      return lista.map(function (x) {
+        var id = idAto(x);
+        var fs = marcarFrases(linhaAto(id, ref, { slug: slug, governoPeriodo: governo, semDcm: k === 'publicados_sem_d_cm', retificacoes: (t.retificacoes || {})[id] }), 'periodo');
+        return h(LinhaAto, { key: id, frases: fs });
+      });
+    };
+    var periodo = function (row) {
+      var g = por === 'governo' ? governoDe(ref, row.governo) : null, l = por === 'legislatura' ? legs[row.legislatura] || { sigla: row.legislatura } : null;
+      var id = g ? 'governo-' + row.governo : 'legislatura-' + row.legislatura;
+      var cab = g ? [gov(row.governo)] : [nomeLeg(row.legislatura)];
+      var quando = g ? deA(g.inicio, g.fim) : l.inicio ? deA(l.inicio, l.fim) : '';
+      if (!row.total) return h('section', { key: id, className: 'periodo periodo-vazio', 'aria-labelledby': id },
+        h('h2', { id: id, className: 'periodo-h', tabIndex: -1 }, render(cab), quando ? ' · ' + quando.replace(/\.$/, '') + '.' : ''),
+        h('p', { className: 'muted' }, 'Nenhuma alteração neste período.'));
+      var meta = [];
+      if (g) {
+        if (g.primeiro_ministro) meta.push(['Primeiro-Ministro: ' + g.primeiro_ministro]);
+        var pt = frasePartidos(g, ref, legislaturasDe(g, gj).slice(-1)[0]);
+        if (pt) meta.push(pt.map(function (x) { return typeof x === 'string' ? x.replace(/\.$/, '') : x; }));
+      }
+      var ls = g ? legislaturasDe(g, gj) : [];
+      var sub = g ? quando + (ls.length ? ' ' + (ls.length === 1 ? 'Legislatura ' : 'Legislaturas ') + lista(ls.map(function (x) { return x === 'Constituinte' ? 'Assembleia Constituinte' : x; })) + '.' : '')
+        : null;
+      return h('section', { key: id, className: 'periodo', 'aria-labelledby': id },
+        h('h2', { id: id, className: 'periodo-h', tabIndex: -1 }, render(cab)),
+        meta.length ? h('p', { className: 'periodo-meta' }, render(meta.reduce(function (a, m, k) { return a.concat(k ? [' · '] : []).concat(m); }, []))) : null,
+        g ? h('p', { className: 'periodo-datas' }, sub)
+          : h('p', { className: 'periodo-datas' }, quando, (row.governos || []).length ? render([' Governos: '].concat(juntarPartes(row.governos.map(function (n) { return [gov(n)]; }))).concat(['.'])) : null),
+        h('p', { className: 'periodo-total' }, row.total === 1 ? '1 ato neste período.' : row.total + ' atos neste período.'),
+        LISTAS[por].map(function (x) {
+          var lista0 = (row.listas || {})[x[0]] || [];
+          if (!lista0.length) return null;
+          return h('div', { key: x[0], className: 'sublista' }, h('h3', { className: 'sublista-h' }, x[1]), h('ul', { className: 'linhas-ato' }, linhas(lista0, x[0], g ? row.governo : null)));
+        }));
+    };
+    var fora = t.fora || {};
+    return h('div', { className: 'pagina-ato pagina-quem' },
+      h(Crumbs, { items: [['Leis e códigos', '#/'], [d.sigla || d.titulo, link(['d', slug])], ['Quem fez cada alteração']] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Quem fez cada alteração'),
+        h('p', { className: 'subtitulo' }, d.titulo),
+        h('p', { className: 'lead' }, 'Todos os atos que alteraram este diploma desde ' + extenso(t.desde) + ', do mais antigo para o mais recente.'),
+        h(Guia, { tipo: 'quem' })),
+      h('div', { className: 'quem-abas' }, h(Abas, { items: [['governo', 'Por Governo'], ['legislatura', 'Por legislatura']], value: por,
+        onChange: function (v) { substituir(link(['quem', slug], { por: v === 'legislatura' ? 'legislatura' : null })); } })),
+      h('div', { className: 'periodos' }, (por === 'governo' ? t.por_governo : t.por_legislatura).map(periodo)),
+      FORA.map(function (x) {
+        var l = fora[x[0]] || [];
+        if (!l.length) return null;
+        return h('section', { key: x[0], className: 'periodo', 'aria-labelledby': 'fora-' + x[0] },
+          h('h2', { id: 'fora-' + x[0], className: 'periodo-h', tabIndex: -1 }, x[1]),
+          h('ul', { className: 'linhas-ato' }, linhas(l, x[0], null)));
+      }));
+  }
+
+  // ---- Parliamentary groups (#/grupos, #/grupo/<id>) ----------------------------------------------
+  // «II e III», «VIII a XVII», «I a III, V»: runs of consecutive legislaturas, in the AR's order.
+  function faixasLegislaturas(ls, ordem) {
+    var pos = ls.map(function (x) { return ordem.indexOf(x); }).filter(function (i) { return i >= 0; }).sort(function (a, b) { return a - b; });
+    var runs = [];
+    pos.forEach(function (i) { var r = runs[runs.length - 1]; if (r && r[1] === i - 1) r[1] = i; else runs.push([i, i]); });
+    return runs.map(function (r) { return r[0] === r[1] ? ordem[r[0]] : r[1] === r[0] + 1 ? ordem[r[0]] + ' e ' + ordem[r[1]] : ordem[r[0]] + ' a ' + ordem[r[1]]; }).join(', ');
+  }
+  function legislaturasTexto(ls, ordem, minuscula) { return (minuscula ? 'l' : 'L') + (ls.length === 1 ? 'egislatura ' : 'egislaturas ') + faixasLegislaturas(ls, ordem); }
+  function ordemLegs(gj) { return ((gj && gj.legislaturas) || []).map(function (l) { return l.sigla; }); }
+  function Grupos() {
+    var r = useData(['grupos/index.json', 'governos.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    document.title = tituloDe(['grupos']);
+    var ordem = ordemLegs(r.data[1]);
+    return h('div', { className: 'pagina-ato' },
+      h(Crumbs, { items: [['Leis e códigos', '#/'], ['Grupos parlamentares']] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Grupos parlamentares'),
+        h('p', { className: 'lead' }, 'Os grupos parlamentares que votaram alterações aos diplomas deste site. Por ordem alfabética.')),
+      h('ul', { className: 'list grupos-lista' }, r.data[0].map(function (g) {
+        return h('li', { key: g.id },
+          h('a', { className: 'grupo-nome', href: link(['grupo', g.id]) }, g.nome + ' (' + g.siglas.join(', ') + ')'),
+          h('p', { className: 'muted' }, legislaturasTexto(g.legislaturas, ordem) + '.'));
+      })));
+  }
+  var SENTIDO = { favor: 'a favor', contra: 'contra', abstencao: 'abstenção', ausente: 'ausente', sem_registo: 'sem registo do voto' };
+  function Grupo(props) {
+    var r = useData(['grupos/' + props.id + '.json', 'atos.json', 'quem.json', 'index.json', 'governos.json', 'passagem.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var g = r.data[0], atos = r.data[1], ref = { atos: atos, quem: r.data[2], index: r.data[3], governos: r.data[4], passagem: r.data[5] };
+    var ordem = ordemLegs(ref.governos), ultimo = g.nomes[g.nomes.length - 1];
+    var nome = ultimo.nome + ' (' + ultimo.sigla + ')';
+    document.title = tituloDe(['grupo', g.id], { grupo: { nome: nome } });
+    var dips = {};
+    ref.index.diplomas.forEach(function (d) { dips[d.slug] = d; });
+    var escolhas = Object.keys(g.votos || {}).filter(function (k) { return g.votos[k].length; })
+      .sort(function (a, b) { return fold((dips[a] || { titulo: a }).titulo) < fold((dips[b] || { titulo: b }).titulo) ? -1 : 1; });
+    var dip = props.q.diploma && (g.votos || {})[props.q.diploma] ? props.q.diploma : props.q.diploma || '';
+    var vfg = function (id) { var q = registo(ref, id).quem; return q.provisorio ? null : linhaVfg(q.vfg, (q.motivos || {}).vfg); };
+    var termos = termosPara(glossarioAtual, TERMOS.periodo), vistos = new Set();
+    return h('div', { className: 'pagina-ato pagina-grupo' },
+      h(Crumbs, { items: [['Leis e códigos', '#/'], ['Grupos parlamentares', '#/grupos'], [ultimo.nome]] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Grupo parlamentar: ' + nome),
+        h('p', { className: 'lead' }, 'Nomes nos registos do Parlamento: ' + g.nomes.map(function (n) { return n.sigla + ', ' + legislaturasTexto(n.legislaturas, ordem, true) + '.'; }).join(' ')),
+        h(Guia, { tipo: 'grupo' })),
+      h('aside', { className: 'regra grupo-notas', 'aria-labelledby': 'notas-g' },
+        h('p', { id: 'notas-g' }, h('strong', null, 'Notas')),
+        h('p', null, ref.index.diplomas.length === 1 ? 'Mostramos só as leis que mudaram o diploma deste site.' : 'Mostramos só as leis que mudaram os ' + ref.index.diplomas.length + ' diplomas deste site.'),
+        h('p', null, render(marcarTermos(['Um grupo parlamentar reúne os deputados de um partido no Parlamento. Os partidos de uma coligação podem formar grupos separados.'], vistos, termos))),
+        h('p', null, 'Mostramos a primeira votação, na generalidade, e o resultado da votação final global.'),
+        h('p', null, 'Um voto contra uma lei não quer dizer que o grupo é contra todo o texto.')),
+      h('section', { className: 'secao', 'aria-labelledby': 'g-inis' },
+        h('h2', { id: 'g-inis' }, 'Iniciativas deste grupo que deram origem a uma lei deste site'),
+        g.iniciativas.length ? h('ul', { className: 'list grupo-inis' }, g.iniciativas.map(function (i, k) {
+          var a = atos[i.ato] || { designacao: i.ato }, al = lig(link(['ato', i.ato]), nomeCompleto(a)), il = ligIni(i.iniciativa, i.designacao, ref.passagem[i.ato]);
+          var f = i.parte ? ['O ' + i.parte + ' ' + daDe(i.designacao) + ' ', il, ' entrou no texto ' + daDe(a.designacao) + ' ', al, '.']
+            : [aDe(i.designacao).toUpperCase() + ' ', il, ' deu origem ' + (feminino(a.designacao) ? 'à ' : 'ao ') , al, '.'];
+          var v = vfg(i.ato);
+          return h('li', { key: k },
+            h('p', { className: 'grupo-ini' }, render(f)),
+            h('p', { className: 'muted' }, i.como === 'propria' ? 'A lei vem desta iniciativa.' : 'Uma das ' + i.n_iniciativas + ' iniciativas que a comissão juntou no texto da lei.'),
+            v ? h('p', { className: 'muted' }, render(v)) : null);
+        })) : h('p', { className: 'lede' }, 'Nenhuma iniciativa deste grupo deu origem a uma lei deste site.')),
+      h('section', { className: 'secao', 'aria-labelledby': 'g-votos' },
+        h('h2', { id: 'g-votos' }, 'Como votou nas alterações a um diploma'),
+        h('label', { className: 'grupo-escolha' }, h('span', null, 'Diploma'),
+          h('select', { className: 'rd-input', value: dip, onChange: function (e) { substituir(link(['grupo', g.id], { diploma: e.target.value || null })); } },
+            h('option', { value: '' }, 'Escolha um diploma'),
+            escolhas.map(function (k) { return h('option', { key: k, value: k }, (dips[k] || { titulo: k }).titulo); }))),
+        !dip ? h('p', { className: 'lede' }, 'Escolha um diploma para ver como este grupo votou as alterações.')
+          : !((g.votos || {})[dip] || []).length ? h('p', { className: 'lede' }, 'Este grupo não votou alterações a este diploma, segundo os dados do Parlamento.')
+          : h('ul', { className: 'list grupo-votos' }, g.votos[dip].map(function (x, k) {
+            var a = atos[x.ato] || { designacao: x.ato }, v = vfg(x.ato);
+            return h('li', { key: k },
+              h('p', { className: 'grupo-ato' }, h('a', { href: link(['ato', x.ato]) }, nomeCompleto(a))),
+              x.sigla !== ultimo.sigla ? h('p', { className: 'muted' }, x.sigla + ', nesta legislatura.') : null,
+              x.oe ? h('p', null, 'Lei do Orçamento do Estado: o voto é sobre o orçamento inteiro. Uma lei do Orçamento do Estado também pode alterar outras leis.') : null,
+              x.itens.map(function (it, j) {
+                return h('p', { key: j }, 'Primeira votação, na generalidade: ' + it.designacao + ': ' + (it.sentido ? SENTIDO[it.sentido] || it.sentido : 'sem votação na generalidade') + '.');
+              }),
+              v ? h('p', null, render(v)) : null,
+              h('p', null, h('a', { href: link(['ato', x.ato], { ir: 'generalidade' }) }, 'Ver a votação de todos os grupos')));
+          }))));
+  }
+
+  // ---- Stories (#/historias, #/historia/<slug>) ------------------------------------------------------
+  function Historias() {
+    var r = useData(['historias/index.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    document.title = tituloDe(['historias']);
+    return h('div', { className: 'pagina-ato' },
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Histórias'),
+        h('p', { className: 'lead' }, 'Como mudaram algumas leis, ato a ato. Cada facto tem uma ligação ao site.')),
+      h('div', { className: 'historias-indice' }, h(ListaHistorias, { historias: r.data[0].historias || [] })));
+  }
+  var TIPO_ATO = { lei: ['lei', 'leis'], 'lei-organica': ['lei orgânica', 'leis orgânicas'], 'lei-constitucional': ['lei constitucional', 'leis constitucionais'],
+    'decreto-lei': ['decreto-lei', 'decretos-leis'], retificacao: ['declaração de retificação', 'declarações de retificação'], 'acordao-tc': ['acórdão do Tribunal Constitucional', 'acórdãos do Tribunal Constitucional'],
+    'acordao-outro': ['acórdão', 'acórdãos'], pre1976: ['diploma anterior a 1976', 'diplomas anteriores a 1976'], outro: ['outro diploma', 'outros diplomas'] };
+  function nomeTipo(t, n) { var x = TIPO_ATO[t] || TIPO_ATO.outro; return n === 1 ? x[0] : x[1]; }
+  function Historia(props) {
+    var r = useData(['historias/' + props.slug + '.json', 'atos.json', '?quem.json', 'passagem.json', '?governos.json', 'index.json', 'pendentes.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    var hx = r.data[0], ref = { atos: r.data[1], quem: r.data[2] || {}, passagem: r.data[3], governos: r.data[4], index: r.data[5] }, pend = r.data[6];
+    document.title = tituloDe(['historia', hx.slug], { historia: hx });
+    var slug0 = ((hx.ambito || {}).diplomas || [])[0] ? hx.ambito.diplomas[0].slug : null;
+    var dips = (hx.ambito && hx.ambito.diplomas || []).map(function (x) { return x.slug; });
+    var ctx = { ref: ref, slug: slug0, votos: function (id) { var p = ref.passagem[id]; return p ? h(VotosAto, { p: p, quem: registo(ref, id).quem, dados: ref, conta: false }) : null; } };
+    var sec = {};
+    (hx.seccoes || []).forEach(function (s) { sec[s.tipo] = sec[s.tipo] || s; });
+    var paragrafos = function (s) { return (s.paragrafos || []).map(function (p, k) { return h('p', { key: k, className: 'historia-p' }, render(p, ctx)); }); };
+    var titulo = function (s, t) { return h('h2', { id: s.id, tabIndex: -1 }, s.titulo || t); };
+    var nomesDip = {};
+    ref.index.diplomas.forEach(function (d) { nomesDip[d.slug] = d; });
+    var bloco = function (s) {
+      if (s.tipo === 'mudanca') {
+        var atos0 = (s.atos || []).map(function (id) { return ref.atos[id] || { id: id, designacao: id }; });
+        var cab = s.subtitulo || atos0.map(nomeCompleto).join(' e ');
+        return h('section', { key: s.id, className: 'secao historia-mudanca', 'aria-labelledby': s.id },
+          h('h2', { id: s.id, tabIndex: -1 }, s.atos && s.atos.length === 1 && !s.subtitulo ? h('a', { href: link(['ato', s.atos[0]]) }, cab) : cab),
+          s.retida ? h('p', { className: 'regra' }, 'Esta parte está em revisão. Os dados mudaram depois da preparação do texto.') : [
+            s.desatualizada ? h('p', { key: 'd', className: 'regra' }, h('strong', null, 'Nota: '), 'esta parte pode estar desatualizada. A lei mudou depois da preparação do texto.') : null,
+            h(React.Fragment, { key: 'p' }, paragrafos(s)),
+            (s.mostrar || []).length ? h('div', { key: 'm', className: 'historia-mostrar' }, h('h3', { className: 'h3' }, 'O que mudou'),
+              h('ul', { className: 'list' }, s.mostrar.map(function (m, k) {
+                return h('li', { key: k }, h('p', { className: 'mostrar-rot' }, m.rotulo + (dips.length > 1 && nomesDip[m.diploma] ? ' ' + (nomesDip[m.diploma].genitivo || '') : '')),
+                  h('p', { className: 'mostrar-antes' }, h('span', { className: 'muted' }, 'Antes: '), m.antes ? h('span', { 'data-citacao': '' }, '«' + m.antes + '»') : 'este texto não existia.'),
+                  h('p', { className: 'mostrar-depois' }, h('span', { className: 'muted' }, 'Depois: '), h('span', { 'data-citacao': '' }, '«' + m.depois + '»')),
+                  h('p', null, h('a', { href: m.href }, 'Ver o antes e o depois')));
+              }))) : null,
+            h('div', { key: 'q', className: 'historia-quem' }, h('h3', { className: 'h3' }, 'Quem'),
+              (s.atos || []).map(function (id) { return h('ul', { key: id, className: 'linhas-ato' }, h(LinhaAto, { frases: marcarFrases(linhaAto(id, ref, { expandida: true }), 'quem'), ctx: ctx, semNome: s.atos.length === 1 && !s.subtitulo })); }))]);
+      }
+      if (s.tipo === 'hoje') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Hoje'), paragrafos(s),
+        (s.artigos || []).length ? h('ul', { className: 'list' }, s.artigos.map(function (a, k) {
+          return h('li', { key: k }, h('a', { href: link(['d', a.diploma, a.artigo]) }, a.rotulo + (nomesDip[a.diploma] ? ' ' + (nomesDip[a.diploma].genitivo || '') : '')));
+        })) : null,
+        (s.pendentes || []).map(function (id) {
+          var i = (pend.iniciativas || {})[id];
+          return i ? h('p', { key: id }, 'Ainda não é lei: ', h('a', { href: link(['iniciativa', id]) }, i.designacao), ', ' + dePropos(i) + '. ' + i.fase_texto.replace(/([^.])$/, '$1.')) : null;
+        }));
+      if (s.tipo === 'todas') {
+        var dentro = {};
+        (s.atos || []).forEach(function (id) { dentro[id] = true; });
+        var filhas = {};
+        (s.atos || []).forEach(function (id) { var q = registo(ref, id).quem; if (q.retifica && dentro[q.retifica]) (filhas[q.retifica] = filhas[q.retifica] || []).push(id); });
+        var linhaTodas = function (id) {
+          var a = ref.atos[id] || { designacao: id }, q = registo(ref, id).quem;
+          var n = (a.alteracoes || []).filter(function (c) { return dips.indexOf(c.diploma) >= 0 && c.tipo !== 'sem_alteracao'; }).length;
+          return [curta(a.publicacao) + ' · ', h('a', { key: 'a', href: link(['ato', id]) }, a.designacao), ' · ' + nomeTipo(q.tipo_ato || tipoDe(a.designacao), 1) + ' · ' + n + (n === 1 ? ' artigo' : ' artigos')];
+        };
+        return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Todas as alterações neste período'),
+          h('ul', { className: 'list todas' }, (s.atos || []).filter(function (id) { var q = registo(ref, id).quem; return !(q.retifica && dentro[q.retifica]); }).map(function (id) {
+            return h('li', { key: id }, linhaTodas(id), (filhas[id] || []).map(function (f) {
+              var fa = ref.atos[f] || { designacao: f };
+              return h('p', { key: f, className: 'todas-ret' }, 'Retificada pela ', h('a', { href: link(['ato', f]) }, nomeCompleto(fa)), '.');
+            }));
+          })));
+      }
+      if (s.tipo === 'limites') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'O que esta história não diz'), paragrafos(s));
+      if (s.tipo === 'metodo') return h('section', { key: s.id, className: 'secao', 'aria-labelledby': s.id }, titulo(s, 'Como fizemos esta história'), paragrafos(s),
+        h('p', { className: 'historia-p' }, 'Preparámos esta história a ' + extenso(hx.preparado_em) + ', com ajuda de uma ferramenta automática. Cada facto vem dos dados do site e tem uma ligação. Ainda não teve revisão jurídica externa.'),
+        (s.correcoes || []).length ? [h('h3', { key: 'c', className: 'h3' }, 'Correções'), h('ul', { key: 'l', className: 'list' }, s.correcoes.map(function (c, k) { return h('li', { key: k }, extenso(c.data) + ': ' + c.texto); }))] : null,
+        h('p', null, h('a', { href: 'https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro: ' + hx.titulo), target: '_blank', rel: 'noopener' }, 'Reportar um erro ↗')));
+      return null;
+    };
+    var resumo = sec.resumo, perguntas = sec.perguntas, numeros = sec.numeros;
+    return h('div', { className: 'pagina-ato pagina-historia' },
+      h(Crumbs, { items: [['Histórias', '#/historias'], [hx.titulo]] }),
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, hx.titulo),
+        h('p', { className: 'historia-aviso nota' }, avisoHistoria(hx)),
+        hx.revisao_externa ? h('p', { className: 'historia-aviso' }, 'Revisão jurídica externa: ' + hx.revisao_externa.por + ', ' + extenso(hx.revisao_externa.em) + '.') : null,
+        h(Guia, { tipo: 'historia' })),
+      h('div', { className: 'historia-topo' },
+        resumo ? h('section', { className: 'historia-resumo-sec', 'aria-labelledby': resumo.id }, titulo(resumo, 'Em cinco frases'), paragrafos(resumo)) : null,
+        perguntas ? h('nav', { className: 'historia-perguntas', 'aria-labelledby': perguntas.id }, titulo(perguntas, 'Nesta história'),
+          h('ul', { className: 'list' }, (perguntas.itens || []).map(function (it, k) { return h('li', { key: k }, h('a', { href: link(['historia', hx.slug], { ir: it.alvo }) }, it.texto)); }))) : null,
+        numeros ? h('section', { className: 'historia-numeros', 'aria-labelledby': numeros.id }, titulo(numeros, 'Em números'),
+          h('p', null, 'Atos que alteraram a lei: ' + (numeros.atos_por_tipo || []).reduce(function (a, x) { return a + x.n; }, 0) + ' (' +
+            (numeros.atos_por_tipo || []).map(function (x) { return x.n + ' ' + nomeTipo(x.tipo_ato, x.n); }).join(', ') + ').'),
+          h('p', null, 'Artigos alterados: ' + numeros.artigos_alterados + '.'),
+          (numeros.mais_alterados || []).length ? h('p', null, 'Artigos com mais redações: ', (numeros.mais_alterados || []).map(function (m, k) {
+            return [k ? ', ' : '', h('a', { key: k, href: link(['d', m.diploma, m.artigo]) }, m.rotulo.replace(/^Artigo/, 'artigo')), ' (' + m.n + ')'];
+          }), '.') : null) : null),
+      (hx.seccoes || []).filter(function (s) { return ['resumo', 'perguntas', 'numeros'].indexOf(s.tipo) < 0; }).map(bloco));
+  }
+
+  // ---- Glossary (#/glossario) ----------------------------------------------------------------------
+  function Glossario() {
+    var r = useData(['glossario.json']);
+    if (!r.data) return h(Loading, { error: r.error });
+    document.title = tituloDe(['glossario']);
+    var g = r.data[0], termos = Object.keys(g.termos || {}).map(function (k) { return g.termos[k]; });
+    var grupos = (g.grupos || []).map(function (x) { return typeof x === 'string' ? { id: x, titulo: x } : x; });
+    var resto = termos.filter(function (t) { return !grupos.some(function (x) { return x.termos ? x.termos.indexOf(t.id) >= 0 : x.id === t.grupo; }); });
+    var entrada = function (t) {
+      return h('div', { key: t.id, className: 'glossario-entrada' },
+        h('h3', { id: t.id, tabIndex: -1 }, t.termo),
+        h('div', { className: 'rd-termo-folha' }, h(R.TermoConteudo, { def: t, id: t.id, bloco: true, semGlossario: true })));
+    };
+    return h('div', { className: 'pagina-ato pagina-glossario' },
+      h('header', { className: 'ato-cabeca' },
+        h('h1', { className: 'display' }, 'Glossário'),
+        h('p', { className: 'lead' }, 'As palavras deste site, explicadas. Cada definição mostra o texto da lei que a sustenta.'),
+        h('p', { className: 'historia-aviso' }, 'Definições preparadas a partir do texto da lei, com ajuda de uma ferramenta automática. Data: ' + extenso(g.preparado_em) + '. Ainda sem revisão jurídica externa.')),
+      grupos.map(function (x) {
+        var ts = x.termos ? x.termos.map(function (id) { return g.termos[id]; }).filter(Boolean)
+          : termos.filter(function (t) { return t.grupo === x.id; }).sort(function (a, b) { return fold(a.termo) < fold(b.termo) ? -1 : 1; });
+        return ts.length ? h('section', { key: x.id, className: 'secao', 'aria-labelledby': 'gl-' + x.id }, h('h2', { id: 'gl-' + x.id }, x.titulo), ts.map(entrada)) : null;
+      }),
+      resto.length ? h('section', { className: 'secao', 'aria-labelledby': 'gl-outros' }, h('h2', { id: 'gl-outros' }, 'Outras palavras'), resto.map(entrada)) : null);
+  }
+
   // ---- Verification report ---------------------------------------------------------------------
   var ESTADO = { verificado: 'Iguais', forma: 'Só na forma', desatualizado: 'Desatualizadas', divergente: 'Divergentes' };
   function pct(x) { return x == null ? '—' : (Math.round(x * 1000) / 10).toString().replace('.', ',') + ' %'; }
@@ -1470,7 +2558,7 @@
     var r = useData(['verificacao.json', 'atos.json']);
     if (!r.data) return h(Loading, { error: r.error });
     var vj = r.data[0], atos = r.data[1];
-    document.title = 'Verificação · Redação';
+    document.title = tituloDe(['verificacao']);
     var com = Object.keys(vj.diplomas).filter(function (k) { return vj.diplomas[k].relatorio; });
     var sem = Object.keys(vj.diplomas).filter(function (k) { return !vj.diplomas[k].relatorio; });
     return h('div', { className: 'pagina-ato' },
@@ -1527,15 +2615,42 @@
               (ult.diff || []).slice(0, 2).map(function (par, j) { return h(DifOficial, { key: j, par: par }); }));
           })));
       }),
+      vj.quem ? h(VerificacaoQuem, { q: vj.quem, atos: atos }) : null,
+      (vj.conteudo || []).length ? h('section', { className: 'secao', 'aria-labelledby': 'v-textos' },
+        h('h2', { id: 'v-textos' }, 'Textos em revisão'),
+        h('ul', { className: 'list' }, vj.conteudo.map(function (x, k) {
+          var href = x.tipo === 'historia' ? link(['historia', x.id], { ir: x.seccao || null }) : x.tipo === 'glossario' ? link(['glossario']) : null;
+          return h('li', { key: k }, href ? h('a', { href: href }, x.id + (x.seccao ? ' · ' + x.seccao : '')) : x.id, h('span', { className: 'muted' }, ' · ' + x.motivo));
+        }))) : null,
       h('section', { className: 'secao', 'aria-labelledby': 'v-sem' },
         h('h2', { id: 'v-sem' }, 'Ainda não verificados'),
         h('p', { className: 'lede' }, lista(sem.map(function (k) { return vj.diplomas[k].titulo; })) + '. Os códigos fiscais quase nunca são republicados: o Orçamento do Estado altera-os sem os republicar. Para estes, vamos comparar o texto com uma reprodução própria dos atos que os alteraram.')));
+  }
+
+  // The check of who made each law (verificacao.json.quem): what we could not read or confirm.
+  function VerificacaoQuem(props) {
+    var q = props.q, atos = props.atos, a = q.assinaturas || {};
+    var nome = function (id) { return h('a', { href: link(['ato', id]) }, (atos[id] || { designacao: id }).designacao); };
+    var lista0 = function (t, xs, f) {
+      return xs && xs.length ? [h('h3', { key: t + 'h', className: 'h3 rever-titulo' }, t), h('ul', { key: t + 'l', className: 'list' }, xs.map(function (x, k) { return h('li', { key: k }, f(x)); }))] : null;
+    };
+    return h('section', { className: 'secao', 'aria-labelledby': 'v-quem' },
+      h('h2', { id: 'v-quem' }, 'Quem fez cada lei: verificação'),
+      a.total != null ? h('p', { className: 'lede' }, 'Lemos as assinaturas de ' + (a.total - (a.falhas || []).length) + ' de ' + a.total + ' atos.') : null,
+      lista0('Atos sem a data do Conselho de Ministros', (a.falhas || []).filter(function (x) { return x.motivo === 'sem_d_cm'; }), function (x) { return nome(x.ato); }),
+      lista0('Factos que as fontes não confirmam', (q.cruzamento || []).filter(function (x) { return x.estado !== 'ok' && x.regra !== 'mesmo_pm'; }), function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + (x.detalhe || x.regra))]; }),
+      lista0('Decretos-leis perto de uma mudança de Governo com o mesmo Primeiro-Ministro', q.mesmo_pm, function (x) {
+        return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · Conselho de Ministros a ' + curta(x.d_cm) + ' · ' + (x.governos || []).map(function (n) { return romano(n); }).join(' e ') + ' Governos Constitucionais')];
+      }),
+      lista0('Datas do Parlamento que não mostramos', q.passos_descartados, function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + x.motivo)]; }),
+      lista0('Votos que não ligámos a esta lei', q.votos_descartados, function (x) { return [nome(x.ato), h('span', { key: 'd', className: 'muted' }, ' · ' + x.fase + ', ' + curta(x.data))]; }));
   }
 
   // ---- About -------------------------------------------------------------------------------------
   function Sobre() {
     var r = useData(['index.json']);
     var when = r.data ? extenso(r.data[0].consultado_em) : '';
+    document.title = tituloDe(['sobre']);
     return h('div', { className: 'stack prose' },
       h('h1', { className: 'title' }, 'Sobre os dados'),
       h('p', null, 'O texto de cada redação vem da legislação consolidada do Diário da República' + (when ? ', consultada a ' + when : '') + '. A ligação de cada lei à sua iniciativa e às votações vem dos dados abertos da Assembleia da República.'),
@@ -1552,15 +2667,57 @@
         h('li', null, h('strong', null, 'Entrada em vigor: '), 'o dia em que a redação começa a valer. Quando o Diário da República não indica esta data, avisamos e usamos a data de publicação.'),
         h('li', null, h('strong', null, 'Produção de efeitos: '), 'os factos ou os períodos a que a redação se aplica. O consolidado do Diário da República só tem esta informação em notas de texto. Mostramos as notas.')),
       h('h2', { className: 'h2' }, 'Limites conhecidos'),
-      h('ul', null,
+      h('ul', { id: 'limites', tabIndex: -1 },
         h('li', null, 'O texto é o do consolidado do Diário da República, que não tem valor legal. Na Constituição, comparámos cada redação com as republicações oficiais (', h('a', { href: '#/verificacao' }, 'Verificação'), '). Nos outros diplomas, ainda não verificámos o texto.'),
         h('li', null, 'Algumas datas de entrada em vigor faltam no consolidado do Diário da República. Nos textos originais, indicamos a norma que fixa a data.'),
-        h('li', null, 'Mostramos só a votação na generalidade. A Assembleia da República publica o sentido de voto de cada grupo e, em algumas votações, o número de deputados. Quando não tem o número, contamos pelos assentos de cada grupo nesse dia.')));
+        h('li', null, 'Mostramos a primeira votação de cada iniciativa, na generalidade, e o resultado da votação final global. Também mostramos o veto, a decisão do Tribunal Constitucional e a confirmação, quando existem. Não mostramos as votações na especialidade.'),
+        h('li', { id: 'votacoes' }, 'A Assembleia da República publica o sentido de voto de cada grupo e, em algumas votações, o número de deputados. Quando não tem o número, contamos pelos assentos de cada grupo nesse dia.')),
+      h('h2', { className: 'h2', id: 'quem', tabIndex: -1 }, 'Quem fez cada lei'),
+      h('ul', null,
+        h('li', null, 'Lemos as datas e os nomes nas assinaturas de cada ato no Diário da República.'),
+        h('li', null, 'O número do Governo e os partidos vêm de uma tabela que fizemos a partir de fontes oficiais.'),
+        h('li', null, 'Comparamos a tabela com os nomes nas assinaturas.'),
+        h('li', null, 'Quando um facto falta, dizemos porquê.')),
+      h('h2', { className: 'h2', id: 'textos', tabIndex: -1 }, 'Histórias e glossário'),
+      h('ul', null,
+        h('li', null, 'Preparámos as histórias e as definições a partir dos dados do site, com ajuda de uma ferramenta automática.'),
+        h('li', null, 'Cada facto tem uma ligação. Cada definição cita o texto da lei.'),
+        h('li', null, 'Ainda não tiveram revisão jurídica externa.')));
   }
 
   // ---- App ---------------------------------------------------------------------------------------
+  // ir=<id> (and #/sobre/<ancora>, #/glossario/<id>): scroll to an element and focus its heading,
+  // once the page's data has loaded.
+  function useIr(route) {
+    var alvo = route.q.ir || ((route.segs[0] === 'sobre' || route.segs[0] === 'glossario') && route.segs[1]) || null;
+    var chave = location.hash;
+    useEffect(function () {
+      if (!alvo) return;
+      var n = 0, vivo = true;
+      (function tentar() {
+        if (!vivo) return;
+        var e = document.getElementById(alvo);
+        if (!e) { if (n++ < 100) setTimeout(tentar, 50); return; }
+        var foco = /^H[1-6]$/.test(e.tagName) ? e : e.querySelector('h1, h2, h3') || e;
+        if (!foco.hasAttribute('tabindex') && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(foco.tagName)) foco.setAttribute('tabindex', '-1');
+        e.scrollIntoView({ block: 'start', behavior: 'auto' });
+        foco.focus({ preventScroll: true });
+      })();
+      return function () { vivo = false; };
+    }, [chave]);
+  }
   function App() {
     var route = useRoute();
+    useIr(route);
+    // The glossary, for the marks on every page, and the phone sheet that shows one term.
+    var rg = useData(['?glossario.json']);
+    glossarioAtual = rg.data ? rg.data[0] : null;
+    var ft = useState(null);
+    abrirTermo = function (id, botao) { ft[1]({ id: id, botao: botao }); };
+    var termo = ft[0] && glossarioAtual && glossarioAtual.termos ? glossarioAtual.termos[ft[0].id] : null;
+    var folhaTermo = termo ? h(Folha, { id: 'folha-termo', aberta: true, titulo: termo.termo,
+      onFechar: function () { var b = ft[0] && ft[0].botao; ft[1](null); if (b) setTimeout(function () { b.focus(); }, 0); } },
+      h('div', { className: 'rd-termo-folha' }, h(R.TermoConteudo, { def: termo, id: ft[0].id, bloco: true }))) : null;
     var s = route.segs, view;
     if (s[0] === 'd' && s[1] && s[2] && s[3] === 'comparar') {
       // The compare page became the Alterações view of the article. Old links still work.
@@ -1575,14 +2732,20 @@
     }
     if (s[0] === 'd' && s[1] && s[2]) view = h(Artigo, { slug: s[1], id: s[2], q: route.q });
     else if (s[0] === 'd' && s[1]) view = h(Diploma, { slug: s[1], q: route.q });
-    else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1] });
+    else if (s[0] === 'ato' && s[1]) view = h(Ato, { id: s[1], q: route.q });
+    else if (s[0] === 'quem' && s[1]) view = h(Quem, { slug: s[1], q: route.q });
+    else if (s[0] === 'grupos') view = h(Grupos);
+    else if (s[0] === 'grupo' && s[1]) view = h(Grupo, { id: s[1], q: route.q });
+    else if (s[0] === 'historias') view = h(Historias);
+    else if (s[0] === 'historia' && s[1]) view = h(Historia, { slug: s[1] });
+    else if (s[0] === 'glossario') view = h(Glossario);
     else if (s[0] === 'alteracoes' && s[1]) view = h(Mudancas, { slug: s[1], q: route.q });
     else if (s[0] === 'iniciativa' && s[1]) view = h(Iniciativa, { id: s[1] });
     else if (s[0] === 'sobre') view = h(Sobre);
     else if (s[0] === 'verificacao') view = h(Verificacao);
     else view = h(Home);
     // A new page fades in. Another redação of the same article does not: only its text moves.
-    return h(Shell, { casa: !s.length }, h('div', { key: s.join('/'), className: 'vista' }, view));
+    return h(Shell, { casa: !s.length }, h('div', { key: s.slice(0, s[0] === 'sobre' || s[0] === 'glossario' ? 1 : s.length).join('/'), className: 'vista' }, view), folhaTermo);
   }
 
   // Follow the reader's light or dark setting, unless the host page already chose a theme.
@@ -1592,6 +2755,11 @@
   if (!root.hasAttribute('data-theme')) { root.setAttribute('data-theme-auto', ''); theme(); }
   if (mq && mq.addEventListener) mq.addEventListener('change', theme);
 
-  window.RedacaoApp = { pick: pick, diff: diff, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey };
+  window.RedacaoApp = { pick: pick, diff: diff, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey,
+    frasesQuem: frasesQuem, frasesProponentes: frasesProponentes, linhaPessoas: linhaPessoas, linhaVfg: linhaVfg, linhasEventos: linhasEventos, linhaAto: linhaAto,
+    nomeGrupo: nomeGrupo, ordinalExtenso: ordinalExtenso, marcarTermos: marcarTermos, termosPara: termosPara, chavePartilha: chavePartilha, partilhaUrl: partilhaUrl,
+    metaDiploma: metaDiploma, tituloDe: tituloDe, textoDe: textoDe, fraseOE: fraseOE, avisoTransitorias: avisoTransitorias, faixasLegislaturas: faixasLegislaturas,
+    ledeGeneralidade: ledeGeneralidade, registo: registo };
+  if (!window.Redacao) return;  // node tests load this file without the design system or a page
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();

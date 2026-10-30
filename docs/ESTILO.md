@@ -139,6 +139,36 @@ Estas palavras e construções tornam o texto vago ou fazem-no parecer gerado po
 - Construções: «não só… como também», «não é X, é Y», três adjetivos seguidos, perguntas retóricas, frases que começam com «Imagine».
 - Gerúndio (regra 2.2), ponto e vírgula (regra 4.1), travessão em apartes (regra 4.2), ponto de exclamação (regra 4.3).
 
+### 8.2. Neutralidade (todo o texto do produto)
+
+Descreva o que aconteceu. Não diga quem ganhou nem fale de campos políticos. A ferramenta verifica estas palavras em todo o texto. Uma citação entre «» de um documento oficial não conta.
+
+<!-- pts:ignorar-inicio -->
+- Votações: «chumbou», «chumbaram», «chumbado», «travou», «luz verde», «vencedores», «derrotados».
+- Campos políticos: «maioria de esquerda», «maioria de direita», «oposição» como campo político, «geringonça». «Oposição à renovação» e «oposição pelo arrendatário» são termos da lei e podem ser usados.
+- Autoria: «lei do PS», «proposta do PSD», «escrito por» seguido de uma sigla. Escreva quem apresentou a iniciativa: «Deputados do Partido Socialista (PS) apresentaram o Projeto de Lei n.º …».
+- Percentagens: «%» junto do nome de um grupo parlamentar ou de um Governo.
+<!-- pts:ignorar-fim -->
+
+### 8.3. Histórias (`tools/estilo.py --historia`)
+
+Numa história, as datas, os números, os nomes e as votações vêm dos dados do site, por referências (`{ato:…}`, `{data:…}`, `{citacao:…}`, `{voto:…}`). A prosa fora das referências e das citações não tem:
+
+<!-- pts:ignorar-inicio -->
+- algarismos, nomes de meses, «n.º», siglas de grupos parlamentares;
+- palavras de votação: «votou», «votaram», «a favor», «absteve», «abstiveram», «abstenção», «unanimidade»;
+- números por extenso: «dois» a «vinte», «trinta» a «mil», «primeiro» a «décimo», «metade», «dobro», «triplo», «terço»;
+- unidades: «ano», «anos», «mês», «meses», «dia», «dias», «semana», «semanas», «euro», «euros», «por cento»;
+- palavras comparativas ou de causa: «mais», «menos», «aumentou», «aumentaram», «reduziu», «reduziram», «alargou», «alargaram», «encurtou», «encurtaram», «subiu», «subiram», «desceu», «desceram», «passou de», «endureceu», «facilitou», «por causa», «devido», «graças», «para que», «com o objetivo»;
+- adjetivos de mérito e rótulos: «mais dura», «mais duro», «restritiva» (e «restritiv-»), «generosa» (e «generos-»), «polémica» (e «polémic-»), «controversa» (e «controvers-»), «histórica», «maioria de esquerda», «maioria de direita», «oposição», «geringonça», «chumbou» (e «chumb-»), «travou», «luz verde», «vencedores» (e «vencedor-»), «derrotados» (e «derrotad-»), «lei do» ou «proposta do» seguido de uma sigla, «escrito por» seguido de uma sigla, «%».
+<!-- pts:ignorar-fim -->
+
+Para dizer o que um ato fez à lei, use «mudou», «acrescentou», «revogou», «retificou» ou «renumerou». Na mesma frase, ponha a ligação à redação.
+
+### 8.4. Nomes de ferramentas
+
+Não escreva o nome da ferramenta automática nem da empresa que a fornece. Para dizer como o texto foi preparado, escreva «com ajuda de uma ferramenta automática».
+
 ## 9. Exemplos
 
 <!-- pts:ignorar-inicio -->

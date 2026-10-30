@@ -1,0 +1,23 @@
+{
+ "historias": [
+  {
+   "slug": "historia-teste",
+   "titulo": "Como mudou a Lei de teste",
+   "resumo": "As alterações à Lei de teste, ato a ato.",
+   "preparado_em": "2026-10-30",
+   "preparacao": "assistida",
+   "revisao_externa": null,
+   "diplomas": [
+    "lei-teste"
+   ]
+  }
+ ],
+ "artigos": {
+  "lei-teste/artigo-1": [
+   {
+    "historia": "historia-teste",
+    "seccao": "lei-901-2020"
+   }
+  ]
+ }
+}

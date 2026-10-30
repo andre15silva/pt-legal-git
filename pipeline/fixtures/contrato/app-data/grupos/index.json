@@ -1,0 +1,206 @@
+[
+ {
+  "id": "be",
+  "nome": "Bloco de Esquerda",
+  "siglas": [
+   "BE"
+  ],
+  "legislaturas": [
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "cds-pp",
+  "nome": "Centro Democrático Social - Partido Popular",
+  "siglas": [
+   "CDS",
+   "CDS-PP"
+  ],
+  "legislaturas": [
+   "Constituinte",
+   "IA",
+   "IB",
+   "II",
+   "III",
+   "IV",
+   "V",
+   "VI",
+   "VII",
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "ch",
+  "nome": "Chega",
+  "siglas": [
+   "CH"
+  ],
+  "legislaturas": [
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "il",
+  "nome": "Iniciativa Liberal",
+  "siglas": [
+   "IL"
+  ],
+  "legislaturas": [
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "l",
+  "nome": "Livre",
+  "siglas": [
+   "L"
+  ],
+  "legislaturas": [
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "pcp",
+  "nome": "Partido Comunista Português",
+  "siglas": [
+   "PCP"
+  ],
+  "legislaturas": [
+   "Constituinte",
+   "IA",
+   "IB",
+   "II",
+   "III",
+   "IV",
+   "V",
+   "VI",
+   "VII",
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "pev",
+  "nome": "Partido Ecologista \"Os Verdes\"",
+  "siglas": [
+   "PEV"
+  ],
+  "legislaturas": [
+   "V",
+   "VI",
+   "VII",
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV"
+  ]
+ },
+ {
+  "id": "psd",
+  "nome": "Partido Social Democrata",
+  "siglas": [
+   "PPD",
+   "PSD"
+  ],
+  "legislaturas": [
+   "Constituinte",
+   "IA",
+   "IB",
+   "II",
+   "III",
+   "IV",
+   "V",
+   "VI",
+   "VII",
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "ps",
+  "nome": "Partido Socialista",
+  "siglas": [
+   "PS"
+  ],
+  "legislaturas": [
+   "Constituinte",
+   "IA",
+   "IB",
+   "II",
+   "III",
+   "IV",
+   "V",
+   "VI",
+   "VII",
+   "VIII",
+   "IX",
+   "X",
+   "XI",
+   "XII",
+   "XIII",
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ },
+ {
+  "id": "pan",
+  "nome": "Pessoas-Animais-Natureza",
+  "siglas": [
+   "PAN"
+  ],
+  "legislaturas": [
+   "XIII",
+   "XIV",
+   "XV",
+   "XVI",
+   "XVII"
+  ]
+ }
+]

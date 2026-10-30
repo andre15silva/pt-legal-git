@@ -1,0 +1,105 @@
+{
+ "id": "be",
+ "nomes": [
+  {
+   "sigla": "BE",
+   "nome": "Bloco de Esquerda",
+   "legislaturas": [
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII",
+    "XIII",
+    "XIV",
+    "XV",
+    "XVI",
+    "XVII"
+   ]
+  }
+ ],
+ "iniciativas": [
+  {
+   "iniciativa": "900202",
+   "designacao": "Projeto de Lei n.º 901/XIII",
+   "sigla": "BE",
+   "ato": "lei-902-2019",
+   "como": "juntada",
+   "n_iniciativas": 3,
+   "parte": null
+  },
+  {
+   "iniciativa": "900302",
+   "designacao": "Projeto de Lei n.º 912/XIII",
+   "sigla": "BE",
+   "ato": "lei-organica-901-2018",
+   "como": "juntada",
+   "n_iniciativas": 7,
+   "parte": null
+  }
+ ],
+ "votos": {
+  "lei-teste": [
+   {
+    "ato": "lei-organica-901-2018",
+    "oe": false,
+    "sigla": "BE",
+    "legislatura": "XIII",
+    "itens": [
+     {
+      "tipo": "texto_comissao",
+      "id": 0,
+      "designacao": "Texto da comissão",
+      "data": "2018-02-02",
+      "sentido": "favor"
+     }
+    ]
+   },
+   {
+    "ato": "lei-902-2019",
+    "oe": false,
+    "sigla": "BE",
+    "legislatura": "XIII",
+    "itens": [
+     {
+      "tipo": "texto_comissao",
+      "id": 0,
+      "designacao": "Texto da comissão",
+      "data": "2018-12-21",
+      "sentido": "favor"
+     }
+    ]
+   },
+   {
+    "ato": "lei-901-2020",
+    "oe": false,
+    "sigla": "BE",
+    "legislatura": "XIV",
+    "itens": [
+     {
+      "tipo": "iniciativa",
+      "id": "900101",
+      "designacao": "Proposta de Lei n.º 901/XIV",
+      "data": "2020-03-05",
+      "sentido": "favor"
+     }
+    ]
+   },
+   {
+    "ato": "lei-901-2022",
+    "oe": true,
+    "sigla": "BE",
+    "legislatura": "XIV",
+    "itens": [
+     {
+      "tipo": "iniciativa",
+      "id": "900501",
+      "designacao": "Proposta de Lei n.º 903/XIV",
+      "data": "2021-10-27",
+      "sentido": "contra"
+     }
+    ]
+   }
+  ]
+ }
+}

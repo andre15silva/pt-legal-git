@@ -1,0 +1,1465 @@
+{
+ "lei-901-2020": {
+  "ato": "lei-901-2020",
+  "legislatura": "XIV",
+  "ordem_grupos": [
+   "PS",
+   "PSD",
+   "BE",
+   "PCP",
+   "CDS-PP",
+   "PAN",
+   "PEV",
+   "CH",
+   "IL",
+   "L"
+  ],
+  "iniciativas": [
+   {
+    "id": "900101",
+    "designacao": "Proposta de Lei n.º 901/XIV",
+    "titulo": "Altera a Lei de teste.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    },
+    "principal": true,
+    "generalidade": {
+     "data": "2020-03-05",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "contra",
+      "BE": "favor",
+      "PCP": "abstencao",
+      "CDS-PP": "contra",
+      "PAN": "favor",
+      "PEV": "abstencao",
+      "CH": "contra",
+      "IL": "contra",
+      "L": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIV"
+    },
+    "baixa_sem_votacao": false
+   }
+  ],
+  "texto_comissao": [],
+  "passos": [
+   {
+    "passo": "iniciativa",
+    "data": "2020-02-01",
+    "votacoes": []
+   },
+   {
+    "passo": "generalidade",
+    "data": "2020-03-05",
+    "votacoes": [
+     {
+      "data": "2020-03-05",
+      "fase": "Votação na generalidade",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "contra",
+       "BE": "favor",
+       "PCP": "abstencao",
+       "CDS-PP": "contra",
+       "PAN": "favor",
+       "PEV": "abstencao",
+       "CH": "contra",
+       "IL": "contra",
+       "L": "favor"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIV"
+     }
+    ]
+   },
+   {
+    "passo": "votacao-final",
+    "data": "2020-07-10",
+    "votacoes": [
+     {
+      "data": "2020-07-10",
+      "fase": "Votação final global",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "contra",
+       "BE": "favor",
+       "PCP": "abstencao",
+       "CDS-PP": "contra",
+       "PAN": "favor",
+       "PEV": "abstencao",
+       "CH": "contra",
+       "IL": "contra",
+       "L": "favor"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIV"
+     }
+    ]
+   },
+   {
+    "passo": "tribunal",
+    "data": "2020-08-05",
+    "votacoes": []
+   },
+   {
+    "passo": "veto",
+    "data": "2020-08-20",
+    "votacoes": []
+   },
+   {
+    "passo": "reapreciacao",
+    "data": "2020-09-25",
+    "votacoes": [
+     {
+      "data": "2020-09-25",
+      "fase": "Confirmação do decreto",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "contra",
+       "BE": "favor",
+       "PCP": "favor",
+       "CDS-PP": "contra",
+       "PAN": "favor",
+       "PEV": "abstencao",
+       "CH": "contra",
+       "IL": "contra",
+       "L": "favor"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIV"
+     }
+    ]
+   },
+   {
+    "passo": "promulgacao",
+    "data": "2020-10-05",
+    "votacoes": []
+   },
+   {
+    "passo": "publicacao",
+    "data": "2020-10-15",
+    "votacoes": []
+   }
+  ],
+  "verificacao": {
+   "sem": 3
+  },
+  "decreto": {
+   "numero": "902/XIV",
+   "anteriores": [
+    "901/XIV"
+   ],
+   "titulo": "Altera a Lei de teste"
+  },
+  "generalidade": [
+   {
+    "origem": "iniciativa",
+    "id": "900101"
+   }
+  ],
+  "vfg": {
+   "data": "2020-07-10",
+   "fase": "Votação final global",
+   "resultado": "Aprovado",
+   "unanime": false,
+   "ausentes": [],
+   "descricao": null,
+   "proposta": null,
+   "grupos": {
+    "PS": "favor",
+    "PSD": "contra",
+    "BE": "favor",
+    "PCP": "abstencao",
+    "CDS-PP": "contra",
+    "PAN": "favor",
+    "PEV": "abstencao",
+    "CH": "contra",
+    "IL": "contra",
+    "L": "favor"
+   },
+   "contagens": {},
+   "dissidencia": [],
+   "fora_de_grupo": [],
+   "sem_registo": [],
+   "verificacao": null,
+   "legislatura": "XIV"
+  },
+  "eventos": [
+   {
+    "tipo": "veto",
+    "data": "2020-08-20",
+    "acordao_tc": "9001/2020"
+   },
+   {
+    "tipo": "confirmacao",
+    "data": "2020-09-25",
+    "voto": {
+     "data": "2020-09-25",
+     "fase": "Confirmação do decreto",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "contra",
+      "BE": "favor",
+      "PCP": "favor",
+      "CDS-PP": "contra",
+      "PAN": "favor",
+      "PEV": "abstencao",
+      "CH": "contra",
+      "IL": "contra",
+      "L": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIV"
+    }
+   }
+  ],
+  "descartados": [
+   {
+    "fase": "Confirmação do decreto",
+    "data": "2020-12-03",
+    "motivo": "depois_da_publicacao"
+   }
+  ],
+  "motivos": {}
+ },
+ "lei-902-2019": {
+  "ato": "lei-902-2019",
+  "legislatura": "XIII",
+  "ordem_grupos": [
+   "PSD",
+   "PS",
+   "BE",
+   "CDS-PP",
+   "PCP",
+   "PEV",
+   "PAN"
+  ],
+  "iniciativas": [
+   {
+    "id": "900202",
+    "designacao": "Projeto de Lei n.º 901/XIII",
+    "titulo": "Altera a Lei de teste (projeto de teste).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "BE"
+     ],
+     "deputados": [
+      {
+       "nome": "Deputada de teste A",
+       "grupo": "BE"
+      }
+     ],
+     "tipo": "grupos"
+    },
+    "principal": true,
+    "generalidade": {
+     "data": "2018-12-13",
+     "fase": "Votação na generalidade",
+     "resultado": "Rejeitado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "BE": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PS": "contra",
+      "PSD": "contra",
+      "CDS-PP": "contra",
+      "PAN": "abstencao"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900201",
+    "designacao": "Proposta de Lei n.º 902/XIII",
+    "titulo": "Altera a Lei de teste.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    },
+    "principal": false,
+    "generalidade": null,
+    "baixa_sem_votacao": true
+   },
+   {
+    "id": "900203",
+    "designacao": "Projeto de Lei n.º 903/XIII",
+    "titulo": "Altera a Lei de teste e outra lei.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [
+      {
+       "nome": "Deputado de teste B",
+       "grupo": "PSD"
+      }
+     ],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-12-13",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PSD": "favor",
+      "CDS-PP": "favor",
+      "BE": "contra",
+      "PCP": "contra",
+      "PEV": "contra",
+      "PS": "abstencao",
+      "PAN": "abstencao"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   }
+  ],
+  "texto_comissao": [
+   {
+    "data": "2018-12-21",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": false,
+    "ausentes": [],
+    "descricao": "Texto de Substituição apresentado pela Comissão de teste relativo à Proposta de Lei n.º 902/XIII/3.ª (GOV), ao Projeto de Lei n.º 901/XIII/3.ª (BE) e ao artigo 8.º do Projeto de Lei n.º 903/XIII/4.ª (PSD)",
+    "proposta": null,
+    "grupos": {
+     "PS": "favor",
+     "BE": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PSD": "contra",
+     "CDS-PP": "contra",
+     "PAN": "abstencao"
+    },
+    "contagens": {},
+    "dissidencia": [],
+    "fora_de_grupo": [],
+    "sem_registo": [],
+    "verificacao": null,
+    "legislatura": "XIII",
+    "citadas": [
+     "900201",
+     "900202",
+     "900203"
+    ]
+   }
+  ],
+  "passos": [
+   {
+    "passo": "iniciativa",
+    "data": "2018-04-30",
+    "votacoes": []
+   },
+   {
+    "passo": "generalidade",
+    "data": "2018-12-21",
+    "votacoes": [
+     {
+      "data": "2018-12-21",
+      "fase": "Votação na generalidade",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": "Texto de Substituição apresentado pela Comissão de teste relativo à Proposta de Lei n.º 902/XIII/3.ª (GOV), ao Projeto de Lei n.º 901/XIII/3.ª (BE) e ao artigo 8.º do Projeto de Lei n.º 903/XIII/4.ª (PSD)",
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "BE": "favor",
+       "PCP": "favor",
+       "PEV": "favor",
+       "PSD": "contra",
+       "CDS-PP": "contra",
+       "PAN": "abstencao"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIII",
+      "citadas": [
+       "900201",
+       "900202",
+       "900203"
+      ]
+     }
+    ]
+   },
+   {
+    "passo": "votacao-final",
+    "data": "2019-01-18",
+    "votacoes": [
+     {
+      "data": "2019-01-18",
+      "fase": "Votação final global",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": "Texto de Substituição apresentado pela Comissão de teste relativo à Proposta de Lei n.º 902/XIII/3.ª (GOV), ao Projeto de Lei n.º 901/XIII/3.ª (BE) e ao artigo 8.º do Projeto de Lei n.º 903/XIII/4.ª (PSD)",
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "BE": "favor",
+       "PCP": "favor",
+       "PEV": "favor",
+       "PSD": "contra",
+       "CDS-PP": "contra",
+       "PAN": "abstencao"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIII"
+     }
+    ]
+   },
+   {
+    "passo": "promulgacao",
+    "data": "2019-02-05",
+    "votacoes": []
+   },
+   {
+    "passo": "publicacao",
+    "data": "2019-02-12",
+    "votacoes": []
+   }
+  ],
+  "verificacao": {
+   "sem": 2
+  },
+  "decreto": {
+   "numero": "903/XIII",
+   "anteriores": [],
+   "titulo": "Altera a Lei de teste"
+  },
+  "generalidade": [
+   {
+    "origem": "texto_comissao",
+    "indice": 0
+   }
+  ],
+  "vfg": {
+   "data": "2019-01-18",
+   "fase": "Votação final global",
+   "resultado": "Aprovado",
+   "unanime": false,
+   "ausentes": [],
+   "descricao": "Texto de Substituição apresentado pela Comissão de teste relativo à Proposta de Lei n.º 902/XIII/3.ª (GOV), ao Projeto de Lei n.º 901/XIII/3.ª (BE) e ao artigo 8.º do Projeto de Lei n.º 903/XIII/4.ª (PSD)",
+   "proposta": null,
+   "grupos": {
+    "PS": "favor",
+    "BE": "favor",
+    "PCP": "favor",
+    "PEV": "favor",
+    "PSD": "contra",
+    "CDS-PP": "contra",
+    "PAN": "abstencao"
+   },
+   "contagens": {},
+   "dissidencia": [],
+   "fora_de_grupo": [],
+   "sem_registo": [],
+   "verificacao": null,
+   "legislatura": "XIII"
+  },
+  "eventos": [],
+  "descartados": [
+   {
+    "fase": "Votação na generalidade",
+    "data": "2018-12-21",
+    "motivo": "duplicado"
+   }
+  ],
+  "motivos": {}
+ },
+ "lei-organica-901-2018": {
+  "ato": "lei-organica-901-2018",
+  "legislatura": "XIII",
+  "ordem_grupos": [
+   "PSD",
+   "PS",
+   "BE",
+   "CDS-PP",
+   "PCP",
+   "PEV",
+   "PAN"
+  ],
+  "iniciativas": [
+   {
+    "id": "900300",
+    "designacao": "Projeto de Lei n.º 910/XIII",
+    "titulo": "Altera a Lei de teste (PS).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PS"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": true,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900301",
+    "designacao": "Projeto de Lei n.º 911/XIII",
+    "titulo": "Altera a Lei de teste (PSD).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900302",
+    "designacao": "Projeto de Lei n.º 912/XIII",
+    "titulo": "Altera a Lei de teste (BE).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "BE"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900303",
+    "designacao": "Projeto de Lei n.º 913/XIII",
+    "titulo": "Altera a Lei de teste (CDS-PP).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "CDS-PP"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900304",
+    "designacao": "Projeto de Lei n.º 914/XIII",
+    "titulo": "Altera a Lei de teste (PCP).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PCP"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900305",
+    "designacao": "Projeto de Lei n.º 915/XIII",
+    "titulo": "Altera a Lei de teste (PEV).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PEV"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900306",
+    "designacao": "Projeto de Lei n.º 916/XIII",
+    "titulo": "Altera a Lei de teste (PAN).",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PAN"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "2018-02-02",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": true,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "CDS-PP": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    },
+    "baixa_sem_votacao": false
+   }
+  ],
+  "texto_comissao": [
+   {
+    "data": "2018-02-02",
+    "fase": "Votação na generalidade",
+    "resultado": "Aprovado",
+    "unanime": true,
+    "ausentes": [],
+    "descricao": "Texto final apresentado pela Comissão de teste relativo aos Projetos de Lei n.ºs 910/XIII/3.ª (PS), 911/XIII/3.ª (PSD), 912/XIII/3.ª (BE), 913/XIII/3.ª (CDS-PP), 914/XIII/3.ª (PCP), 915/XIII/3.ª (PEV), 916/XIII/3.ª (PAN)",
+    "proposta": null,
+    "grupos": {
+     "PS": "favor",
+     "PSD": "favor",
+     "BE": "favor",
+     "CDS-PP": "favor",
+     "PCP": "favor",
+     "PEV": "favor",
+     "PAN": "favor"
+    },
+    "contagens": {},
+    "dissidencia": [],
+    "fora_de_grupo": [],
+    "sem_registo": [],
+    "verificacao": null,
+    "legislatura": "XIII",
+    "citadas": [
+     "900300",
+     "900301",
+     "900302",
+     "900303",
+     "900304",
+     "900305",
+     "900306"
+    ]
+   }
+  ],
+  "passos": [
+   {
+    "passo": "iniciativa",
+    "data": "2017-10-02",
+    "votacoes": []
+   },
+   {
+    "passo": "generalidade",
+    "data": "2018-02-02",
+    "votacoes": [
+     {
+      "data": "2018-02-02",
+      "fase": "Votação na generalidade",
+      "resultado": "Aprovado",
+      "unanime": true,
+      "ausentes": [],
+      "descricao": "Texto final apresentado pela Comissão de teste relativo aos Projetos de Lei n.ºs 910/XIII/3.ª (PS), 911/XIII/3.ª (PSD), 912/XIII/3.ª (BE), 913/XIII/3.ª (CDS-PP), 914/XIII/3.ª (PCP), 915/XIII/3.ª (PEV), 916/XIII/3.ª (PAN)",
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "favor",
+       "BE": "favor",
+       "CDS-PP": "favor",
+       "PCP": "favor",
+       "PEV": "favor",
+       "PAN": "favor"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIII",
+      "citadas": [
+       "900300",
+       "900301",
+       "900302",
+       "900303",
+       "900304",
+       "900305",
+       "900306"
+      ]
+     }
+    ]
+   },
+   {
+    "passo": "votacao-final",
+    "data": "2018-05-25",
+    "votacoes": [
+     {
+      "data": "2018-05-25",
+      "fase": "Votação final global",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [
+       "PEV"
+      ],
+      "descricao": "Texto final apresentado pela Comissão de teste relativo aos Projetos de Lei n.ºs 910/XIII/3.ª (PS), 911/XIII/3.ª (PSD), 912/XIII/3.ª (BE), 913/XIII/3.ª (CDS-PP), 914/XIII/3.ª (PCP), 915/XIII/3.ª (PEV), 916/XIII/3.ª (PAN)",
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "favor",
+       "BE": "favor",
+       "PCP": "favor",
+       "PAN": "favor",
+       "CDS-PP": "contra"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIII"
+     }
+    ]
+   },
+   {
+    "passo": "veto",
+    "data": "2018-06-20",
+    "votacoes": []
+   },
+   {
+    "passo": "reapreciacao",
+    "data": "2018-07-01",
+    "votacoes": [
+     {
+      "data": "2018-07-01",
+      "fase": "Votação novo decreto",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "favor",
+       "BE": "favor",
+       "PCP": "favor",
+       "PEV": "favor",
+       "PAN": "favor",
+       "CDS-PP": "abstencao"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIII"
+     }
+    ]
+   },
+   {
+    "passo": "promulgacao",
+    "data": "2018-07-04",
+    "votacoes": []
+   },
+   {
+    "passo": "publicacao",
+    "data": "2018-07-10",
+    "votacoes": []
+   }
+  ],
+  "verificacao": {
+   "sem": 3
+  },
+  "decreto": {
+   "numero": "905/XIII",
+   "anteriores": [
+    "904/XIII"
+   ],
+   "titulo": "Altera a Lei de teste"
+  },
+  "generalidade": [
+   {
+    "origem": "texto_comissao",
+    "indice": 0
+   }
+  ],
+  "vfg": {
+   "data": "2018-05-25",
+   "fase": "Votação final global",
+   "resultado": "Aprovado",
+   "unanime": false,
+   "ausentes": [
+    "PEV"
+   ],
+   "descricao": "Texto final apresentado pela Comissão de teste relativo aos Projetos de Lei n.ºs 910/XIII/3.ª (PS), 911/XIII/3.ª (PSD), 912/XIII/3.ª (BE), 913/XIII/3.ª (CDS-PP), 914/XIII/3.ª (PCP), 915/XIII/3.ª (PEV), 916/XIII/3.ª (PAN)",
+   "proposta": null,
+   "grupos": {
+    "PS": "favor",
+    "PSD": "favor",
+    "BE": "favor",
+    "PCP": "favor",
+    "PAN": "favor",
+    "CDS-PP": "contra"
+   },
+   "contagens": {},
+   "dissidencia": [],
+   "fora_de_grupo": [],
+   "sem_registo": [],
+   "verificacao": null,
+   "legislatura": "XIII"
+  },
+  "eventos": [
+   {
+    "tipo": "veto",
+    "data": "2018-06-20",
+    "acordao_tc": null
+   },
+   {
+    "tipo": "novo_decreto",
+    "data": "2018-07-01",
+    "voto": {
+     "data": "2018-07-01",
+     "fase": "Votação novo decreto",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "BE": "favor",
+      "PCP": "favor",
+      "PEV": "favor",
+      "PAN": "favor",
+      "CDS-PP": "abstencao"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIII"
+    }
+   }
+  ],
+  "descartados": [],
+  "motivos": {}
+ },
+ "lei-constitucional-901-1997": {
+  "ato": "lei-constitucional-901-1997",
+  "legislatura": "VII",
+  "ordem_grupos": [
+   "PS",
+   "PSD",
+   "CDS-PP",
+   "PCP",
+   "PEV"
+  ],
+  "iniciativas": [
+   {
+    "id": "900401",
+    "designacao": "Projeto de Revisão Constitucional n.º 901/VII",
+    "titulo": "Revisão de teste.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PS"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": true,
+    "generalidade": {
+     "data": "1997-06-05",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [
+      "PEV"
+     ],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "CDS-PP": "contra",
+      "PCP": "contra"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "VII"
+    },
+    "baixa_sem_votacao": false
+   },
+   {
+    "id": "900402",
+    "designacao": "Projeto de Revisão Constitucional n.º 902/VII",
+    "titulo": "Revisão de teste.",
+    "autores": {
+     "nome": null,
+     "grupos": [
+      "PSD"
+     ],
+     "deputados": [],
+     "tipo": "grupos"
+    },
+    "principal": false,
+    "generalidade": {
+     "data": "1997-06-05",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [
+      "PEV"
+     ],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "favor",
+      "CDS-PP": "contra",
+      "PCP": "contra"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "VII"
+    },
+    "baixa_sem_votacao": false
+   }
+  ],
+  "texto_comissao": [],
+  "passos": [
+   {
+    "passo": "iniciativa",
+    "data": "1996-03-01",
+    "votacoes": []
+   },
+   {
+    "passo": "generalidade",
+    "data": "1997-06-05",
+    "votacoes": [
+     {
+      "data": "1997-06-05",
+      "fase": "Votação na generalidade",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [
+       "PEV"
+      ],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "favor",
+       "CDS-PP": "contra",
+       "PCP": "contra"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "VII"
+     }
+    ]
+   },
+   {
+    "passo": "votacao-final",
+    "data": "1997-07-31",
+    "votacoes": [
+     {
+      "data": "1997-07-31",
+      "fase": "Votação final global",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "favor",
+       "CDS-PP": "contra",
+       "PCP": "contra",
+       "PEV": "contra"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "VII"
+     }
+    ]
+   },
+   {
+    "passo": "promulgacao",
+    "data": "1997-09-15",
+    "votacoes": []
+   },
+   {
+    "passo": "publicacao",
+    "data": "1997-09-20",
+    "votacoes": []
+   }
+  ],
+  "verificacao": {
+   "sem": 2
+  },
+  "decreto": null,
+  "generalidade": [
+   {
+    "origem": "iniciativa",
+    "id": "900401"
+   },
+   {
+    "origem": "iniciativa",
+    "id": "900402"
+   }
+  ],
+  "vfg": {
+   "data": "1997-07-31",
+   "fase": "Votação final global",
+   "resultado": "Aprovado",
+   "unanime": false,
+   "ausentes": [],
+   "descricao": null,
+   "proposta": null,
+   "grupos": {
+    "PS": "favor",
+    "PSD": "favor",
+    "CDS-PP": "contra",
+    "PCP": "contra",
+    "PEV": "contra"
+   },
+   "contagens": {},
+   "dissidencia": [],
+   "fora_de_grupo": [],
+   "sem_registo": [],
+   "verificacao": null,
+   "legislatura": "VII"
+  },
+  "eventos": [],
+  "descartados": [],
+  "motivos": {}
+ },
+ "lei-901-2022": {
+  "ato": "lei-901-2022",
+  "legislatura": "XIV",
+  "ordem_grupos": [
+   "PS",
+   "PSD",
+   "BE",
+   "PCP",
+   "CDS-PP",
+   "PAN",
+   "PEV",
+   "CH",
+   "IL",
+   "L"
+  ],
+  "iniciativas": [
+   {
+    "id": "900501",
+    "designacao": "Proposta de Lei n.º 903/XIV",
+    "titulo": "Aprova o Orçamento do Estado para 2022.",
+    "autores": {
+     "nome": "Governo",
+     "grupos": [],
+     "deputados": [],
+     "tipo": "governo"
+    },
+    "principal": true,
+    "generalidade": {
+     "data": "2021-10-27",
+     "fase": "Votação na generalidade",
+     "resultado": "Aprovado",
+     "unanime": false,
+     "ausentes": [],
+     "descricao": null,
+     "proposta": null,
+     "grupos": {
+      "PS": "favor",
+      "PSD": "contra",
+      "BE": "contra",
+      "PCP": "abstencao",
+      "CDS-PP": "contra",
+      "PAN": "abstencao",
+      "PEV": "abstencao",
+      "CH": "contra",
+      "IL": "contra",
+      "L": "abstencao"
+     },
+     "contagens": {},
+     "dissidencia": [],
+     "fora_de_grupo": [],
+     "sem_registo": [],
+     "verificacao": null,
+     "legislatura": "XIV"
+    },
+    "baixa_sem_votacao": false
+   }
+  ],
+  "texto_comissao": [],
+  "passos": [
+   {
+    "passo": "iniciativa",
+    "data": "2021-10-11",
+    "votacoes": []
+   },
+   {
+    "passo": "generalidade",
+    "data": "2021-10-27",
+    "votacoes": [
+     {
+      "data": "2021-10-27",
+      "fase": "Votação na generalidade",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "contra",
+       "BE": "contra",
+       "PCP": "abstencao",
+       "CDS-PP": "contra",
+       "PAN": "abstencao",
+       "PEV": "abstencao",
+       "CH": "contra",
+       "IL": "contra",
+       "L": "abstencao"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIV"
+     }
+    ]
+   },
+   {
+    "passo": "votacao-final",
+    "data": "2021-11-25",
+    "votacoes": [
+     {
+      "data": "2021-11-25",
+      "fase": "Votação final global",
+      "resultado": "Aprovado",
+      "unanime": false,
+      "ausentes": [],
+      "descricao": null,
+      "proposta": null,
+      "grupos": {
+       "PS": "favor",
+       "PSD": "contra",
+       "BE": "contra",
+       "PCP": "abstencao",
+       "CDS-PP": "contra",
+       "PAN": "abstencao",
+       "PEV": "abstencao",
+       "CH": "contra",
+       "IL": "contra",
+       "L": "abstencao"
+      },
+      "contagens": {},
+      "dissidencia": [],
+      "fora_de_grupo": [],
+      "sem_registo": [],
+      "verificacao": null,
+      "legislatura": "XIV"
+     }
+    ]
+   },
+   {
+    "passo": "promulgacao",
+    "data": "2021-12-30",
+    "votacoes": []
+   },
+   {
+    "passo": "publicacao",
+    "data": "2022-01-10",
+    "votacoes": []
+   }
+  ],
+  "verificacao": {
+   "sem": 2
+  },
+  "decreto": {
+   "numero": "906/XIV",
+   "anteriores": [],
+   "titulo": "Orçamento do Estado para 2022"
+  },
+  "generalidade": [
+   {
+    "origem": "iniciativa",
+    "id": "900501"
+   }
+  ],
+  "vfg": {
+   "data": "2021-11-25",
+   "fase": "Votação final global",
+   "resultado": "Aprovado",
+   "unanime": false,
+   "ausentes": [],
+   "descricao": null,
+   "proposta": null,
+   "grupos": {
+    "PS": "favor",
+    "PSD": "contra",
+    "BE": "contra",
+    "PCP": "abstencao",
+    "CDS-PP": "contra",
+    "PAN": "abstencao",
+    "PEV": "abstencao",
+    "CH": "contra",
+    "IL": "contra",
+    "L": "abstencao"
+   },
+   "contagens": {},
+   "dissidencia": [],
+   "fora_de_grupo": [],
+   "sem_registo": [],
+   "verificacao": null,
+   "legislatura": "XIV"
+  },
+  "eventos": [],
+  "descartados": [],
+  "motivos": {}
+ }
+}

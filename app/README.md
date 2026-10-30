@@ -22,6 +22,7 @@ The data is not committed. Build it locally from the official sources:
 python -I pipeline/fetch.py              # DR consolidated texts: about 8 minutes per large code, cached in data/cache/
 python -I pipeline/fetch_parlamento.py   # AR open data: Iniciativas and Diplomas Aprovados, about 900 MB
 python -I pipeline/pendentes.py          # texts of the bills now in Parliament (needs pdftotext, from poppler)
+python -I pipeline/assinaturas.py        # signature blocks of acts not in pipeline/assinaturas.json (one fetch per act, cached)
 python -I pipeline/build.py              # writes app/data/ and copies the design system to app/ds/
 python3 -m http.server 8000 -d app       # then open http://localhost:8000
 ```
@@ -68,20 +69,65 @@ When the DR changes its web app, `dr_client.py` stops with `StaleApiVersion` and
 
 ## URLs
 
-| What | URL |
-|---|---|
-| An article at a date | `#/d/codigo-irc/artigo-87?em=2026-03-01&base=vigor` |
-| One redação, named by the act that made it | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025` |
-| What the text box shows | `&ver=texto`, `&ver=mudou` or `&ver=origem` |
-| What changed in a redação, against the one before | `#/d/codigo-irc/artigo-87?redacao=lei-64-2025&ver=mudou` |
-| Against any other redação, side by side | `&com=lei-82-2023&lado=1` |
-| Walk through the articles one act changed | `#/d/nrau/artigo-15-a?redacao=lei-56-2023&ver=mudou&ato=lei-56-2023` |
-| What changed in a whole diploma between two dates | `#/alteracoes/codigo-do-trabalho?de=2023-01-01&ate=2026-10-29` |
-| One act: what it changed and its votação na generalidade | `#/ato/lei-56-2023` |
-| One parliamentary initiative (or a bill now in Parliament) | `#/iniciativa/315386` |
-| The check of the text against the official republications | `#/verificacao` |
+| Route | View | Params |
+|---|---|---|
+| `#/` | Home | |
+| `#/d/<slug>` | Diploma | |
+| `#/d/<slug>/<artigo>` | Article | `redacao=<ato>`, `ver=texto\|mudou\|origem`, `com=<ato>`, `lado=1`, `em=<data>&base=vigor`, `ato=<ato>`, `de=partilha` |
+| `#/alteracoes/<slug>` | What changed in a whole diploma between two dates | `de=<data>`, `ate=<data>` |
+| `#/ato/<id>` | Act: who made it, what it changed, its votes. An id in `index.aliases_atos` is replaced by the canonical id. | |
+| `#/iniciativa/<id>` | One parliamentary initiative (or a bill now in Parliament) | |
+| `#/quem/<slug>` | Who made each change to a diploma, by Government | `por=legislatura` |
+| `#/grupos`, `#/grupo/<id>` | Parliamentary groups | `diploma=<slug>` |
+| `#/historias`, `#/historia/<slug>` | Stories | |
+| `#/glossario`, `#/glossario/<id>` | Glossary; `<id>` scrolls to the entry | |
+| `#/verificacao` | Checks of the text and of who made each act | |
+| `#/sobre`, `#/sobre/<ancora>` | About; scrolls to `limites`, `quem`, `votacoes` | |
+| any | | `ir=<element id>` scrolls there and focuses its heading |
 
-Old links still work: a redação index (`redacao=3`) and the old compare page (`/comparar?de=…&ate=…&vista=lado`), which redirects to the Alterações view.
+Examples: `#/d/codigo-irc/artigo-87?redacao=lei-64-2025&ver=mudou`, `#/alteracoes/codigo-do-trabalho?de=2023-01-01&ate=2026-10-29`,
+`#/quem/nrau?por=legislatura`, `#/grupo/cds-pp?diploma=lei-nacionalidade`.
+Old links still work: a redação index (`redacao=3`), the old compare page (`/comparar?de=…&ate=…&vista=lado`), and old act ids
+(`iii-acordao-do-tribunal-constitucional-299-2020`, `decreto-lei-329-a-95-1-parte`, `declaracao`) through `index.json.aliases_atos`.
+
+## Data (`app/data/`)
+
+Built by `pipeline/build.py`; checked by `python -I pipeline/contrato.py app/data`. The same validator runs on the shared fixture
+(`pipeline/fixtures/contrato/app-data/`, synthetic Governments and Presidents, real AR group names). Dates are ISO `AAAA-MM-DD`.
+A `null` fact has a reason code next to it (`motivos`).
+
+| File | Holds |
+|---|---|
+| `index.json` | diplomas, search synonyms, `aliases_atos` (old act id → canonical id) |
+| `d/<slug>.json` | a diploma's tree; `copia` (`{inicio, diploma, rotulo}`) when part of it is a copy of another diploma (the NRAU's annex) |
+| `d/<slug>/<artigo>.json` | one article's redações, oldest first; `copia_de` (`{diploma, artigo}`) on a copied article |
+| `atos.json` | every act: designation, publication, link, sumário, `alteracoes[]`, `tipo_ato`, `ar`, `iniciativas` |
+| `passagem.json` | each law's passage: initiatives, `texto_comissao[]`, `passos`, `decreto`, `generalidade[]`, `vfg`, `eventos[]`, `descartados[]`, `motivos`. Every vote carries `legislatura` (of its date) and the siglas of that legislatura. |
+| `iniciativas.json`, `pendentes.json` | initiatives linked to acts; bills now in Parliament |
+| `pesquisa.json` | `[slug, artigo, rótulo, epígrafe, estado, copia_de]` per article |
+| `quem.json` | one record per act (below) |
+| `governos.json` | `governos[]`, `presidentes[]`, `legislaturas[]`, `grupos{id: {nomes[]}}`, `siglas{leg: {sigla: id}}` |
+| `quem/<slug>.json` | a diploma's timeline: `por_governo[]`, `por_legislatura[]` (each `{total, listas: {decretos_leis, propostas, outras, publicados_sem_d_cm}}`), `fora{}`, `retificacoes{}` |
+| `grupos/index.json`, `grupos/<id>.json` | groups, alphabetical; a group's initiatives that became a law (`como`: `propria` \| `juntada`) and its generalidade positions by diploma |
+| `verificacao.json` | checks against official republications; `quem` (signature coverage, cross-check, dropped steps and votes); `conteudo` (content withheld) |
+| `glossario.json`, `historias/`, `partilha.json` | written by `pipeline/conteudo.py` |
+
+**`quem.json` record (R-14).** Keys: `tipo_ato` (`decreto-lei`, `lei`, `lei-organica`, `lei-constitucional`, `retificacao`, `acordao-tc`,
+`acordao-outro`, `pre1976`, `aprovacao-constituicao`, `portaria`, `resolucao`, `dlr`, `outro`); `governo` (`{numero, base:
+"conselho_ministros", data}`, decretos-leis only); `governo_publicacao`; `d_cm`; `em_gestao`; `presidente` (`{id, nome, d_promulgacao,
+base: "assinatura"|"parlamento"}`, plus `interino: true` and `id: null` for an interim President); `legislatura`; `periodo` (`{data, base:
+d_cm|vfg|reapreciacao|publicacao, governo, legislatura, fora}`); `proponentes[]` (`{iniciativa, designacao, tipo:
+governo|grupos|cidadaos|regiao|comissao|mesa, governo, entrada, grupos[{id, sigla}], sem_grupo[], nome, resultado_generalidade}`, by
+entry date, never by `principal`); `texto_comissao` (`{tipo, n_iniciativas, iniciativas[{iniciativa, designacao, parte}]}`); `vfg`;
+`eventos[]` (`veto` with `presidente` and `acordao_tc`, `tribunal`, `confirmacao`, `novo_decreto`); `retifica`; `retificado_por[]`;
+`tribunal` (`{tribunal, data, data_base, normas[{diploma, artigo, numeros, escrito_por, efeitos_desde, tipo}]}`); `pre1976`
+(`{signatarios[]}`); `oe` (`{ano}`); `transitorias[]`; `ar_url`; `assinatura` (`{estado: ok|parcial|falhou|sem_link|por_ler, obtido_em,
+url}`); `motivos` (keys `governo`, `presidente`, `d_cm`, `vfg`, `passos`, `passagem`, `generalidade`); `verificacao[]` (`{regra:
+presidente|referenda|cm_primeiro|promulgacao_ar|mesmo_pm, estado: ok|aviso|conflito, detalhe}`).
+
+**Reason codes** (`motivos` values): `sem_d_cm`, `sem_link`, `sem_texto`, `por_ler`, `sessao_em_falta`, `sem_ar`, `antes_1976`,
+`antes_governo_constitucional`, `tabela_aberta`, `conflito`, `voto_ambiguo`, `passos_descartados`, `sem_registo_vfg`, `sem_generalidade`.
+The app turns each into one sentence (design spec §2.10). Method: [docs/QUEM.md](../docs/QUEM.md).
 
 ## How the data is made
 
@@ -92,7 +138,7 @@ Old links still work: a redação index (`redacao=3`) and the old compare page (
    - It diffs consecutive versions word by word. Each word keeps the index of the version that wrote it; this is the *origem do texto*.
    - A rewritten phrase is one change. A short unchanged run between two replacements joins them when it is not longer than either replacement (the diff-match-patch semantic rule). The Alterações view uses the same rule, in `app.js`. `node app/test_diff.js` checks it and, when `app/data` exists, checks that every compare view rebuilds both texts exactly.
 3. It links each law to its parliamentary initiative through the AR open data: `Diplomas Aprovados` gives the law's number and the initiatives behind it, and `Iniciativas` gives their events and votes.
-4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. See [`docs/PASSAGEM.md`](../docs/PASSAGEM.md). For now the app shows only the votação na generalidade: each initiative's own vote, and the vote on the committee's texto de substituição when there is one.
+4. `passagem.py` turns those events into the passage of each act (`data/passagem.json`): who proposed it, the dated steps, and each vote by group, with counts, dissent and absences. It reads the seats of each group on the vote date from `InformacaoBase`, and checks every result against them. A result that cannot be right ("Aprovado" with fewer votes for than against) is flagged on the page. Votes and events of another decree of the same initiative, or dated after the publication, are dropped (the matching cascade, [`docs/PASSAGEM.md`](../docs/PASSAGEM.md) §8). The app shows the votação na generalidade, the votação final global, and the veto, Tribunal Constitucional ruling and confirmation when there are any.
 5. An entry-into-force date before the publication date is a DR data error, and the build drops it (Decreto-Lei n.º 162/2014 has 1992). Retificações keep theirs: they take the date of the act they correct.
 6. `pendentes.py` finds the bills now in Parliament (current legislatura) that would change a diploma: Projetos and Propostas de Lei not yet law, not rejected on the generalidade vote, not withdrawn, and not replaced by a text that became law. The bill's title names the diploma (the `iniciativas` pattern in `corpus.json`). The bill's text names the articles: each of its articles that amends the diploma says so in its first sentence ("São alterados os artigos 170.º e 178.º do Código Penal"). The diploma page lists the bills and marks the articles they would change; the article page lists the bills that name it. `data/pendentes.json` holds them.
 7. [`pipeline/sinonimos.json`](../pipeline/sinonimos.json) holds the words people use and the words the law uses ("inquilino" and "arrendatário", "horas extra" and "trabalho suplementar"). Search matches either.

@@ -16,13 +16,24 @@ Inputs:
 - .js: string literals of two or more words.
 - .md: lines, list items and table cells. Text between <!-- pts:ignorar-inicio -->
   and <!-- pts:ignorar-fim --> is skipped (use it only for examples of bad copy).
+- .json (glossary and story sources): strings under titulo, resumo, texto, definicao and
+  paragrafos. Each typed reference «{tipo:argumento|rótulo}» counts as one word, X.
 - anything else: plain text.
+
+Every input is also checked against the neutrality list (rule 8.2, R-64): «chumbou», «travou»,
+«luz verde», «lei do PS», «maioria de esquerda», «%» next to a group or a Government… Text in «»
+is a quotation and is not checked. With --historia, the story lints (docs/ESTILO.md §8.3) also run:
+no digits, months, «n.º», group siglas, vote words, number words, units, comparative or causal
+words, and the story banned list.
+
+    python -I tools/estilo.py --historia pipeline/historias/*.json
 
 Exit code 1 if any error is found.
 """
 from __future__ import annotations
 
 import argparse
+import codecs
 import html
 import re
 import sys
@@ -55,6 +66,60 @@ LEGAL_PASSIVE_OK = {"publicado", "publicada", "publicados", "publicadas", "revog
                     "aprovado", "aprovada", "rejeitado", "rejeitada", "promulgado", "promulgada", "retificado", "retificada"}
 ABBREV = re.compile(r"\b(n\.º|n\.os|art\.|arts\.|al\.|als\.|p\. ex\.|n\.<sup>os</sup>)", re.I)
 IMPERATIVE_HINT = re.compile(r"^(para |se |quando )?[^,]*,?\s*(escolha|compare|veja|leia|pesquise|siga|copie|abra|toque|confirme|use|escreva|guarde|descarregue|volte|mostre|carregue)\b", re.I)
+
+# Every sigla in the AR files InformacaoBase* (a test checks it when data/ exists), plus the
+# historical forms the AR writes in votes. Whole word, case-sensitive.
+SIGLAS = ("ASDI", "BE", "CDS", "CDS-PP", "CH", "DESC", "DR", "ID", "IL", "JPP", "L", "MDP/CDE", "PAN", "PCP",
+          "PEV", "PPD", "PPD/PSD", "PPM", "PRD", "PS", "PSD", "PSN", "UDP", "UEDS")
+_SIGLA = "(?:" + "|".join(re.escape(x) for x in sorted(SIGLAS, key=len, reverse=True)) + ")"
+_SIGLA_W = rf"(?<![\w/-]){_SIGLA}(?![\w/-])"
+
+# Rule 8.2 (R-64): words that take sides or score a vote. Checked on every input.
+NEUTRALIDADE = [
+    (r"\bchumb(ou|aram|ad[oa]s?)\b", "«chumbou»: escreva «rejeitou» ou o resultado da votação"),
+    (r"\btravou\b", "«travou»"),
+    (r"\bluz verde\b", "«luz verde»: escreva «promulgou» ou «aprovou»"),
+    (r"\bmaioria de (esquerda|direita)\b", "«maioria de esquerda/direita»"),
+    # «oposição à renovação», «oposição pelo arrendatário» are legal terms; «a oposição» as a camp is not.
+    (r"\boposição\b(?!\s+(à|às|ao|aos|pel[oa]s?|do|da|de)\b)", "«oposição» como campo político"),
+    (r"\bgeringonça\b", "«geringonça»"),
+    (r"\bvencedor(a|es|as)?\b", "«vencedores»"),
+    (r"\bderrotad[oa]s?\b", "«derrotados»"),
+]
+NEUTRALIDADE_SIGLA = [  # case-sensitive for the sigla
+    (rf"(?i:\blei d[oa]) {_SIGLA}(?![\w/-])", "«lei do {SIGLA}»: diga quem apresentou a iniciativa"),
+    (rf"(?i:\bproposta d[oa]) {_SIGLA}(?![\w/-])", "«proposta do {SIGLA}»: um grupo apresenta projetos de lei"),
+    (rf"(?i:\bescrito por):?\s+(?:(?i:o|a|os|as)\s+)?{_SIGLA}(?![\w/-])", "«escrito por» + sigla"),
+    (rf"{_SIGLA_W}[^.%]{{0,30}}%|%[^.]{{0,30}}{_SIGLA_W}|\bGoverno\b[^.%]{{0,30}}%|%[^.]{{0,30}}\bGoverno\b",
+     "«%» junto de um grupo ou de um Governo"),
+]
+
+# Story lints (DESIGN-SPEC §4.3, checks 2, 2b and 4). The text reaches here with each typed
+# reference replaced by X and each «quotation» removed.
+MESES = ("janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro",
+         "novembro", "dezembro")
+VOTO = ("votou", "votaram", "a favor", "absteve", "abstiveram", "abstenção", "unanimidade")
+NUMEROS = ("dois", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze",
+           "catorze", "quinze", "dezasseis", "dezassete", "dezoito", "dezanove", "vinte", "trinta", "quarenta",
+           "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento", "duzentos", "duzentas",
+           "trezentos", "quinhentos", "mil", "milhão", "milhões", "primeiro", "primeira", "primeiros", "primeiras",
+           "segundo", "segunda", "terceiro", "terceira", "quarto", "quarta", "quinto", "quinta", "sexto", "sexta",
+           "sétimo", "sétima", "oitavo", "oitava", "nono", "nona", "décimo", "décima", "metade", "dobro", "triplo",
+           "terço", "terços", "quintos")
+UNIDADES = ("ano", "anos", "mês", "meses", "dia", "dias", "semana", "semanas", "euro", "euros", "por cento")
+COMPARATIVAS = ("mais", "menos", "aumentou", "aumentaram", "reduziu", "reduziram", "alargou", "alargaram",
+                "encurtou", "encurtaram", "subiu", "subiram", "desceu", "desceram", "passou de", "endureceu",
+                "facilitou", "por causa", "devido", "graças", "para que", "com o objetivo")
+HISTORIA_PROIBIDAS = [
+    r"mais dur[oa]s?", r"restritiv\w*", r"generos\w*", r"polémic\w*", r"controvers\w*", r"históric[oa]s?",
+    r"maioria de esquerda", r"maioria de direita", r"oposição", r"geringonça", r"chumb\w*", r"travou", r"luz verde",
+    r"vencedor\w*", r"derrotad\w*",
+]
+# Rule 6 of the stories, and every committed text: no model or vendor names. The names are kept
+# in rot13 so that this file does not itself contain them.
+FORNECEDORES = (r"\b(" + codecs.decode("pynhqr|naguebcvp|bcranv|pungtcg|trzvav", "rot13")
+                + r"|gpt(-?\d[\w.]*)?|llm|llms|modelo de linguagem|inteligência artificial)\b")
+_REF = re.compile(r"(?<!\{)\{(?!\{)([a-z]+):([^{}|]*)(?:\|([^{}]*))?\}(?!\})")
 
 KEYS = "summary|title|caption|label|who|note|result|text|act"  # quoted official titles use the key "oficial"
 VISIBLE_ATTRS = ("title", "aria-label", "placeholder", "label", "caption", "result", "text")
@@ -113,6 +178,95 @@ def extract_js(src: str) -> list[str]:
     return out
 
 
+def sem_refs(text: str) -> str:
+    """A story or glossary string with each typed reference replaced by X (rule 3.1 counts it as one word)."""
+    return _REF.sub("X", text).replace("{{", "{").replace("}}", "}")
+
+
+JSON_KEYS = {"titulo", "resumo", "texto", "definicao", "paragrafos"}
+
+
+def extract_json(src: str) -> list[str]:
+    return [t for _, t in extract_json_keyed(src)]
+
+
+def extract_json_keyed(src: str) -> list[tuple[str, str]]:
+    import json
+    out: list[tuple[str, str]] = []
+
+    def strings(v):
+        if isinstance(v, str):
+            yield v
+        elif isinstance(v, list):
+            for x in v:
+                yield from strings(x)
+
+    def walk(o):
+        if isinstance(o, dict):
+            for k, v in o.items():
+                if k in JSON_KEYS:
+                    out.extend((k, sem_refs(x)) for x in strings(v) if x.strip())
+                else:
+                    walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+    walk(json.loads(src))
+    return out
+
+
+def check_neutralidade(text: str) -> list[tuple[str, str, str]]:
+    """Rule 8.2 (R-64). Quotations «…» are primary documents and are not checked."""
+    t = re.sub(r"«[^»]*»", "«…»", text)
+    low = fold(t).lower()
+    issues = [("erro", "8.2", msg) for pat, msg in NEUTRALIDADE if re.search(pat, low)]
+    issues += [("erro", "8.2", msg) for pat, msg in NEUTRALIDADE_SIGLA if re.search(pat, fold(t))]
+    if re.search(FORNECEDORES, low):
+        issues.append(("erro", "8.4", f"nome de modelo ou de fornecedor «{re.search(FORNECEDORES, low).group(0)}»"))
+    return issues
+
+
+def _palavras(lista) -> str:
+    return r"(?<![\wÀ-ú])(" + "|".join(re.escape(w) for w in sorted(lista, key=len, reverse=True)) + r")(?![\wÀ-ú])"
+
+
+def check_historia(text: str) -> list[tuple[str, str, str]]:
+    """Story prose lints (§4.3 checks 2, 2b and 4). `text` has its references already replaced by X.
+
+    Quotations «…» (quoted primary documents, only through a `fonte` reference) are skipped."""
+    issues = []
+    t = re.sub(r"«[^»]*»", " ", fold(text))
+    low = t.lower()
+    m = re.search(r".{0,20}\d.{0,10}", t)
+    if m:
+        issues.append(("erro", "H2", f"algarismo fora de uma referência: «{m.group(0).strip()}»"))
+    m = re.search(_palavras(MESES), low)
+    if m:
+        issues.append(("erro", "H2", f"nome de mês «{m.group(1)}»: use {{data:…}}"))
+    if re.search(r"\bn\.(º|os)", low):
+        issues.append(("erro", "H2", "«n.º» fora de uma referência"))
+    m = re.search(_SIGLA_W, t)
+    if m:
+        issues.append(("erro", "H2", f"sigla de grupo «{m.group(0)}» fora de uma referência"))
+    m = re.search(_palavras(VOTO), low)
+    if m:
+        issues.append(("erro", "H2", f"palavra de votação «{m.group(1)}»: use {{voto:…}} ou {{vfg:…}}"))
+    for lista, nome in ((NUMEROS, "número por extenso"), (UNIDADES, "unidade"), (COMPARATIVAS, "palavra comparativa ou causal")):
+        m = re.search(_palavras(lista), low)
+        if m:
+            issues.append(("erro", "H2b", f"{nome} «{m.group(1)}»: os números só chegam ao leitor por citação"))
+    for pat in HISTORIA_PROIBIDAS:
+        m = re.search(r"(?<![\wÀ-ú])" + pat + r"(?![\wÀ-ú])", low)
+        if m:
+            issues.append(("erro", "H4", f"palavra proibida nas histórias «{m.group(0)}»"))
+    if "%" in t:
+        issues.append(("erro", "H4", "«%» numa história"))
+    for pat, msg in NEUTRALIDADE_SIGLA[:3]:
+        if re.search(pat, t):
+            issues.append(("erro", "H4", msg))
+    return issues
+
+
 def sentences(text: str) -> list[str]:
     protected = ABBREV.sub(lambda m: m.group(0).replace(".", "§"), text)
     parts = re.split(r"(?<=[.?!])\s+(?=[A-ZÀ-Ú«(\d])", protected)
@@ -130,7 +284,7 @@ def check(text: str) -> list[tuple[str, str, str]]:
     issues = []
     full = text
     text = re.sub(r"«[^»]*»", "«…»", text)  # quoted words are cited, not used (sentence length still counts them)
-    low = fold(text).lower()
+    low = fold(text).lower().replace("união de facto", "união-de-facto")  # a legal term, not the filler
     for phrase in BANNED:
         if re.search(rf"(?<![\wÀ-ú]){re.escape(phrase)}(?![\wÀ-ú])", low):
             issues.append(("erro", "8", f"palavra proibida «{phrase}»"))
@@ -163,6 +317,7 @@ def check(text: str) -> list[tuple[str, str, str]]:
         limit = MAX_INSTRUCTION if IMPERATIVE_HINT.search(s) else MAX_DESCRIPTION
         if n > limit:
             issues.append(("erro", "3.1", f"{n} palavras (máx. {limit}): «{s[:90]}…»"))
+    issues += check_neutralidade(full)
     return issues
 
 
@@ -171,19 +326,25 @@ def main() -> int:
     ap.add_argument("ficheiros", nargs="*")
     ap.add_argument("--texto")
     ap.add_argument("--avisos", action="store_true", help="mostrar também os avisos")
+    ap.add_argument("--historia", action="store_true", help="aplicar também as regras das histórias (§8.3)")
     a = ap.parse_args()
-    units: list[tuple[str, str]] = []
+    units: list[tuple[str, str, bool]] = []
     if a.texto:
-        units.append(("--texto", a.texto))
+        units.append(("--texto", a.texto, True))
     for f in a.ficheiros:
         src = open(f, encoding="utf-8").read()
+        if f.endswith(".json"):
+            # A story's title is fixed by its brief («… desde 1981»): the story lints skip it.
+            units.extend((f, c, k != "titulo") for k, c in extract_json_keyed(src))
+            continue
         chunks = (extract_html(src) if f.endswith(".html") else extract_js(src) if f.endswith(".js")
                   else extract_md(src) if f.endswith(".md") else [src])
-        units.extend((f, c) for c in chunks)
+        units.extend((f, c, True) for c in chunks)
     errors = 0
     seen = set()
-    for where, text in units:
-        for level, rule, msg in check(text):
+    for where, text, historia in units:
+        found = check(text) + (check_historia(text) if a.historia and historia else [])
+        for level, rule, msg in found:
             if level == "aviso" and not a.avisos:
                 continue
             key = (where, rule, msg)

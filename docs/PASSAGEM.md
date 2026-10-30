@@ -201,3 +201,41 @@ The act page shows the committee text vote first, when there is one, because tha
 - «Não temos o registo desta votação.» · «Não temos as votações da comissão.»
 
 **Never:** culpa, autoria, blame, vencedores, derrotados, chumbado.
+
+## 8. Which votes and events belong to this law (round 3)
+
+One initiative can produce several decrees and several laws. Proposta de Lei n.º 1/XVII produced the
+Lei Orgânica n.º 1/2026 (Lei da Nacionalidade) and a Código Penal text; both texts were voted on the
+same days. `passagem.py` keeps only what belongs to the act, in four steps, and lists what it drops in
+`descartados` (shown in `#/verificacao`):
+
+1. **The act's decree.** In `Diplomas<leg>`, the «Decreto da Assembleia da República» records of the
+   law's initiatives whose title equals the law's title (case, accents and punctuation folded). The
+   latest is `decreto.numero`; earlier ones (before a veto) go to `anteriores`.
+2. **Events.** `ObsFase` names decrees: «Decreto n.º 17/XVII», «Decretos n.ºs 95/XV, 96/XV», «Decretos
+   n.º 97, 102 e 112/XV», «Decreto da Assembleia da República n.º 49/XVII/1.ª». An event that names
+   one of this act's decrees stays; one that names only other decrees goes (`outro_decreto`); one that
+   names none stays unless the initiatives have another law's decree. «Lei (Publicação DR)» stays only
+   within one day of the DR publication date. Anything dated more than a day after publication goes
+   (`depois_da_publicacao`). The veto keeps the Tribunal Constitucional ruling its note names
+   («Acórdão do Tribunal Constitucional n.º 1133/2025»).
+3. **Votes.** A committee text belongs to the act whose initiatives it cites best. On a tie (both texts
+   of LO 1/2026 cite only PPL 1/XVII), the text whose description names the amended diploma or the
+   law's title wins, and a text that names another decree's title loses. The final global vote
+   follows the same rule. «Votação novo decreto» and «Confirmação do decreto» follow their event's note
+   (decree number, or the quoted title). If the rule cannot decide, the vote is not shown
+   (`voto_ambiguo`).
+4. **Duplicates.** The AR records one vote under every initiative it covers, sometimes with other ids
+   and punctuation (Lei n.º 3/2019). Votes with the same date, cited initiatives and positions are one.
+
+**Step order.** The kept steps must satisfy VFG ≤ veto ≤ reapreciação ≤ promulgação ≤ publicação
+(especialidade is not checked: LO 1/2026 has it the day before the generalidade). Otherwise the dated
+steps are dropped and `motivos.passos = passos_descartados`. After the cascade, no act has steps out
+of order (2026-10-30).
+
+**Absences and siglas.** «Ausência: CDS, PEV, Carlos Macedo (Indep)» is a section of its own: the groups
+go to `ausentes`, the named deputy is left out (an absence is not dissent), and absent groups are not
+«sem registo». Every sigla is the one of the AR file of the legislatura of the vote's date (see
+[QUEM.md](QUEM.md) §5); each vote carries its `legislatura`.
+
+**Legislatura I** has two AR files (IA, IB); both are read for the laws of legislatura I.

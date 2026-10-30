@@ -12,12 +12,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Pillow, to test the link preview images
+        run: python -m pip install pillow==11.3.0
       - name: Unit tests
+        env:
+          REDACAO_ESTRITO: "1"   # content checks are errors here (DESIGN-SPEC §6.0)
+          CI: "true"             # a skipped image test is an error
         run: |
           python -I -m unittest discover -s tools -v
           python -I -m unittest discover -s pipeline -v
           node app/test_diff.js
       - name: Copy follows PTS (docs/ESTILO.md)
-        run: python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js design-system/components/*/preview.html docs/ESTILO.md app/app.js
+        run: |
+          python -I tools/estilo.py design/screens/*.dc.html design-system/components/bundle.js design-system/components/*/preview.html docs/ESTILO.md app/app.js pipeline/glossario.json
+          python -I tools/estilo.py --historia pipeline/historias/*.json
       - name: Design tokens meet contrast targets
         run: python -I tools/check_contrast.py design-system/tokens.json

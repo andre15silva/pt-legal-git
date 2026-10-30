@@ -1,0 +1,950 @@
+{
+ "decreto-lei-90001": {
+  "tipo_ato": "pre1976",
+  "governo": null,
+  "governo_publicacao": null,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": null,
+  "legislatura": null,
+  "periodo": {
+   "data": "1970-03-02",
+   "base": "publicacao",
+   "governo": null,
+   "legislatura": null,
+   "fora": "antes_1976"
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": {
+   "signatarios": [
+    "O Ministro de teste, Signatário de teste A"
+   ]
+  },
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "sem_link",
+   "obtido_em": null,
+   "url": null
+  },
+  "motivos": {
+   "governo": "antes_1976",
+   "presidente": "antes_1976"
+  },
+  "verificacao": []
+ },
+ "decreto-lei-90002": {
+  "tipo_ato": "pre1976",
+  "governo": null,
+  "governo_publicacao": null,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": null,
+  "legislatura": null,
+  "periodo": {
+   "data": "1974-02-01",
+   "base": "publicacao",
+   "governo": null,
+   "legislatura": null,
+   "fora": "antes_1976"
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": {
+   "signatarios": [
+    "O Ministro de teste, Signatário de teste B"
+   ]
+  },
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "sem_link",
+   "obtido_em": null,
+   "url": null
+  },
+  "motivos": {
+   "governo": "antes_1976",
+   "presidente": "antes_1976"
+  },
+  "verificacao": []
+ },
+ "decreto-lei-901-1977": {
+  "tipo_ato": "decreto-lei",
+  "governo": {
+   "numero": 1,
+   "base": "conselho_ministros",
+   "data": "1977-05-10"
+  },
+  "governo_publicacao": 1,
+  "d_cm": "1977-05-10",
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-a",
+   "nome": "Presidente de teste A",
+   "d_promulgacao": "1977-05-20",
+   "base": "assinatura"
+  },
+  "legislatura": "IA",
+  "periodo": {
+   "data": "1977-05-10",
+   "base": "d_cm",
+   "governo": 1,
+   "legislatura": "IA",
+   "fora": null
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-901-1977-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "referenda",
+    "estado": "ok"
+   },
+   {
+    "regra": "cm_primeiro",
+    "estado": "ok"
+   }
+  ]
+ },
+ "decreto-lei-902-2010": {
+  "tipo_ato": "decreto-lei",
+  "governo": {
+   "numero": 2,
+   "base": "conselho_ministros",
+   "data": "2010-05-25"
+  },
+  "governo_publicacao": 3,
+  "d_cm": "2010-05-25",
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2010-06-10",
+   "base": "assinatura"
+  },
+  "legislatura": "XI",
+  "periodo": {
+   "data": "2010-05-25",
+   "base": "d_cm",
+   "governo": 2,
+   "legislatura": "XI",
+   "fora": null
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-902-2010-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "referenda",
+    "estado": "ok"
+   },
+   {
+    "regra": "mesmo_pm",
+    "estado": "aviso",
+    "detalhe": "d_cm a 7 dias da posse do Governo 3, com o mesmo Primeiro-Ministro"
+   }
+  ]
+ },
+ "decreto-lei-903-2012": {
+  "tipo_ato": "decreto-lei",
+  "governo": null,
+  "governo_publicacao": 3,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2012-02-20",
+   "base": "assinatura"
+  },
+  "legislatura": "XII",
+  "periodo": {
+   "data": "2012-03-01",
+   "base": "publicacao",
+   "governo": 3,
+   "legislatura": "XII",
+   "fora": null
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "parcial",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/lei-903-2012-900000"
+  },
+  "motivos": {
+   "governo": "sem_d_cm",
+   "d_cm": "sem_d_cm"
+  },
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   }
+  ]
+ },
+ "lei-constitucional-901-1997": {
+  "tipo_ato": "lei-constitucional",
+  "governo": null,
+  "governo_publicacao": 2,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-a",
+   "nome": "Presidente de teste A",
+   "d_promulgacao": "1997-09-15",
+   "base": "assinatura"
+  },
+  "legislatura": "VII",
+  "periodo": {
+   "data": "1997-07-31",
+   "base": "vfg",
+   "governo": 2,
+   "legislatura": "VII",
+   "fora": "revisoes"
+  },
+  "proponentes": [
+   {
+    "iniciativa": "900401",
+    "designacao": "Projeto de Revisão Constitucional n.º 901/VII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "1996-03-01",
+    "grupos": [
+     {
+      "id": "ps",
+      "sigla": "PS"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900402",
+    "designacao": "Projeto de Revisão Constitucional n.º 902/VII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "1996-03-02",
+    "grupos": [
+     {
+      "id": "psd",
+      "sigla": "PSD"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   }
+  ],
+  "texto_comissao": null,
+  "vfg": {
+   "data": "1997-07-31",
+   "unanime": false,
+   "resultado": "Aprovado"
+  },
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900001",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/constitucional-901-1997-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "promulgacao_ar",
+    "estado": "ok"
+   }
+  ]
+ },
+ "lei-organica-901-2018": {
+  "tipo_ato": "lei-organica",
+  "governo": null,
+  "governo_publicacao": 3,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2018-07-04",
+   "base": "assinatura"
+  },
+  "legislatura": "XIII",
+  "periodo": {
+   "data": "2018-07-01",
+   "base": "reapreciacao",
+   "governo": 3,
+   "legislatura": "XIII",
+   "fora": null
+  },
+  "proponentes": [
+   {
+    "iniciativa": "900300",
+    "designacao": "Projeto de Lei n.º 910/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "ps",
+      "sigla": "PS"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900301",
+    "designacao": "Projeto de Lei n.º 911/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "psd",
+      "sigla": "PSD"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900302",
+    "designacao": "Projeto de Lei n.º 912/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "be",
+      "sigla": "BE"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900303",
+    "designacao": "Projeto de Lei n.º 913/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "cds-pp",
+      "sigla": "CDS-PP"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900304",
+    "designacao": "Projeto de Lei n.º 914/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "pcp",
+      "sigla": "PCP"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900305",
+    "designacao": "Projeto de Lei n.º 915/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "pev",
+      "sigla": "PEV"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   },
+   {
+    "iniciativa": "900306",
+    "designacao": "Projeto de Lei n.º 916/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2017-10-02",
+    "grupos": [
+     {
+      "id": "pan",
+      "sigla": "PAN"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   }
+  ],
+  "texto_comissao": {
+   "tipo": "texto_final",
+   "n_iniciativas": 7,
+   "iniciativas": [
+    {
+     "iniciativa": "900300",
+     "designacao": "Projeto de Lei n.º 910/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900301",
+     "designacao": "Projeto de Lei n.º 911/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900302",
+     "designacao": "Projeto de Lei n.º 912/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900303",
+     "designacao": "Projeto de Lei n.º 913/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900304",
+     "designacao": "Projeto de Lei n.º 914/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900305",
+     "designacao": "Projeto de Lei n.º 915/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900306",
+     "designacao": "Projeto de Lei n.º 916/XIII",
+     "parte": null
+    }
+   ]
+  },
+  "vfg": {
+   "data": "2018-05-25",
+   "unanime": false,
+   "resultado": "Aprovado"
+  },
+  "eventos": [
+   {
+    "tipo": "veto",
+    "data": "2018-06-20",
+    "presidente": "presidente-teste-b",
+    "acordao_tc": null
+   },
+   {
+    "tipo": "novo_decreto",
+    "data": "2018-07-01"
+   }
+  ],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900002",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/organica-901-2018-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "promulgacao_ar",
+    "estado": "ok"
+   }
+  ]
+ },
+ "lei-902-2019": {
+  "tipo_ato": "lei",
+  "governo": null,
+  "governo_publicacao": 3,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2019-02-05",
+   "base": "assinatura"
+  },
+  "legislatura": "XIII",
+  "periodo": {
+   "data": "2019-01-18",
+   "base": "vfg",
+   "governo": 3,
+   "legislatura": "XIII",
+   "fora": null
+  },
+  "proponentes": [
+   {
+    "iniciativa": "900202",
+    "designacao": "Projeto de Lei n.º 901/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2018-03-01",
+    "grupos": [
+     {
+      "id": "be",
+      "sigla": "BE"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Rejeitado"
+   },
+   {
+    "iniciativa": "900201",
+    "designacao": "Proposta de Lei n.º 902/XIII",
+    "tipo": "governo",
+    "governo": 3,
+    "entrada": "2018-04-30",
+    "grupos": [],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": null
+   },
+   {
+    "iniciativa": "900203",
+    "designacao": "Projeto de Lei n.º 903/XIII",
+    "tipo": "grupos",
+    "governo": null,
+    "entrada": "2018-10-01",
+    "grupos": [
+     {
+      "id": "psd",
+      "sigla": "PSD"
+     }
+    ],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   }
+  ],
+  "texto_comissao": {
+   "tipo": "texto_substituicao",
+   "n_iniciativas": 3,
+   "iniciativas": [
+    {
+     "iniciativa": "900201",
+     "designacao": "Proposta de Lei n.º 902/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900202",
+     "designacao": "Projeto de Lei n.º 901/XIII",
+     "parte": null
+    },
+    {
+     "iniciativa": "900203",
+     "designacao": "Projeto de Lei n.º 903/XIII",
+     "parte": "artigo 8.º"
+    }
+   ]
+  },
+  "vfg": {
+   "data": "2019-01-18",
+   "unanime": false,
+   "resultado": "Aprovado"
+  },
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [
+   {
+    "artigo": "15.º",
+    "epigrafe": "Norma transitória"
+   }
+  ],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900003",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/902-2019-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "promulgacao_ar",
+    "estado": "ok"
+   }
+  ]
+ },
+ "lei-901-2020": {
+  "tipo_ato": "lei",
+  "governo": null,
+  "governo_publicacao": 4,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2020-10-05",
+   "base": "assinatura"
+  },
+  "legislatura": "XIV",
+  "periodo": {
+   "data": "2020-09-25",
+   "base": "reapreciacao",
+   "governo": 4,
+   "legislatura": "XIV",
+   "fora": null
+  },
+  "proponentes": [
+   {
+    "iniciativa": "900101",
+    "designacao": "Proposta de Lei n.º 901/XIV",
+    "tipo": "governo",
+    "governo": 4,
+    "entrada": "2020-02-01",
+    "grupos": [],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   }
+  ],
+  "texto_comissao": null,
+  "vfg": {
+   "data": "2020-07-10",
+   "unanime": false,
+   "resultado": "Aprovado"
+  },
+  "eventos": [
+   {
+    "tipo": "veto",
+    "data": "2020-08-20",
+    "presidente": "presidente-teste-b",
+    "acordao_tc": "9001/2020"
+   },
+   {
+    "tipo": "confirmacao",
+    "data": "2020-09-25"
+   }
+  ],
+  "retifica": null,
+  "retificado_por": [
+   "declaracao-de-retificacao-901-2020"
+  ],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [
+   {
+    "artigo": "5.º",
+    "epigrafe": "Norma transitória"
+   }
+  ],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900004",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "referenda",
+    "estado": "ok"
+   },
+   {
+    "regra": "promulgacao_ar",
+    "estado": "ok"
+   }
+  ]
+ },
+ "declaracao-de-retificacao-901-2020": {
+  "tipo_ato": "retificacao",
+  "governo": null,
+  "governo_publicacao": 4,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": null,
+  "legislatura": "XIV",
+  "periodo": {
+   "data": "2020-09-25",
+   "base": "reapreciacao",
+   "governo": 4,
+   "legislatura": "XIV",
+   "fora": "retificacao"
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": "lei-901-2020",
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/declaracao-retificacao/de-retificacao-901-2020-900000"
+  },
+  "motivos": {},
+  "verificacao": []
+ },
+ "acordao-do-tribunal-constitucional-9001-2021": {
+  "tipo_ato": "acordao-tc",
+  "governo": null,
+  "governo_publicacao": 4,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": null,
+  "legislatura": "XIV",
+  "periodo": {
+   "data": "2021-03-01",
+   "base": "publicacao",
+   "governo": 4,
+   "legislatura": "XIV",
+   "fora": "acordaos"
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": {
+   "tribunal": "Tribunal Constitucional",
+   "data": "2021-02-10",
+   "data_base": "decisao",
+   "normas": [
+    {
+     "diploma": "lei-teste",
+     "artigo": "artigo-2",
+     "numeros": [
+      "2"
+     ],
+     "escrito_por": "lei-902-2019",
+     "efeitos_desde": "2019-02-13",
+     "tipo": "inconstitucional"
+    }
+   ]
+  },
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": null,
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/acordao/do-tribunal-constitucional-9001-2021-900000"
+  },
+  "motivos": {},
+  "verificacao": []
+ },
+ "lei-901-2022": {
+  "tipo_ato": "lei",
+  "governo": null,
+  "governo_publicacao": 4,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2021-12-30",
+   "base": "assinatura"
+  },
+  "legislatura": "XIV",
+  "periodo": {
+   "data": "2021-11-25",
+   "base": "vfg",
+   "governo": 4,
+   "legislatura": "XIV",
+   "fora": null
+  },
+  "proponentes": [
+   {
+    "iniciativa": "900501",
+    "designacao": "Proposta de Lei n.º 903/XIV",
+    "tipo": "governo",
+    "governo": 4,
+    "entrada": "2021-10-11",
+    "grupos": [],
+    "sem_grupo": [],
+    "nome": null,
+    "resultado_generalidade": "Aprovado"
+   }
+  ],
+  "texto_comissao": null,
+  "vfg": {
+   "data": "2021-11-25",
+   "unanime": false,
+   "resultado": "Aprovado"
+  },
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": {
+   "ano": 2022
+  },
+  "transitorias": [],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900005",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/901-2022-900000"
+  },
+  "motivos": {},
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   },
+   {
+    "regra": "promulgacao_ar",
+    "estado": "ok"
+   }
+  ]
+ },
+ "lei-901-2023": {
+  "tipo_ato": "lei",
+  "governo": null,
+  "governo_publicacao": 4,
+  "d_cm": null,
+  "em_gestao": null,
+  "presidente": {
+   "id": "presidente-teste-b",
+   "nome": "Presidente de teste B",
+   "d_promulgacao": "2023-05-20",
+   "base": "assinatura"
+  },
+  "legislatura": "XV",
+  "periodo": {
+   "data": "2023-06-01",
+   "base": "publicacao",
+   "governo": 4,
+   "legislatura": "XV",
+   "fora": null
+  },
+  "proponentes": [],
+  "texto_comissao": null,
+  "vfg": null,
+  "eventos": [],
+  "retifica": null,
+  "retificado_por": [],
+  "tribunal": null,
+  "pre1976": null,
+  "oe": null,
+  "transitorias": [],
+  "ar_url": "https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheDiplomaAprovado.aspx?BID=900006",
+  "assinatura": {
+   "estado": "ok",
+   "obtido_em": "2026-10-30",
+   "url": "https://diariodarepublica.pt/dr/detalhe/lei/901-2023-900000"
+  },
+  "motivos": {
+   "passagem": "sessao_em_falta",
+   "vfg": "sessao_em_falta",
+   "generalidade": "sessao_em_falta"
+  },
+  "verificacao": [
+   {
+    "regra": "presidente",
+    "estado": "ok"
+   }
+  ]
+ }
+}

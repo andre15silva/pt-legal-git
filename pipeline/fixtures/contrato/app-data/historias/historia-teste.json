@@ -1,0 +1,187 @@
+{
+ "slug": "historia-teste",
+ "titulo": "Como mudou a Lei de teste",
+ "resumo": "As alterações à Lei de teste, ato a ato.",
+ "preparado_em": "2026-10-30",
+ "preparacao": "assistida",
+ "revisao_externa": null,
+ "aviso": "Texto preparado a partir dos dados do site, com ajuda de uma ferramenta automática. Data: 2026-10-30. Ainda sem revisão jurídica externa.",
+ "ambito": {
+  "desde": "1970-03-02",
+  "diplomas": [
+   {
+    "slug": "lei-teste",
+    "artigos": "todos"
+   }
+  ]
+ },
+ "seccoes": [
+  {
+   "id": "em-cinco-frases",
+   "tipo": "resumo",
+   "titulo": "Em cinco frases",
+   "paragrafos": [
+    [
+     "A ",
+     {
+      "t": "ato",
+      "id": "decreto-lei-90001",
+      "texto": "Decreto-Lei n.º 90001, de 2 de março de 1970",
+      "href": "#/ato/decreto-lei-90001"
+     },
+     " aprovou a lei."
+    ]
+   ]
+  },
+  {
+   "id": "nesta-historia",
+   "tipo": "perguntas",
+   "titulo": "Nesta história",
+   "itens": [
+    {
+     "texto": "Qual é o prazo?",
+     "alvo": "lei-901-2020"
+    }
+   ]
+  },
+  {
+   "id": "em-numeros",
+   "tipo": "numeros",
+   "titulo": "Em números",
+   "atos_por_tipo": [
+    {
+     "tipo_ato": "lei",
+     "n": 4
+    }
+   ],
+   "artigos_alterados": 3,
+   "mais_alterados": [
+    {
+     "diploma": "lei-teste",
+     "artigo": "artigo-1",
+     "rotulo": "Artigo 1.º",
+     "n": 6
+    }
+   ]
+  },
+  {
+   "id": "lei-901-2020",
+   "tipo": "mudanca",
+   "atos": [
+    "lei-901-2020"
+   ],
+   "subtitulo": null,
+   "retida": null,
+   "paragrafos": [
+    [
+     "A ",
+     {
+      "t": "ato",
+      "id": "lei-901-2020",
+      "texto": "Lei n.º 901/2020, de 15 de outubro",
+      "href": "#/ato/lei-901-2020"
+     },
+     " mudou o ",
+     {
+      "t": "comparar",
+      "texto": "o que mudou no artigo 1.º",
+      "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou"
+     },
+     "."
+    ],
+    [
+     "Quem a propôs: ",
+     {
+      "t": "governo",
+      "ato": "lei-901-2020"
+     },
+     ". ",
+     {
+      "t": "vfg",
+      "ato": "lei-901-2020"
+     }
+    ]
+   ],
+   "mostrar": [
+    {
+     "diploma": "lei-teste",
+     "artigo": "artigo-1",
+     "rotulo": "Artigo 1.º",
+     "ato": "lei-901-2020",
+     "antes": "2 — O prazo é de seis anos.",
+     "depois": "2 — O prazo é de dez anos, contados da entrada.",
+     "href": "#/d/lei-teste/artigo-1?redacao=lei-901-2020&ver=mudou"
+    }
+   ],
+   "tabela": null,
+   "desatualizada": false,
+   "hashes": {
+    "lei-teste/artigo-1@lei-901-2020": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   }
+  },
+  {
+   "id": "lei-902-2019",
+   "tipo": "mudanca",
+   "atos": [
+    "lei-902-2019"
+   ],
+   "subtitulo": null,
+   "retida": "Os dados mudaram depois da preparação do texto.",
+   "paragrafos": [],
+   "mostrar": [],
+   "tabela": null,
+   "desatualizada": true,
+   "hashes": {}
+  },
+  {
+   "id": "hoje",
+   "tipo": "hoje",
+   "artigos": [
+    {
+     "diploma": "lei-teste",
+     "artigo": "artigo-1",
+     "rotulo": "Artigo 1.º"
+    }
+   ],
+   "pendentes": [],
+   "paragrafos": []
+  },
+  {
+   "id": "todas",
+   "tipo": "todas",
+   "atos": [
+    "decreto-lei-90002",
+    "decreto-lei-901-1977",
+    "decreto-lei-902-2010",
+    "decreto-lei-903-2012",
+    "lei-constitucional-901-1997",
+    "lei-organica-901-2018",
+    "lei-902-2019",
+    "lei-901-2020",
+    "declaracao-de-retificacao-901-2020",
+    "acordao-do-tribunal-constitucional-9001-2021",
+    "lei-901-2022",
+    "lei-901-2023"
+   ]
+  },
+  {
+   "id": "o-que-nao-diz",
+   "tipo": "limites",
+   "paragrafos": [
+    [
+     "Esta história não dá conselhos jurídicos."
+    ]
+   ]
+  },
+  {
+   "id": "como-fizemos",
+   "tipo": "metodo",
+   "paragrafos": [
+    [
+     "Usámos os dados do site."
+    ]
+   ],
+   "correcoes": []
+  }
+ ]
+}

@@ -27,8 +27,15 @@ export declare function ProcessTrack(props: ProcessTrackProps): React.ReactEleme
 export interface GroupVote { group: string; seats?: number; vote: 'favor' | 'contra' | 'abstencao' | 'ausente' }
 export interface VoteBarProps { votes: GroupVote[]; title?: string; result?: string }
 export declare function VoteBar(props: VoteBarProps): React.ReactElement;
+export interface VotacaoProps { grupos: Record<string, 'favor' | 'contra' | 'abstencao'>; ordem?: string[]; contagens?: Record<string, Record<string, number>>; dissidencia?: { grupo: string; sentido: string; n?: number; nome?: string }[]; foraDeGrupo?: { nome: string; sentido: string }[]; ausentes?: string[]; semRegisto?: string[]; unanime?: boolean; resultado?: string; verificacao?: { ok: boolean; metodo: string; favor: number; contra: number; abstencao: number }; mostrarConta?: boolean; nomes?: Record<string, string> }
+export declare function Votacao(props: VotacaoProps): React.ReactElement;
+export interface Definicao { termo: string; definicao: string[]; apoio?: string[]; fonte?: { rota?: string; url?: string; texto: string } }
+export interface TermoProps { id: string; texto: string; def: Definicao; onAbrirFolha?: (id: string, botao: HTMLButtonElement) => void }
+export declare function Termo(props: TermoProps): React.ReactElement;
+export interface TermoConteudoProps { id: string; def: Definicao; bloco?: boolean; semGlossario?: boolean }
+export declare function TermoConteudo(props: TermoConteudoProps): React.ReactElement;
 export interface CitationProps { text: string; permalink?: string }
 export declare function Citation(props: CitationProps): React.ReactElement;
 export interface SourceNoteProps { children?: React.ReactNode; source?: { href: string; label: string }; updated?: string; verification?: Status; tone?: 'aviso' }
 export declare function SourceNote(props: SourceNoteProps): React.ReactElement;
-declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Citation: typeof Citation; SourceNote: typeof SourceNote; dataPorExtenso(iso: string): string } } }
+declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Votacao: typeof Votacao; Termo: typeof Termo; TermoConteudo: typeof TermoConteudo; Citation: typeof Citation; SourceNote: typeof SourceNote; dataPorExtenso(iso: string): string } } }

@@ -1,0 +1,314 @@
+{
+  "slug": "nacionalidade-desde-1981",
+  "titulo": "Como mudou a Lei da Nacionalidade desde 1981",
+  "resumo": "As alterações à Lei da Nacionalidade, ato a ato: o texto antes e depois, quem as propôs e as votações no Parlamento.",
+  "preparado_em": "2026-10-30",
+  "preparacao": "assistida",
+  "revisao_externa": null,
+  "ambito": {
+    "desde": "1981-10-03",
+    "diplomas": [
+      {
+        "slug": "lei-nacionalidade",
+        "artigos": "todos"
+      }
+    ]
+  },
+  "seccoes": [
+    {
+      "id": "em-cinco-frases",
+      "tipo": "resumo",
+      "paragrafos": [
+        "A Lei da Nacionalidade é a {ato:lei-37-81}. O {redacao:lei-nacionalidade/artigo-1@lei-organica-1-2026|artigo sobre a nacionalidade originária} diz quem é português de origem. O {redacao:lei-nacionalidade/artigo-6@lei-organica-1-2026|artigo sobre os requisitos da naturalização} diz quando o Governo concede a nacionalidade a quem a pede.",
+        "A {ato:lei-25-94}, a {ato:lei-organica-2-2006}, a {ato:lei-organica-2-2018} e a {ato:lei-organica-1-2026} mudaram o {comparar:lei-nacionalidade/artigo-6@lei-organica-1-2026|requisito de residência para a naturalização}. O {comparar:lei-nacionalidade/artigo-3@lei-organica-1-2026|artigo sobre o casamento e a união de facto} mudou na {ato:lei-25-94}, na {ato:lei-organica-2-2006} e na {ato:lei-organica-1-2026}."
+      ]
+    },
+    {
+      "id": "nesta-historia",
+      "tipo": "perguntas",
+      "itens": [
+        {
+          "texto": "Quanto tempo tem de viver em Portugal quem pede a naturalização?",
+          "alvo": "residencia"
+        },
+        {
+          "texto": "Quem nasce em Portugal, filho de estrangeiros, é português?",
+          "alvo": "lei-organica-2-2006"
+        },
+        {
+          "texto": "O que mudou para quem é casado ou vive em união de facto com um português?",
+          "alvo": "lei-organica-2-2006"
+        },
+        {
+          "texto": "E os netos e outros descendentes de portugueses?",
+          "alvo": "xii-legislatura"
+        },
+        {
+          "texto": "As regras novas aplicam-se a um pedido já entregue?",
+          "alvo": "lei-organica-1-2026"
+        },
+        {
+          "texto": "Quem fez cada mudança?",
+          "alvo": "todas"
+        }
+      ]
+    },
+    {
+      "id": "lei-37-81",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-37-81"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "Na origem da {ato:lei-37-81} estão o {iniciativa:30352}, o {iniciativa:30469} e a {iniciativa:30801}. Veja a votação na generalidade: {voto:lei-37-81/generalidade}",
+        "No texto original, o requisito de residência para a naturalização diz: {citacao:lei-nacionalidade/artigo-6@lei-37-81#1/b}."
+      ],
+      "mostrar": [],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "residencia",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-25-94"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-25-94} mudou o {comparar:lei-nacionalidade/artigo-6@lei-25-94|requisito de residência}. Na redação nova, diz: {citacao:lei-nacionalidade/artigo-6@lei-25-94#1/b}.",
+        "A mesma lei mudou o {comparar:lei-nacionalidade/artigo-1@lei-25-94|artigo sobre a nacionalidade originária} e o {comparar:lei-nacionalidade/artigo-3@lei-25-94|artigo sobre o casamento}. Também revogou o {redacao:lei-nacionalidade/artigo-13@lei-25-94} e o {redacao:lei-nacionalidade/artigo-15@lei-25-94}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-6@lei-25-94",
+        "lei-nacionalidade/artigo-3@lei-25-94"
+      ],
+      "tabela": {
+        "diploma": "lei-nacionalidade",
+        "artigo": "artigo-6",
+        "numero": "1",
+        "alinea": "b"
+      },
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "decreto-lei-194-2003",
+      "tipo": "mudanca",
+      "atos": [
+        "decreto-lei-194-2003"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "O {ato:decreto-lei-194-2003} revogou o {redacao:lei-nacionalidade/artigo-20@decreto-lei-194-2003|artigo sobre os registos gratuitos}. Aprovou-o {governo:decreto-lei-194-2003}, em Conselho de Ministros, a {data:decreto-lei-194-2003.d_cm}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-20@decreto-lei-194-2003"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-1-2004",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-1-2004"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-1-2004} mudou o {comparar:lei-nacionalidade/artigo-30@lei-organica-1-2004|artigo sobre a mulher casada com estrangeiro} e o {comparar:lei-nacionalidade/artigo-31@lei-organica-1-2004|artigo sobre a aquisição voluntária de nacionalidade estrangeira}.",
+        "Na redação nova, o artigo sobre a mulher casada com estrangeiro diz: {citacao:lei-nacionalidade/artigo-30@lei-organica-1-2004#1}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-30@lei-organica-1-2004"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-2-2006",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-2-2006"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-2-2006} mudou o {comparar:lei-nacionalidade/artigo-1@lei-organica-2-2006|artigo sobre a nacionalidade originária}. Na redação nova, uma alínea trata os filhos de estrangeiros nascidos em Portugal: {citacao:lei-nacionalidade/artigo-1@lei-organica-2-2006#1/e}.",
+        "A lei também mudou o {comparar:lei-nacionalidade/artigo-3@lei-organica-2-2006|artigo sobre o casamento}. Na redação nova, o artigo trata a união de facto: {citacao:lei-nacionalidade/artigo-3@lei-organica-2-2006#3}. Mudou ainda o {comparar:lei-nacionalidade/artigo-6@lei-organica-2-2006|artigo sobre os requisitos da naturalização} e revogou o {redacao:lei-nacionalidade/artigo-36@lei-organica-2-2006} e o {redacao:lei-nacionalidade/artigo-39@lei-organica-2-2006}.",
+        "Na origem desta lei estão o {iniciativa:20721}, o {iniciativa:20771}, o {iniciativa:20780}, a {iniciativa:20962}, o {iniciativa:21045} e o {iniciativa:21048}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-1@lei-organica-2-2006",
+        "lei-nacionalidade/artigo-6@lei-organica-2-2006"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "xii-legislatura",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-1-2013",
+        "lei-organica-8-2015",
+        "lei-organica-9-2015"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-1-2013} mudou o {comparar:lei-nacionalidade/artigo-6@lei-organica-1-2013|artigo sobre os requisitos da naturalização}. A redação nova trata os descendentes de judeus sefarditas portugueses: {citacao:lei-nacionalidade/artigo-6@lei-organica-1-2013#7}.",
+        "A {ato:lei-organica-8-2015} mudou o {comparar:lei-nacionalidade/artigo-6@lei-organica-8-2015|mesmo artigo} e o {comparar:lei-nacionalidade/artigo-9@lei-organica-8-2015|artigo sobre os fundamentos para impedir a aquisição}. A alínea nova sobre os requisitos diz: {citacao:lei-nacionalidade/artigo-6@lei-organica-8-2015#1/e}.",
+        "A {ato:lei-organica-9-2015} mudou o {comparar:lei-nacionalidade/artigo-1@lei-organica-9-2015|artigo sobre a nacionalidade originária}. Na redação nova, uma alínea trata os netos de portugueses nascidos no estrangeiro: {citacao:lei-nacionalidade/artigo-1@lei-organica-9-2015#1/d}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-6@lei-organica-1-2013",
+        "lei-nacionalidade/artigo-1@lei-organica-9-2015"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-2-2018",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-2-2018"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-2-2018} mudou o {comparar:lei-nacionalidade/artigo-6@lei-organica-2-2018|requisito de residência para a naturalização} e o {comparar:lei-nacionalidade/artigo-1@lei-organica-2-2018|artigo sobre a nacionalidade originária}. Na redação nova, a alínea sobre os filhos de estrangeiros nascidos em Portugal diz: {citacao:lei-nacionalidade/artigo-1@lei-organica-2-2018#1/f}.",
+        "A lei acrescentou o {redacao:lei-nacionalidade/artigo-12-a@lei-organica-2-2018|artigo sobre a nulidade} e o {redacao:lei-nacionalidade/artigo-12-b@lei-organica-2-2018|artigo sobre a consolidação da nacionalidade}.",
+        "A {ato:lei-organica-2-2018|lei} vem de um texto de substituição de uma comissão parlamentar. A comissão juntou o {iniciativa:40868}, o {iniciativa:40955}, o {iniciativa:41074}, o {iniciativa:41458} e o {iniciativa:41473}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-6@lei-organica-2-2018",
+        "lei-nacionalidade/artigo-1@lei-organica-2-2018"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-2-2020",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-2-2020"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-2-2020} mudou o {comparar:lei-nacionalidade/artigo-1@lei-organica-2-2020|artigo sobre a nacionalidade originária} e o {comparar:lei-nacionalidade/artigo-6@lei-organica-2-2020|artigo sobre os requisitos da naturalização}. Na redação nova, a alínea sobre os filhos de estrangeiros nascidos em Portugal diz: {citacao:lei-nacionalidade/artigo-1@lei-organica-2-2020#1/f}.",
+        "A lei também mudou o {comparar:lei-nacionalidade/artigo-12-b@lei-organica-2-2020|artigo sobre a consolidação da nacionalidade}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-1@lei-organica-2-2020"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-1-2024",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-1-2024"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-1-2024} mudou o {comparar:lei-nacionalidade/artigo-6@lei-organica-1-2024|artigo sobre os requisitos da naturalização}. Na redação nova, os descendentes de judeus sefarditas portugueses têm também de cumprir esta condição: {citacao:lei-nacionalidade/artigo-6@lei-organica-1-2024#7/b}.",
+        "A lei mudou o {comparar:lei-nacionalidade/artigo-14@lei-organica-1-2024|artigo sobre os efeitos da filiação} e acrescentou o {redacao:lei-nacionalidade/artigo-12-c@lei-organica-1-2024|artigo sobre a recolha de dados biométricos}.",
+        "A {ato:lei-organica-1-2024|lei} vem de um texto de substituição de uma comissão parlamentar. A comissão juntou o {iniciativa:121390}, o {iniciativa:121559}, o {iniciativa:121563}, o {iniciativa:121564}, o {iniciativa:121569}, o {iniciativa:121570} e o {iniciativa:121571}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-6@lei-organica-1-2024",
+        "lei-nacionalidade/artigo-14@lei-organica-1-2024"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "lei-organica-1-2026",
+      "tipo": "mudanca",
+      "atos": [
+        "lei-organica-1-2026",
+        "declaracao-de-retificacao-17-2026-1"
+      ],
+      "subtitulo": null,
+      "paragrafos": [
+        "A {ato:lei-organica-1-2026} mudou o {comparar:lei-nacionalidade/artigo-6@lei-organica-1-2026|requisito de residência para a naturalização}. Na redação nova, diz: {citacao:lei-nacionalidade/artigo-6@lei-organica-1-2026#1/b}.",
+        "A lei mudou o {comparar:lei-nacionalidade/artigo-1@lei-organica-1-2026|artigo sobre a nacionalidade originária} e o {comparar:lei-nacionalidade/artigo-3@lei-organica-1-2026|artigo sobre o casamento e a união de facto}. Também revogou o {redacao:lei-nacionalidade/artigo-13@lei-organica-1-2026|artigo sobre a suspensão de procedimentos}.",
+        "{vfg:lei-organica-1-2026} O Presidente da República, {presidente:lei-organica-1-2026}, promulgou a lei a {data:lei-organica-1-2026.promulgacao}.",
+        "A {ato:declaracao-de-retificacao-17-2026-1} retificou o {comparar:lei-nacionalidade/artigo-6@declaracao-de-retificacao-17-2026-1|artigo sobre os requisitos da naturalização}.",
+        "Antes de aplicar o texto novo a um pedido já entregue, leia a {ato:lei-organica-1-2026|lei completa}."
+      ],
+      "mostrar": [
+        "lei-nacionalidade/artigo-6@lei-organica-1-2026",
+        "lei-nacionalidade/artigo-1@lei-organica-1-2026",
+        "lei-nacionalidade/artigo-6@declaracao-de-retificacao-17-2026-1"
+      ],
+      "tabela": null,
+      "fontes_iniciativas": []
+    },
+    {
+      "id": "hoje",
+      "tipo": "hoje",
+      "artigos": [
+        "lei-nacionalidade/artigo-1",
+        "lei-nacionalidade/artigo-3",
+        "lei-nacionalidade/artigo-6"
+      ],
+      "pendentes": [
+        "356472"
+      ],
+      "paragrafos": []
+    },
+    {
+      "id": "o-que-nao-diz",
+      "tipo": "limites",
+      "paragrafos": [
+        "Esta história não diz se uma pessoa pode pedir a nacionalidade. Para um caso concreto, fale com um advogado, um solicitador ou um serviço de apoio jurídico.",
+        "Não mostra estatísticas de pedidos nem de decisões. Não trata o Regulamento da Nacionalidade nem outros diplomas sobre a nacionalidade.",
+        "Não explica as razões de cada alteração. Os autores das iniciativas explicam as suas razões nos textos das iniciativas, no site da Assembleia da República.",
+        "Os dados abertos do Parlamento não incluem algumas sessões legislativas. Nesses casos, a secção do ato diz que não temos os dados da passagem."
+      ]
+    },
+    {
+      "id": "como-fizemos",
+      "tipo": "metodo",
+      "paragrafos": [
+        "O texto dos artigos vem do Diário da República. Os dados da passagem no Parlamento vêm dos dados abertos da Assembleia da República.",
+        "As designações, as datas, os nomes, os Governos e as votações não estão escritos nesta história. O site lê esses dados em cada atualização.",
+        "Uma verificação automática confirma que cada ligação existe e que cada frase sobre uma alteração tem uma ligação ao texto da lei. Se um artigo mudar depois da preparação, a secção mostra uma nota."
+      ],
+      "correcoes": []
+    }
+  ],
+  "hashes": {
+    "lei-nacionalidade/artigo-12-a@lei-organica-2-2018": "sha256:b423a12d9d7c6d334830ef3982120e14331e3393883c4a0582f5c9ba7910fbcd",
+    "lei-nacionalidade/artigo-12-b@lei-organica-2-2018": "sha256:c5701936b690b6ae0381ceecbccb170ce7acaf17e14c476c539a71beef24ded7",
+    "lei-nacionalidade/artigo-12-b@lei-organica-2-2020": "sha256:61640125c752b3c0f78d0895b49eeabdd03d3095f140843efc7229991ca46520",
+    "lei-nacionalidade/artigo-12-c@lei-organica-1-2024": "sha256:f8aebf4724c80322fc91db317195aca7e3580ff69d61a864cdd5380f2220b953",
+    "lei-nacionalidade/artigo-13@lei-25-94": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-13@lei-organica-1-2026": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-14@lei-organica-1-2024": "sha256:1c397fb3409aecbc601412ff220403e75fba5a07f0f8663797ffed371a4bac1a",
+    "lei-nacionalidade/artigo-15@lei-25-94": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-1@lei-25-94": "sha256:ee17c7767873b1a96b7821fd1f40856bc87732e571c6f4dc3fbe43dea0b04d08",
+    "lei-nacionalidade/artigo-1@lei-organica-1-2026": "sha256:0d0a63522769f01caee303b715927b7b49b9a1100eb1cc8d348bb63af32eb404",
+    "lei-nacionalidade/artigo-1@lei-organica-2-2006": "sha256:b59aafb16a274d6e399448038d9ca4c89a8ac7645f5266d01978127acfb3d020",
+    "lei-nacionalidade/artigo-1@lei-organica-2-2018": "sha256:2d9218c29ad1828119118ef77fcda9d0d9321a6f8268e14cd42ddb67b8a0755c",
+    "lei-nacionalidade/artigo-1@lei-organica-2-2020": "sha256:90eb084e72ae245beaef168baa5ab6bae44d903a14c8f4292ea0ec8d8ab136f6",
+    "lei-nacionalidade/artigo-1@lei-organica-9-2015": "sha256:4979741f64d4316be4e33177564b4bdd3d0d010f6adc6460ceed5af3acc64559",
+    "lei-nacionalidade/artigo-20@decreto-lei-194-2003": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-30@lei-organica-1-2004": "sha256:dd3a4576c1a3551a6de5d6e8501921842d2264cdc25b40e0d54178fab392baf5",
+    "lei-nacionalidade/artigo-31@lei-organica-1-2004": "sha256:a18e434f0b5a0266b80d4ae8f94fe601bad06309b94f25ea7241434bcb9d9290",
+    "lei-nacionalidade/artigo-36@lei-organica-2-2006": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-39@lei-organica-2-2006": "sha256:5f8c3cec2921bdb86c726b6fb801947213b01efe9316f083ca8ffcc0f9ca9cfd",
+    "lei-nacionalidade/artigo-3@lei-25-94": "sha256:822ba2e53f71815c0df44c1b11b62a83364d75ba87945f0b6941b665b1d3ef99",
+    "lei-nacionalidade/artigo-3@lei-organica-1-2026": "sha256:f00adcf36303e118bea3b65a24dbfa3f49e8e6f0c3e0ced8a033cb589135cb05",
+    "lei-nacionalidade/artigo-3@lei-organica-2-2006": "sha256:e5d7fbe52539ec8b8c2557c571c4cd09edbb4f20903d5b7ea5aae13f953b935a",
+    "lei-nacionalidade/artigo-6@declaracao-de-retificacao-17-2026-1": "sha256:ed7b3a5775f1cd9caf21bc3c40c65652726582dfa9fdd6cac878c9848046828f",
+    "lei-nacionalidade/artigo-6@lei-25-94": "sha256:c4ec016f35c50e4b945101a88edf9035b98a53ab79e187ff86fb6d0f2d9f4079",
+    "lei-nacionalidade/artigo-6@lei-37-81": "sha256:c50d373ba3cfbbbfbf5dbedaf6e282c533bc1fbd3a3400dc5d9a431eb40e2d62",
+    "lei-nacionalidade/artigo-6@lei-organica-1-2013": "sha256:4371e3b90e665e3014b9973af2ee5fc6665e6cffac03c180e1a94247c69ac9b6",
+    "lei-nacionalidade/artigo-6@lei-organica-1-2024": "sha256:4d0d68122570b7343956569ad0878ea5ca0f77ce41ab1d975234539d60139050",
+    "lei-nacionalidade/artigo-6@lei-organica-1-2026": "sha256:f9c465c4795d75313480d606766aa32812f72e8bebee673057b4acb7a3995e38",
+    "lei-nacionalidade/artigo-6@lei-organica-2-2006": "sha256:497a90b4812a9b51dd27f9fddfd38dd6ce63e849aaaa53432b3fe9c769286777",
+    "lei-nacionalidade/artigo-6@lei-organica-2-2018": "sha256:106db309bd994edc5b2ba0929215567e5427c5dae2740b504ffdeff9ad5a55a4",
+    "lei-nacionalidade/artigo-6@lei-organica-2-2020": "sha256:1ab9dedddce64bdc47e88c04ed2a4389affb83cfaacf9a8634e221f30ed379ad",
+    "lei-nacionalidade/artigo-6@lei-organica-8-2015": "sha256:463d231fa307ef2bd5d867944141fe41ec678322117d6195728753b342ba86dc",
+    "lei-nacionalidade/artigo-9@lei-organica-8-2015": "sha256:f1e7e7c24420a9442539a46e2d6f110123ea688a9fa9f509be9fc182df790961"
+  }
+}

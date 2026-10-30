@@ -1,0 +1,138 @@
+{
+ "id": "cds-pp",
+ "nomes": [
+  {
+   "sigla": "CDS",
+   "nome": "Centro Democrático Social",
+   "legislaturas": [
+    "Constituinte",
+    "IA",
+    "IB",
+    "II",
+    "III",
+    "IV",
+    "V"
+   ]
+  },
+  {
+   "sigla": "CDS-PP",
+   "nome": "Centro Democrático Social - Partido Popular",
+   "legislaturas": [
+    "VI",
+    "XIII",
+    "XIV",
+    "XVI",
+    "XVII"
+   ]
+  },
+  {
+   "sigla": "CDS-PP",
+   "nome": "Partido Popular",
+   "legislaturas": [
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII"
+   ]
+  }
+ ],
+ "iniciativas": [
+  {
+   "iniciativa": "900303",
+   "designacao": "Projeto de Lei n.º 913/XIII",
+   "sigla": "CDS-PP",
+   "ato": "lei-organica-901-2018",
+   "como": "juntada",
+   "n_iniciativas": 7,
+   "parte": null
+  }
+ ],
+ "votos": {
+  "lei-teste": [
+   {
+    "ato": "lei-constitucional-901-1997",
+    "oe": false,
+    "sigla": "CDS-PP",
+    "legislatura": "VII",
+    "itens": [
+     {
+      "tipo": "iniciativa",
+      "id": "900401",
+      "designacao": "Projeto de Revisão Constitucional n.º 901/VII",
+      "data": "1997-06-05",
+      "sentido": "contra"
+     },
+     {
+      "tipo": "iniciativa",
+      "id": "900402",
+      "designacao": "Projeto de Revisão Constitucional n.º 902/VII",
+      "data": "1997-06-05",
+      "sentido": "contra"
+     }
+    ]
+   },
+   {
+    "ato": "lei-organica-901-2018",
+    "oe": false,
+    "sigla": "CDS-PP",
+    "legislatura": "XIII",
+    "itens": [
+     {
+      "tipo": "texto_comissao",
+      "id": 0,
+      "designacao": "Texto da comissão",
+      "data": "2018-02-02",
+      "sentido": "favor"
+     }
+    ]
+   },
+   {
+    "ato": "lei-902-2019",
+    "oe": false,
+    "sigla": "CDS-PP",
+    "legislatura": "XIII",
+    "itens": [
+     {
+      "tipo": "texto_comissao",
+      "id": 0,
+      "designacao": "Texto da comissão",
+      "data": "2018-12-21",
+      "sentido": "contra"
+     }
+    ]
+   },
+   {
+    "ato": "lei-901-2020",
+    "oe": false,
+    "sigla": "CDS-PP",
+    "legislatura": "XIV",
+    "itens": [
+     {
+      "tipo": "iniciativa",
+      "id": "900101",
+      "designacao": "Proposta de Lei n.º 901/XIV",
+      "data": "2020-03-05",
+      "sentido": "contra"
+     }
+    ]
+   },
+   {
+    "ato": "lei-901-2022",
+    "oe": true,
+    "sigla": "CDS-PP",
+    "legislatura": "XIV",
+    "itens": [
+     {
+      "tipo": "iniciativa",
+      "id": "900501",
+      "designacao": "Proposta de Lei n.º 903/XIV",
+      "data": "2021-10-27",
+      "sentido": "contra"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,263 @@
+{
+ "rotulo": "Artigo 1.º",
+ "epigrafe": "Objeto",
+ "estado": "vigente",
+ "versoes": [
+  {
+   "ato": "decreto-lei-90001",
+   "tipo": "original",
+   "artigo_do_ato": null,
+   "publicacao": "1970-03-02",
+   "vigor": "1970-03-07",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de cinco anos."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "decreto-lei-90002",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "1974-02-01",
+   "vigor": "1974-02-06",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de "
+     ],
+     [
+      1,
+      "seis"
+     ],
+     [
+      0,
+      " anos."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "decreto-lei-901-1977",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "1977-06-01",
+   "vigor": "1977-06-06",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste "
+     ],
+     [
+      2,
+      "e a prova"
+     ],
+     [
+      0,
+      "."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de "
+     ],
+     [
+      1,
+      "seis"
+     ],
+     [
+      0,
+      " anos."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "lei-901-2020",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2020-10-15",
+   "vigor": "2020-10-16",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste "
+     ],
+     [
+      2,
+      "e a prova"
+     ],
+     [
+      0,
+      "."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de "
+     ],
+     [
+      3,
+      "dez"
+     ],
+     [
+      0,
+      " anos"
+     ],
+     [
+      3,
+      ", contados da entrada"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "declaracao-de-retificacao-901-2020",
+   "tipo": "retificado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2020-11-10",
+   "vigor": "2020-10-16",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste "
+     ],
+     [
+      2,
+      "e a prova"
+     ],
+     [
+      0,
+      "."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de "
+     ],
+     [
+      3,
+      "dez"
+     ],
+     [
+      0,
+      " anos"
+     ],
+     [
+      3,
+      ", contados da "
+     ],
+     [
+      4,
+      "data de"
+     ],
+     [
+      3,
+      " entrada"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  },
+  {
+   "ato": "lei-901-2022",
+   "tipo": "alterado",
+   "artigo_do_ato": "Artigo 2.º",
+   "publicacao": "2022-01-10",
+   "vigor": "2022-01-01",
+   "vigor_conhecido": true,
+   "linhas": [
+    [
+     [
+      0,
+      "1 — A presente lei regula o teste "
+     ],
+     [
+      2,
+      "e a prova"
+     ],
+     [
+      0,
+      "."
+     ]
+    ],
+    [
+     [
+      0,
+      "2 — O prazo é de "
+     ],
+     [
+      5,
+      "oito"
+     ],
+     [
+      0,
+      " anos"
+     ],
+     [
+      3,
+      ", contados da "
+     ],
+     [
+      4,
+      "data de"
+     ],
+     [
+      3,
+      " entrada"
+     ],
+     [
+      0,
+      "."
+     ]
+    ]
+   ],
+   "vigor_fonte": "Diário da República (legislação consolidada)"
+  }
+ ],
+ "notas": [],
+ "id": "artigo-1",
+ "diploma": "lei-teste",
+ "caminho": [
+  "Capítulo I"
+ ]
+}

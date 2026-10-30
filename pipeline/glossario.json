@@ -1,0 +1,651 @@
+{
+  "descricao": "Glossário. Cada definição só diz o que o texto da lei citado em «apoio» diz. Regras de publicação: pipeline/glossario.py.",
+  "preparado_em": "2026-10-30",
+  "termos": {
+    "apreciacao-parlamentar": {
+      "id": "apreciacao-parlamentar",
+      "termo": "apreciação parlamentar",
+      "formas": [
+        "apreciação parlamentar",
+        "Apreciação Parlamentar"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "A Assembleia da República pode apreciar um decreto-lei para fazer cessar a sua vigência ou para o alterar.",
+        "Dez deputados podem pedir a apreciação nos trinta dias seguintes à publicação, descontados os períodos de suspensão do funcionamento da Assembleia.",
+        "Não se aplica aos decretos-leis da competência legislativa exclusiva do Governo."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-169",
+        "texto": "Constituição, artigo 169.º"
+      },
+      "apoio": [
+        "Os decretos-leis, salvo os aprovados no exercício da competência legislativa exclusiva do Governo, podem ser submetidos a apreciação da Assembleia da República, para efeitos de cessação de vigência ou de alteração, a requerimento de dez Deputados, nos trinta dias subsequentes à publicação, descontados os períodos de suspensão do funcionamento da Assembleia da República"
+      ],
+      "hash_fonte": "sha256:bd1d387b5d7ffe0085d941d0fa5f8f45339cc8abe455866da3373094057be0f2",
+      "verificado_em": "2026-10-30"
+    },
+    "assembleia-da-republica": {
+      "id": "assembleia-da-republica",
+      "termo": "Assembleia da República",
+      "formas": [
+        "Assembleia da República"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "A assembleia representativa de todos os cidadãos portugueses."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-147",
+        "texto": "Constituição, artigo 147.º"
+      },
+      "apoio": [
+        "A Assembleia da República é a assembleia representativa de todos os cidadãos portugueses"
+      ],
+      "hash_fonte": "sha256:3ae481d8029217ab741d9ee4f2783f510dba70dfd4b90ab75bdbbe80c412aa92",
+      "verificado_em": "2026-10-30"
+    },
+    "conselho-de-ministros": {
+      "id": "conselho-de-ministros",
+      "termo": "Conselho de Ministros",
+      "formas": [
+        "Conselho de Ministros"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Junta o Primeiro-Ministro, os Vice-Primeiros-Ministros, se os houver, e os ministros."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-184",
+        "texto": "Constituição, artigo 184.º"
+      },
+      "apoio": [
+        "O Conselho de Ministros é constituído pelo Primeiro-Ministro, pelos Vice-Primeiros-Ministros, se os houver, e pelos Ministros"
+      ],
+      "hash_fonte": "sha256:ef585027f5936dc4a4a83a6ac520655dadfaf577bba6fa081405b8449ce127b6",
+      "verificado_em": "2026-10-30"
+    },
+    "declaracao-de-inconstitucionalidade": {
+      "id": "declaracao-de-inconstitucionalidade",
+      "termo": "declaração de inconstitucionalidade",
+      "formas": [
+        "declaração de inconstitucionalidade",
+        "declarou inconstitucional",
+        "força obrigatória geral"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Uma decisão do Tribunal Constitucional, com força obrigatória geral.",
+        "Em regra, produz efeitos desde a entrada em vigor da norma declarada inconstitucional."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-282",
+        "texto": "Constituição, artigo 282.º"
+      },
+      "apoio": [
+        "A declaração de inconstitucionalidade ou de ilegalidade com força obrigatória geral produz efeitos desde a entrada em vigor da norma declarada inconstitucional ou ilegal"
+      ],
+      "hash_fonte": "sha256:adaf9778e01ad5a3523e91c2de6880f79cf058d6eb18fbeb93db11eae5820390",
+      "verificado_em": "2026-10-30"
+    },
+    "decreto-lei": {
+      "id": "decreto-lei",
+      "termo": "decreto-lei",
+      "formas": [
+        "decreto-lei",
+        "decretos-leis",
+        "Decreto-Lei"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "Um diploma que o Governo faz, no exercício de funções legislativas.",
+        "O Governo faz decretos-leis nas matérias que não estão reservadas à Assembleia da República. Nas matérias de reserva relativa, precisa da autorização da Assembleia."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-198",
+        "texto": "Constituição, artigo 198.º"
+      },
+      "apoio": [
+        "Compete ao Governo, no exercício de funções legislativas",
+        "Fazer decretos-leis em matérias não reservadas à Assembleia da República",
+        "Fazer decretos-leis em matérias de reserva relativa da Assembleia da República, mediante autorização desta"
+      ],
+      "hash_fonte": "sha256:c2d6fbf648c026e16e615d6fda1ff71eb7798b060bdae4abcd2093bc8cfc9c1b",
+      "verificado_em": "2026-10-30"
+    },
+    "entrada-em-vigor": {
+      "id": "entrada-em-vigor",
+      "termo": "entrada em vigor",
+      "formas": [
+        "entrada em vigor",
+        "entrou em vigor",
+        "entra em vigor",
+        "em vigor"
+      ],
+      "grupo": "datas",
+      "definicao": [
+        "O início da vigência de um diploma. É o dia fixado no diploma, e nunca o próprio dia da publicação.",
+        "Se o diploma não fixar o dia, entra em vigor no 5.º dia após a publicação."
+      ],
+      "fonte": {
+        "rota": "#/d/lei-formulario/artigo-2",
+        "texto": "Lei n.º 74/98, artigo 2.º"
+      },
+      "apoio": [
+        "entram em vigor no dia neles fixado, não podendo, em caso algum, o início da vigência verificar-se no próprio dia da publicação",
+        "Na falta de fixação do dia, os diplomas referidos no número anterior entram em vigor, em todo o território nacional e no estrangeiro, no 5.º dia após a publicação"
+      ],
+      "hash_fonte": "sha256:3d163169f68a2fc759877e69dc05076f7849e3f460c9a8f320e38ace29c6599c",
+      "verificado_em": "2026-10-30"
+    },
+    "fiscalizacao-preventiva": {
+      "id": "fiscalizacao-preventiva",
+      "termo": "fiscalização preventiva",
+      "formas": [
+        "fiscalização preventiva",
+        "apreciação preventiva"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "O Presidente da República pode pedir ao Tribunal Constitucional que aprecie a constitucionalidade de normas de um decreto.",
+        "Faz o pedido sobre um decreto enviado para promulgação como lei ou como decreto-lei."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-278",
+        "texto": "Constituição, artigo 278.º"
+      },
+      "apoio": [
+        "O Presidente da República pode requerer ao Tribunal Constitucional a apreciação preventiva da constitucionalidade de qualquer norma constante de tratado internacional que lhe tenha sido submetido para ratificação, de decreto que lhe tenha sido enviado para promulgação como lei ou como decreto-lei"
+      ],
+      "hash_fonte": "sha256:0117d481816ac73ace003002fb66dc2b7d6e9a1628cda8524345023bc6a3d2b3",
+      "verificado_em": "2026-10-30"
+    },
+    "governo": {
+      "id": "governo",
+      "termo": "Governo",
+      "formas": [
+        "Governo"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "O órgão de condução da política geral do país. É também o órgão superior da administração pública."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-182",
+        "texto": "Constituição, artigo 182.º"
+      },
+      "apoio": [
+        "O Governo é o órgão de condução da política geral do país e o órgão superior da administração pública"
+      ],
+      "hash_fonte": "sha256:cf99634f96de6962a2a39ed8f4907bce92ad8d92b83a7bb09ed74541bfab41fa",
+      "verificado_em": "2026-10-30"
+    },
+    "governo-em-gestao": {
+      "id": "governo-em-gestao",
+      "termo": "Governo em gestão",
+      "formas": [
+        "Governo em gestão",
+        "gestão corrente",
+        "Governo demitido"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Um Governo demitido, ou que ainda não viu o seu programa apreciado pela Assembleia da República.",
+        "Esse Governo limita-se aos atos estritamente necessários para assegurar a gestão dos negócios públicos."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-186",
+        "texto": "Constituição, artigo 186.º"
+      },
+      "apoio": [
+        "Antes da apreciação do seu programa pela Assembleia da República, ou após a sua demissão, o Governo limitar-se-á à prática dos actos estritamente necessários para assegurar a gestão dos negócios públicos"
+      ],
+      "hash_fonte": "sha256:79969b069a24ede2439a6f24afd2c2fdde775457e9ff9482659a20763286b3c1",
+      "verificado_em": "2026-10-30"
+    },
+    "grupo-parlamentar": {
+      "id": "grupo-parlamentar",
+      "termo": "grupo parlamentar",
+      "formas": [
+        "grupo parlamentar",
+        "grupos parlamentares"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "Os deputados eleitos por um partido ou por uma coligação de partidos podem formar um grupo parlamentar."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-180",
+        "texto": "Constituição, artigo 180.º"
+      },
+      "apoio": [
+        "Os Deputados eleitos por cada partido ou coligação de partidos podem constituir-se em grupo parlamentar"
+      ],
+      "hash_fonte": "sha256:e9cb5cb03177e5153eb16cd787eb1532519b4490bbe46e53cbf9e959b9218e14",
+      "verificado_em": "2026-10-30"
+    },
+    "legislatura": {
+      "id": "legislatura",
+      "termo": "legislatura",
+      "formas": [
+        "legislatura",
+        "legislaturas"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "O período de funções de uma Assembleia da República eleita. Tem a duração de quatro sessões legislativas.",
+        "Depois de uma dissolução, a Assembleia eleita inicia nova legislatura."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-171",
+        "texto": "Constituição, artigo 171.º"
+      },
+      "apoio": [
+        "A legislatura tem a duração de quatro sessões legislativas",
+        "No caso de dissolução, a Assembleia então eleita inicia nova legislatura"
+      ],
+      "hash_fonte": "sha256:3d9fdfc76ae58a227cc5ea0609dc3a75d603e6123b5fdee76c740e7041681ebc",
+      "verificado_em": "2026-10-30"
+    },
+    "lei": {
+      "id": "lei",
+      "termo": "lei",
+      "formas": [
+        "lei",
+        "leis"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "Um diploma da Assembleia da República.",
+        "A Assembleia pode fazer leis sobre todas as matérias, salvo as que a Constituição reserva ao Governo."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-161",
+        "texto": "Constituição, artigo 161.º"
+      },
+      "apoio": [
+        "Fazer leis sobre todas as matérias, salvo as reservadas pela Constituição ao Governo"
+      ],
+      "hash_fonte": "sha256:1b547bdfe00eae98999521ca7344926922e14cdcf6e2fa1d2598fc5c6f3dd2e2",
+      "verificado_em": "2026-10-30"
+    },
+    "lei-de-autorizacao-legislativa": {
+      "id": "lei-de-autorizacao-legislativa",
+      "termo": "lei de autorização legislativa",
+      "formas": [
+        "lei de autorização legislativa",
+        "autorização legislativa"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "Uma lei da Assembleia da República que autoriza o Governo a legislar sobre matérias da reserva relativa da Assembleia.",
+        "A lei define o objeto, o sentido, a extensão e a duração da autorização."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-165",
+        "texto": "Constituição, artigo 165.º"
+      },
+      "apoio": [
+        "É da exclusiva competência da Assembleia da República legislar sobre as seguintes matérias, salvo autorização ao Governo",
+        "As leis de autorização legislativa devem definir o objecto, o sentido, a extensão e a duração da autorização"
+      ],
+      "hash_fonte": "sha256:3ecaf0410fa77a0cbaf4a79012f6d49fa6810a16628b8592f7135063376544ab",
+      "verificado_em": "2026-10-30"
+    },
+    "lei-organica": {
+      "id": "lei-organica",
+      "termo": "lei orgânica",
+      "formas": [
+        "lei orgânica",
+        "leis orgânicas",
+        "Lei Orgânica"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "Uma lei que precisa de aprovação, na votação final global, por maioria absoluta dos deputados em efetividade de funções."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-168",
+        "texto": "Constituição, artigo 168.º"
+      },
+      "apoio": [
+        "As leis orgânicas carecem de aprovação, na votação final global, por maioria absoluta dos Deputados em efectividade de funções"
+      ],
+      "hash_fonte": "sha256:d1504c5b941d28e5bcb2a2c0ec5e473c84d6655b0ae23de3bcba50c700d9941b",
+      "verificado_em": "2026-10-30"
+    },
+    "orcamento-do-estado": {
+      "id": "orcamento-do-estado",
+      "termo": "Orçamento do Estado",
+      "formas": [
+        "Orçamento do Estado"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "A Assembleia da República aprova o Orçamento do Estado, sob proposta do Governo."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-161",
+        "texto": "Constituição, artigo 161.º"
+      },
+      "apoio": [
+        "Aprovar as leis das grandes opções dos planos nacionais e o Orçamento do Estado, sob proposta do Governo"
+      ],
+      "hash_fonte": "sha256:1b547bdfe00eae98999521ca7344926922e14cdcf6e2fa1d2598fc5c6f3dd2e2",
+      "verificado_em": "2026-10-30"
+    },
+    "presidente-da-republica": {
+      "id": "presidente-da-republica",
+      "termo": "Presidente da República",
+      "formas": [
+        "Presidente da República"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Representa a República Portuguesa e garante a independência nacional, a unidade do Estado e o regular funcionamento das instituições democráticas."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-120",
+        "texto": "Constituição, artigo 120.º"
+      },
+      "apoio": [
+        "O Presidente da República representa a República Portuguesa, garante a independência nacional, a unidade do Estado e o regular funcionamento das instituições democráticas"
+      ],
+      "hash_fonte": "sha256:7ca8424e0a33a9336d2aba331735bfe9cfab529bb9e4bbc6473701723b360ecb",
+      "verificado_em": "2026-10-30"
+    },
+    "promulgacao": {
+      "id": "promulgacao",
+      "termo": "promulgação",
+      "formas": [
+        "promulgação",
+        "promulgou",
+        "promulgada",
+        "promulgado",
+        "promulgar"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Um ato próprio do Presidente da República.",
+        "O Presidente promulga e manda publicar as leis, os decretos-leis e os decretos regulamentares."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-134",
+        "texto": "Constituição, artigo 134.º"
+      },
+      "apoio": [
+        "Compete ao Presidente da República, na prática de actos próprios",
+        "Promulgar e mandar publicar as leis, os decretos-leis e os decretos regulamentares"
+      ],
+      "hash_fonte": "sha256:9d081d7059008c1efafcd3e1f0ad8f3dd112bda81c2f9b1cd5a54b3f6ce03220",
+      "verificado_em": "2026-10-30"
+    },
+    "publicacao": {
+      "id": "publicacao",
+      "termo": "publicação",
+      "formas": [
+        "publicação",
+        "publicado",
+        "publicada"
+      ],
+      "grupo": "datas",
+      "definicao": [
+        "A publicação de um diploma no Diário da República. A eficácia jurídica do diploma depende da publicação.",
+        "A data do diploma é a data da publicação."
+      ],
+      "fonte": {
+        "rota": "#/d/lei-formulario/artigo-1",
+        "texto": "Lei n.º 74/98, artigo 1.º"
+      },
+      "apoio": [
+        "A eficácia jurídica dos actos a que se refere a presente lei depende da sua publicação no Diário da República",
+        "A data do diploma é a da sua publicação"
+      ],
+      "hash_fonte": "sha256:2c14199bc5e4fb7e94dea54005574bbaaafd3ade7bf0fc4f068f26fdc3fb8caf",
+      "verificado_em": "2026-10-30"
+    },
+    "referenda": {
+      "id": "referenda",
+      "termo": "referenda",
+      "formas": [
+        "referenda",
+        "referendou",
+        "referendado"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Um ato do Governo sobre certos atos do Presidente da República.",
+        "Sem a referenda, esses atos não existem juridicamente."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-140",
+        "texto": "Constituição, artigo 140.º"
+      },
+      "apoio": [
+        "Carecem de referenda do Governo os actos do Presidente da República",
+        "A falta de referenda determina a inexistência jurídica do acto"
+      ],
+      "hash_fonte": "sha256:f9619114b3b757a5b5701d66454d58a4de06a56dac637fd0f5555e8c1525b94f",
+      "verificado_em": "2026-10-30"
+    },
+    "republicacao": {
+      "id": "republicacao",
+      "termo": "republicação",
+      "formas": [
+        "republicação",
+        "republicações",
+        "republicado",
+        "republicada",
+        "republicados",
+        "republicadas"
+      ],
+      "grupo": "texto",
+      "definicao": [
+        "O texto completo de um diploma, publicado de novo em anexo à lei que o alterou."
+      ],
+      "fonte": {
+        "rota": "#/d/lei-formulario/artigo-6",
+        "texto": "Lei n.º 74/98, artigo 6.º"
+      },
+      "apoio": [
+        "deve proceder-se à republicação integral dos correspondentes diplomas legislativos, em anexo às referidas alterações"
+      ],
+      "hash_fonte": "sha256:7c8c9827cfc4faf61db09d8fd0cb5bde4deaed8884d254ba8ee90c1b736dc99f",
+      "verificado_em": "2026-10-30"
+    },
+    "retificacao": {
+      "id": "retificacao",
+      "termo": "retificação",
+      "formas": [
+        "retificação",
+        "retificações",
+        "Declaração de Retificação",
+        "retificado",
+        "retificada"
+      ],
+      "grupo": "texto",
+      "definicao": [
+        "A correção de lapsos gramaticais, ortográficos, de cálculo ou de natureza análoga num diploma publicado.",
+        "O órgão que aprovou o texto original publica uma declaração de retificação.",
+        "A retificação produz efeitos desde a entrada em vigor do texto retificado."
+      ],
+      "fonte": {
+        "rota": "#/d/lei-formulario/artigo-5",
+        "texto": "Lei n.º 74/98, artigo 5.º"
+      },
+      "apoio": [
+        "As rectificações são admissíveis exclusivamente para correcção de lapsos gramaticais, ortográficos, de cálculo ou de natureza análoga",
+        "são feitas mediante declaração do órgão que aprovou o texto original, publicada na mesma série",
+        "As declarações de rectificação reportam os efeitos à data da entrada em vigor do texto rectificado"
+      ],
+      "hash_fonte": "sha256:2f3103bfbcf3ff9f32c43028657ece91dac71a2b5b85458897f60c41e1dfd93e",
+      "verificado_em": "2026-10-30"
+    },
+    "revisao-constitucional": {
+      "id": "revisao-constitucional",
+      "termo": "revisão constitucional",
+      "formas": [
+        "revisão constitucional",
+        "revisões constitucionais",
+        "lei de revisão",
+        "Lei Constitucional"
+      ],
+      "grupo": "tipos",
+      "definicao": [
+        "Uma alteração da Constituição. A Assembleia da República aprova as alterações por maioria de dois terços dos deputados em efetividade de funções.",
+        "O Presidente da República não pode recusar a promulgação da lei de revisão."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-286",
+        "texto": "Constituição, artigo 286.º"
+      },
+      "apoio": [
+        "As alterações da Constituição são aprovadas por maioria de dois terços dos Deputados em efectividade de funções",
+        "O Presidente da República não pode recusar a promulgação da lei de revisão"
+      ],
+      "hash_fonte": "sha256:dcccb1cbf1ec943497fe524bc894797a3f2641861703274dcce211f1ce862579",
+      "verificado_em": "2026-10-30"
+    },
+    "revogado": {
+      "id": "revogado",
+      "termo": "revogado",
+      "formas": [
+        "revogado",
+        "revogada",
+        "revogados",
+        "revogadas",
+        "revogou",
+        "revogação"
+      ],
+      "grupo": "texto",
+      "definicao": [
+        "Uma lei revogada deixa de estar em vigor porque outra lei a revogou.",
+        "A revogação pode resultar de declaração expressa ou da incompatibilidade entre as disposições novas e as regras anteriores."
+      ],
+      "fonte": {
+        "rota": "#/d/codigo-civil/artigo-7",
+        "texto": "Código Civil, artigo 7.º"
+      },
+      "apoio": [
+        "a lei só deixa de vigorar se for revogada por outra lei",
+        "A revogação pode resultar de declaração expressa, da incompatibilidade entre as novas disposições e as regras precedentes"
+      ],
+      "hash_fonte": "sha256:e933a0022142c6ea379eda7d2b7a9b6059e0a09974549e353e080852aa45c906",
+      "verificado_em": "2026-10-30"
+    },
+    "texto-de-substituicao": {
+      "id": "texto-de-substituicao",
+      "termo": "texto de substituição",
+      "formas": [
+        "texto de substituição",
+        "textos de substituição"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "Um texto que uma comissão parlamentar apresenta para substituir projetos ou propostas de lei.",
+        "Os projetos e as propostas mantêm-se, quando não são retirados."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-167",
+        "texto": "Constituição, artigo 167.º"
+      },
+      "apoio": [
+        "As comissões parlamentares podem apresentar textos de substituição, sem prejuízo dos projectos e das propostas de lei e de referendo a que se referem, quando não retirados"
+      ],
+      "hash_fonte": "sha256:42f06c9c1ad36e8c5626b247e965e942e6d62ce91d75456d3a1b28a6393d82f3",
+      "verificado_em": "2026-10-30"
+    },
+    "tribunal-constitucional": {
+      "id": "tribunal-constitucional",
+      "termo": "Tribunal Constitucional",
+      "formas": [
+        "Tribunal Constitucional"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "O tribunal que administra a justiça em matérias de natureza jurídico-constitucional."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-221",
+        "texto": "Constituição, artigo 221.º"
+      },
+      "apoio": [
+        "O Tribunal Constitucional é o tribunal ao qual compete especificamente administrar a justiça em matérias de natureza jurídico-constitucional"
+      ],
+      "hash_fonte": "sha256:03b728c7d1768698fc141ff844c82f6f7c9c0768e0c14a4798190d22a222e858",
+      "verificado_em": "2026-10-30"
+    },
+    "veto": {
+      "id": "veto",
+      "termo": "veto",
+      "formas": [
+        "veto",
+        "vetou",
+        "vetado",
+        "vetada"
+      ],
+      "grupo": "quem",
+      "definicao": [
+        "Em vez de promulgar um decreto, o Presidente da República exerce o direito de veto.",
+        "Para um decreto da Assembleia da República, pede uma nova apreciação numa mensagem fundamentada.",
+        "Para um decreto do Governo, comunica por escrito ao Governo o sentido do veto."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-136",
+        "texto": "Constituição, artigo 136.º"
+      },
+      "apoio": [
+        "qualquer decreto da Assembleia da República para ser promulgado como lei",
+        "exercer o direito de veto, solicitando nova apreciação do diploma em mensagem fundamentada",
+        "exercer o direito de veto, comunicando por escrito ao Governo o sentido do veto"
+      ],
+      "hash_fonte": "sha256:accaa4c4433b1ce04827b1f239ca37f48e56a74dc8980ffaad08e33e7db3d458",
+      "verificado_em": "2026-10-30"
+    },
+    "votacao-final-global": {
+      "id": "votacao-final-global",
+      "termo": "votação final global",
+      "formas": [
+        "votação final global"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "A votação final de um projeto ou de uma proposta de lei na Assembleia da República.",
+        "Antes dela, há a votação na generalidade e a votação na especialidade."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-168",
+        "texto": "Constituição, artigo 168.º"
+      },
+      "apoio": [
+        "A votação compreende uma votação na generalidade, uma votação na especialidade e uma votação final global",
+        "sem prejuízo do poder de avocação pela Assembleia e do voto final desta para aprovação global"
+      ],
+      "hash_fonte": "sha256:d1504c5b941d28e5bcb2a2c0ec5e473c84d6655b0ae23de3bcba50c700d9941b",
+      "verificado_em": "2026-10-30"
+    },
+    "votacao-na-generalidade": {
+      "id": "votacao-na-generalidade",
+      "termo": "votação na generalidade",
+      "formas": [
+        "votação na generalidade",
+        "na generalidade",
+        "generalidade"
+      ],
+      "grupo": "parlamento",
+      "definicao": [
+        "Uma das votações de um projeto ou de uma proposta de lei na Assembleia da República.",
+        "As outras são a votação na especialidade e a votação final global."
+      ],
+      "fonte": {
+        "rota": "#/d/constituicao/artigo-168",
+        "texto": "Constituição, artigo 168.º"
+      },
+      "apoio": [
+        "A votação compreende uma votação na generalidade, uma votação na especialidade e uma votação final global"
+      ],
+      "hash_fonte": "sha256:d1504c5b941d28e5bcb2a2c0ec5e473c84d6655b0ae23de3bcba50c700d9941b",
+      "verificado_em": "2026-10-30"
+    }
+  }
+}

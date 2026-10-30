@@ -1,0 +1,619 @@
+{
+ "descricao": "Governos Constitucionais desde 1976. inicio = data de posse do Governo; fim = posse do Governo seguinte (intervalos [inicio, fim)). Fontes: o decreto de nomeação do Primeiro-Ministro no Diário da República (assinado no dia da posse; para III, IV e V, na véspera) e a página «Tomada de posse» do arquivo histórico do Governo (historico.portugal.gov.pt), que diz os partidos dos Governos I a XVI. «partidos»: só os partidos com ministros (D-3), com os ids de pipeline/grupos.json; [] com nota_partidos nos Governos de iniciativa presidencial (III a V); null quando nenhuma fonte oficial o diz. em_gestao: vazio, porque não temos fontes do Diário da República ou da Assembleia para os períodos de gestão (R-24 fica cortado).",
+ "verificado": "2026-10-30: datas de posse confirmadas em duas fontes oficiais por linha (decreto no DR e arquivo histórico, I–XX; decreto no DR, XXI–XXV). Comparado com os nomes nas assinaturas dos atos (pipeline/assinaturas.json).",
+ "governos": [
+  {
+   "numero": 1,
+   "romano": "I",
+   "inicio": "1976-07-23",
+   "fim": "1978-01-23",
+   "primeiro_ministro": "Mário Soares",
+   "nomes_dr": [
+    "Mário Alberto Nobre Lopes Soares",
+    "Mário Soares"
+   ],
+   "partidos": [
+    "ps"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/603-a-1976-552284",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc01/tomada-de-posse/tomada-de-posse-do-i-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/12-1978-241044",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/603-a-1976-552284",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc01/tomada-de-posse/tomada-de-posse-do-i-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 2,
+   "romano": "II",
+   "inicio": "1978-01-23",
+   "fim": "1978-08-29",
+   "primeiro_ministro": "Mário Soares",
+   "nomes_dr": [
+    "Mário Alberto Nobre Lopes Soares",
+    "Mário Soares"
+   ],
+   "partidos": [
+    "ps",
+    "cds-pp"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/12-1978-241044",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc02/tomada-de-posse/tomada-de-posse-do-ii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/85-1978-435854",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/12-1978-241044",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc02/tomada-de-posse/tomada-de-posse-do-ii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 3,
+   "romano": "III",
+   "inicio": "1978-08-29",
+   "fim": "1978-11-22",
+   "primeiro_ministro": "Alfredo Nobre da Costa",
+   "nomes_dr": [
+    "Alfredo Jorge Nobre da Costa"
+   ],
+   "partidos": [],
+   "nota_partidos": {
+    "texto": "presidencial",
+    "fonte": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc03/tomada-de-posse/tomada-de-posse-do-iii-governo-constitucional.aspx"
+   },
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/85-1978-435854",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc03/tomada-de-posse/tomada-de-posse-do-iii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/134-a-1978-665540",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/85-1978-435854",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc03/tomada-de-posse/tomada-de-posse-do-iii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "O Diário da República publicou a nomeação do Primeiro-Ministro (Decreto n.º 85/78) a 28/08/1978; o Governo tomou posse a 29/08/1978 (arquivo histórico do Governo)."
+   ]
+  },
+  {
+   "numero": 4,
+   "romano": "IV",
+   "inicio": "1978-11-22",
+   "fim": "1979-08-01",
+   "primeiro_ministro": "Carlos Mota Pinto",
+   "nomes_dr": [
+    "Carlos Alberto da Mota Pinto"
+   ],
+   "partidos": [],
+   "nota_partidos": {
+    "texto": "presidencial",
+    "fonte": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc04/tomada-de-posse/tomada-de-posse-do-iv-governo-constitucional.aspx"
+   },
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/134-a-1978-665540",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc04/tomada-de-posse/tomada-de-posse-do-iv-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/74-a-1979-402734",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/134-a-1978-665540",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc04/tomada-de-posse/tomada-de-posse-do-iv-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Nomeação do Primeiro-Ministro (Decreto n.º 134-A/78) publicada a 21/11/1978; posse do Governo a 22/11/1978 (arquivo histórico). O arquivo diz que o mandato terminou a 7/07/1979; o Governo seguinte tomou posse a 1/08/1979."
+   ]
+  },
+  {
+   "numero": 5,
+   "romano": "V",
+   "inicio": "1979-08-01",
+   "fim": "1980-01-03",
+   "primeiro_ministro": "Maria de Lurdes Pintasilgo",
+   "nomes_dr": [
+    "Maria de Lurdes Ruivo da Silva Matos Pintasilgo"
+   ],
+   "partidos": [],
+   "nota_partidos": {
+    "texto": "presidencial",
+    "fonte": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc05/tomada-de-posse/tomada-de-posse-do-v-governo-constitucional.aspx"
+   },
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/74-a-1979-402734",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc05/tomada-de-posse/tomada-de-posse-do-v-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/2-1980-432857",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/74-a-1979-402734",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc05/tomada-de-posse/tomada-de-posse-do-v-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Nomeação da Primeira-Ministra (Decreto n.º 74-A/79) publicada a 31/07/1979; posse do Governo a 1/08/1979 (arquivo histórico)."
+   ]
+  },
+  {
+   "numero": 6,
+   "romano": "VI",
+   "inicio": "1980-01-03",
+   "fim": "1981-01-09",
+   "primeiro_ministro": "Francisco Sá Carneiro",
+   "nomes_dr": [
+    "Francisco Manuel Lumbrales Sá Carneiro",
+    "Francisco Sá Carneiro"
+   ],
+   "partidos": [
+    "psd",
+    "cds-pp",
+    "ppm"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/2-1980-432857",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc06/tomada-de-posse/tomada-de-posse-do-vi-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/23-1981-571180",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/2-1980-432857",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc06/tomada-de-posse/tomada-de-posse-do-vi-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "O Primeiro-Ministro morreu a 4/12/1980; o Governo terminou com a posse do VII Governo, a 9/01/1981 (arquivo histórico). O arquivo não nomeia quem o substituiu."
+   ]
+  },
+  {
+   "numero": 7,
+   "romano": "VII",
+   "inicio": "1981-01-09",
+   "fim": "1981-09-04",
+   "primeiro_ministro": "Francisco Pinto Balsemão",
+   "nomes_dr": [
+    "Francisco José Pereira Pinto Balsemão"
+   ],
+   "partidos": [
+    "psd",
+    "cds-pp",
+    "ppm"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/23-1981-571180",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc07/tomada-de-posse/tomada-de-posse-do-vii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto/113-a-1981-480158",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/23-1981-571180",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc07/tomada-de-posse/tomada-de-posse-do-vii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 8,
+   "romano": "VIII",
+   "inicio": "1981-09-04",
+   "fim": "1983-06-09",
+   "primeiro_ministro": "Francisco Pinto Balsemão",
+   "nomes_dr": [
+    "Francisco José Pereira Pinto Balsemão"
+   ],
+   "partidos": [
+    "psd",
+    "cds-pp",
+    "ppm"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto/113-a-1981-480158",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc08/tomada-de-posse/tomada-de-posse-do-viii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/13-1983-524386",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto/113-a-1981-480158",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc08/tomada-de-posse/tomada-de-posse-do-viii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 9,
+   "romano": "IX",
+   "inicio": "1983-06-09",
+   "fim": "1985-11-06",
+   "primeiro_ministro": "Mário Soares",
+   "nomes_dr": [
+    "Mário Alberto Nobre Lopes Soares",
+    "Mário Soares"
+   ],
+   "partidos": [
+    "ps",
+    "psd"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/13-1983-524386",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc09/tomada-de-posse/tomada-de-posse-do-ix-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/53-1985-336502",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/13-1983-524386",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc09/tomada-de-posse/tomada-de-posse-do-ix-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 10,
+   "romano": "X",
+   "inicio": "1985-11-06",
+   "fim": "1987-08-17",
+   "primeiro_ministro": "Aníbal Cavaco Silva",
+   "nomes_dr": [
+    "Aníbal António Cavaco Silva"
+   ],
+   "partidos": [
+    "psd"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/53-1985-336502",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc10/tomada-de-posse/tomada-de-posse-do-x-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/26-1987-331012",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/53-1985-336502",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc10/tomada-de-posse/tomada-de-posse-do-x-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 11,
+   "romano": "XI",
+   "inicio": "1987-08-17",
+   "fim": "1991-10-31",
+   "primeiro_ministro": "Aníbal Cavaco Silva",
+   "nomes_dr": [
+    "Aníbal António Cavaco Silva"
+   ],
+   "partidos": [
+    "psd"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/26-1987-331012",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc11/tomada-de-posse/tomada-de-posse-do-xi-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/56-1991-198349",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/26-1987-331012",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc11/tomada-de-posse/tomada-de-posse-do-xi-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 12,
+   "romano": "XII",
+   "inicio": "1991-10-31",
+   "fim": "1995-10-28",
+   "primeiro_ministro": "Aníbal Cavaco Silva",
+   "nomes_dr": [
+    "Aníbal António Cavaco Silva"
+   ],
+   "partidos": [
+    "psd"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/56-1991-198349",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc12/tomada-de-posse/tomada-de-posse-do-xii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/80-b-1995-470848",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/56-1991-198349",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc12/tomada-de-posse/tomada-de-posse-do-xii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 13,
+   "romano": "XIII",
+   "inicio": "1995-10-28",
+   "fim": "1999-10-25",
+   "primeiro_ministro": "António Guterres",
+   "nomes_dr": [
+    "António Manuel de Oliveira Guterres"
+   ],
+   "partidos": [
+    "ps"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/80-b-1995-470848",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc13/tomada-de-posse/tomada-de-posse-do-xiii-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/198-1999-332390",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/80-b-1995-470848",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc13/tomada-de-posse/tomada-de-posse-do-xiii-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 14,
+   "romano": "XIV",
+   "inicio": "1999-10-25",
+   "fim": "2002-04-06",
+   "primeiro_ministro": "António Guterres",
+   "nomes_dr": [
+    "António Manuel de Oliveira Guterres"
+   ],
+   "partidos": [
+    "ps"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/198-1999-332390",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc14/tomada-de-posse/tomada-de-posse-do-xiv-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/24-b-2002-164625",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/198-1999-332390",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc14/tomada-de-posse/tomada-de-posse-do-xiv-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 15,
+   "romano": "XV",
+   "inicio": "2002-04-06",
+   "fim": "2004-07-17",
+   "primeiro_ministro": "José Manuel Durão Barroso",
+   "nomes_dr": [
+    "José Manuel Durão Barroso"
+   ],
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/24-b-2002-164625",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc15/tomada-de-posse/tomada-de-posse-do-xv-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/35-d-2004-150743",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/24-b-2002-164625",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc15/tomada-de-posse/tomada-de-posse-do-xv-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "numero": 16,
+   "romano": "XVI",
+   "inicio": "2004-07-17",
+   "fim": "2005-03-12",
+   "primeiro_ministro": "Pedro Santana Lopes",
+   "nomes_dr": [
+    "Pedro Miguel de Santana Lopes"
+   ],
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/35-d-2004-150743",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc16/tomada-de-posse/tomada-de-posse-do-xvi-governo-constitucional.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/35-d-2004-150743",
+    "partidos": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc16/tomada-de-posse/tomada-de-posse-do-xvi-governo-constitucional.aspx"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "O arquivo histórico diz que o Governo foi formado com base na maioria parlamentar do PSD e do Partido Popular (CDS-PP)."
+   ]
+  },
+  {
+   "numero": 17,
+   "romano": "XVII",
+   "inicio": "2005-03-12",
+   "fim": "2009-10-26",
+   "primeiro_ministro": "José Sócrates",
+   "nomes_dr": [
+    "José Sócrates Carvalho Pinto de Sousa"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc17/composicao.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 18,
+   "romano": "XVIII",
+   "inicio": "2009-10-26",
+   "fim": "2011-06-21",
+   "primeiro_ministro": "José Sócrates",
+   "nomes_dr": [
+    "José Sócrates Carvalho Pinto de Sousa"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc18/composicao.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 19,
+   "romano": "XIX",
+   "inicio": "2011-06-21",
+   "fim": "2015-10-30",
+   "primeiro_ministro": "Pedro Passos Coelho",
+   "nomes_dr": [
+    "Pedro Manuel Mamede Passos Coelho",
+    "Pedro Passos Coelho"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc19/composicao.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 20,
+   "romano": "XX",
+   "inicio": "2015-10-30",
+   "fim": "2015-11-26",
+   "primeiro_ministro": "Pedro Passos Coelho",
+   "nomes_dr": [
+    "Pedro Manuel Mamede Passos Coelho",
+    "Pedro Passos Coelho"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134",
+    "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc20/composicao.aspx",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 21,
+   "romano": "XXI",
+   "inicio": "2015-11-26",
+   "fim": "2019-10-26",
+   "primeiro_ministro": "António Costa",
+   "nomes_dr": [
+    "António Luís Santos da Costa",
+    "António Luís Santos Costa"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
+    "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 22,
+   "romano": "XXII",
+   "inicio": "2019-10-26",
+   "fim": "2022-03-30",
+   "primeiro_ministro": "António Costa",
+   "nomes_dr": [
+    "António Luís Santos da Costa",
+    "António Luís Santos Costa"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
+    "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 23,
+   "romano": "XXIII",
+   "inicio": "2022-03-30",
+   "fim": "2024-04-02",
+   "primeiro_ministro": "António Costa",
+   "nomes_dr": [
+    "António Luís Santos da Costa",
+    "António Luís Santos Costa"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
+    "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 24,
+   "romano": "XXIV",
+   "inicio": "2024-04-02",
+   "fim": "2025-06-05",
+   "primeiro_ministro": "Luís Montenegro",
+   "nomes_dr": [
+    "Luís Filipe Montenegro Cardoso de Morais Esteves",
+    "Luís Montenegro"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
+    "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
+    "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  },
+  {
+   "numero": 25,
+   "romano": "XXV",
+   "inicio": "2025-06-05",
+   "fim": null,
+   "primeiro_ministro": "Luís Montenegro",
+   "nomes_dr": [
+    "Luís Filipe Montenegro Cardoso de Morais Esteves",
+    "Luís Montenegro"
+   ],
+   "partidos": null,
+   "nota_partidos": null,
+   "em_gestao": [],
+   "fontes": {
+    "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
+    "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259"
+   },
+   "consultado_em": "2026-10-30",
+   "notas": [
+    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+   ]
+  }
+ ]
+}

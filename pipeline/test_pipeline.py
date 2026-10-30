@@ -150,6 +150,11 @@ class Passagem(unittest.TestCase):
         a = "Texto de Substituição apresentado pela Comissão relativo à Proposta de Lei n.º 129/XIII/3.ª (GOV), e dos Projetos de Lei n.ºs 847/XIII/3.ª (BE), e 1043/XIII/4.ª (PSD)"
         b = "Texto de Substituição apresentado pela Comissão relativo à Proposta de Lei n.º 128/XIII/3.ª (GOV), Artigo 8.º do Projeto de Lei n.º 847/XIII/3.ª (BE) e do Projeto de Lei n.º 1041/XIII/4.ª (PSD)"
         self.assertEqual(passagem.citadas(a), {("Proposta de Lei", "129", "XIII"), ("Projeto de Lei", "847", "XIII"), ("Projeto de Lei", "1043", "XIII")})
+        # Older spelling and lower case, as the AR writes them (Lei 5/2004, LO 3/2018).
+        self.assertEqual(passagem.citadas("relativo à Proposta de Lei n.º 94/IX e ao Projecto de Lei n.º 309/IX (PS)"),
+                         {("Proposta de Lei", "94", "IX"), ("Projeto de Lei", "309", "IX")})
+        self.assertEqual(passagem.citadas("relativo à Proposta de Lei n.º 77/XIII/2.ª (GOV), Projetos de lei n.ºs 426/XIII/2.ª (BE) e 516/XIII/2.ª (PSD)"),
+                         {("Proposta de Lei", "77", "XIII"), ("Projeto de Lei", "426", "XIII"), ("Projeto de Lei", "516", "XIII")})
         g = lambda d, desc, pos: N(phase="Votação na generalidade", date=d, description=desc, positions=pos, result="Aprovado", unanimous=False, absent=[])
         own = g("2018-07-18", None, {"BE": "favor", "PSD": "contra"})
         ta, tb = g("2018-12-21", a, {"PS": "favor"}), g("2018-12-21", b, {"PSD": "favor"})

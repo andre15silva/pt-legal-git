@@ -343,3 +343,15 @@ alteracoes(desde, refs[])                  resolver_referencia("art. 88.º do CI
 4. **Date semantics.** Conditional, transitional and retroactive dates are the core risk. Use explicit `regra_data`, never a silent default.
 5. **Initiative ↔ act linkage.** Solved for laws: `TextosAprovados` → Diplomas Aprovados gives the exact act (99.4%). The residual risk is the three legislative sessions missing from the open data, and the many-to-one cases (789 of 4,188 laws come from several initiatives), where attribution must go through the texto final.
 6. **Neutrality.** Measure vote-parsing error rates per group.
+
+## 9. Who made each change (round 3)
+
+A second layer sits on the acts: `app/data/quem.json` (one record per act: Government, President,
+proposers, votes, events, reason codes), `governos.json` (the tables and the AR's groups per
+legislatura), `quem/<slug>.json` (a diploma's timeline by Government and by legislatura) and
+`grupos/` (one page per parliamentary group). It is built offline from the committed tables
+(`pipeline/governos.json`, `presidentes.json`, `grupos.json`), the committed signature seed
+(`pipeline/assinaturas.json`) and the AR open data. One validator, `pipeline/contrato.py`, checks every
+file of `app/data`, real or the shared fixture in `pipeline/fixtures/contrato/`. Method:
+[QUEM.md](QUEM.md); matching votes to a law: [PASSAGEM.md](PASSAGEM.md) §8.
+

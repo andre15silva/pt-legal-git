@@ -1,0 +1,61 @@
+{
+ "consultado_em": "2026-10-30",
+ "diplomas": {
+  "lei-teste": {
+   "titulo": "Lei de teste",
+   "sigla": "LT",
+   "relatorio": null
+  }
+ },
+ "quem": {
+  "assinaturas": {
+   "total": 11,
+   "com_d_cm": 2,
+   "falhas": [
+    {
+     "ato": "decreto-lei-903-2012",
+     "motivo": "sem_d_cm"
+    }
+   ]
+  },
+  "cruzamento": [
+   {
+    "ato": "decreto-lei-902-2010",
+    "regra": "mesmo_pm",
+    "estado": "aviso",
+    "detalhe": "d_cm a 7 dias da posse do Governo 3, com o mesmo Primeiro-Ministro"
+   }
+  ],
+  "mesmo_pm": [
+   {
+    "ato": "decreto-lei-902-2010",
+    "d_cm": "2010-05-25",
+    "governos": [
+     2,
+     3
+    ]
+   }
+  ],
+  "passos_descartados": [],
+  "votos_descartados": [
+   {
+    "ato": "lei-901-2020",
+    "fase": "Confirmação do decreto",
+    "data": "2020-12-03",
+    "motivo": "depois_da_publicacao"
+   }
+  ],
+  "cobertura": {
+   "dl_d_cm": 0.6667,
+   "leis_promulgacao": 1.0
+  }
+ },
+ "conteudo": [
+  {
+   "tipo": "historia",
+   "id": "historia-teste",
+   "seccao": "lei-902-2019",
+   "motivo": "Os dados mudaram depois da preparação do texto."
+  }
+ ]
+}

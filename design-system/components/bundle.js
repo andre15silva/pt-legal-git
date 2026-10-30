@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Votacao"},{"name":"Citation"},{"name":"SourceNote"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Redacao","components":[{"name":"Button"},{"name":"StatusPill"},{"name":"ActChip"},{"name":"Redline"},{"name":"TextOrigin"},{"name":"TimeRuler"},{"name":"VersionBar"},{"name":"Register"},{"name":"Popover"},{"name":"DateLens"},{"name":"VersionTimeline"},{"name":"ProcessTrack"},{"name":"VoteBar"},{"name":"Votacao"},{"name":"Termo"},{"name":"TermoConteudo"},{"name":"Citation"},{"name":"SourceNote"}]} */
 (function () {
   var React = window.React;
   var h = React.createElement;
@@ -256,9 +256,9 @@
       go(k);
     };
     return h('div', { className: 'rd-vbar', id: id, role: 'group', 'aria-label': props.heading || 'Redação mostrada', onKeyDown: onKey },
-      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i <= 0, 'aria-describedby': id + '-s', onClick: function () { go(i - 1); } },
+      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i <= 0, 'aria-label': 'Redação anterior', 'aria-describedby': id + '-s', onClick: function () { go(i - 1); } },
         h('span', { 'aria-hidden': 'true' }, '‹ '), 'Anterior'),
-      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i >= n - 1, 'aria-describedby': id + '-s', onClick: function () { go(i + 1); } },
+      h('button', { type: 'button', className: 'rd-vbar-step', 'aria-disabled': i >= n - 1, 'aria-label': 'Redação seguinte', 'aria-describedby': id + '-s', onClick: function () { go(i + 1); } },
         'Seguinte', h('span', { 'aria-hidden': 'true' }, ' ›')),
       h('p', { id: id + '-s', className: 'rd-vbar-status', role: 'status', onClick: props.onStatus }, props.status),
       props.children ? h('div', { className: 'rd-vbar-tools' }, props.children) : null);
@@ -421,35 +421,128 @@
   // Deputy counts only when the record has them. Dissent goes in the group's line. Groups the
   // record lists as absent say "Ausente". Groups missing from the record say "sem registo".
   // props: {grupos: {GP: sentido}, ordem: [GP], contagens?, dissidencia?, foraDeGrupo?,
-  //   ausentes?, semRegisto? (groups with seats that day and no record), unanime?, resultado?, verificacao?}
+  //   ausentes?, semRegisto? (groups with seats that day and no record), unanime?, resultado?, verificacao?,
+  //   nomes? ({GP: name in the Assembleia's records}: each sigla then reads as the group's name)}
   var SENTIDOS = [['favor', 'A favor'], ['contra', 'Contra'], ['abstencao', 'Abstenção']];
   var PALAVRA = { favor: 'a favor', contra: 'contra', abstencao: 'abstenção' };
+  // "PS, PSD e CDS" as elements: items joined by commas.
+  function juntar(xs) {
+    var out = [];
+    xs.forEach(function (x, k) { if (k) out.push(', '); out.push(h(React.Fragment, { key: k }, x)); });
+    return out;
+  }
   function Votacao(props) {
     var g = props.grupos || {}, cont = props.contagens || {}, dis = props.dissidencia || [], fora = props.foraDeGrupo || [];
+    var nomes = props.nomes || {};
     var ordem = (props.ordem || []).slice();
     Object.keys(g).forEach(function (k) { if (ordem.indexOf(k) < 0) ordem.push(k); });
     var ausentes = props.ausentes || [];
+    // A sigla with its name: seen as the sigla, heard as the name.
+    function sigla(k) {
+      return nomes[k] ? h('abbr', { title: nomes[k] }, h('span', { 'aria-hidden': 'true' }, k), h('span', { className: 'rd-sr' }, nomes[k])) : k;
+    }
     function grupo(k) {
       var n = cont[k] && cont[k][g[k]];
       var extra = dis.filter(function (d) { return d.grupo === k; }).map(function (d) {
         return d.nome ? d.nome + ' votou ' + PALAVRA[d.sentido] : d.n + (d.n === 1 ? ' deputado votou ' : ' deputados votaram ') + PALAVRA[d.sentido];
       });
-      return k + (n ? ' ' + n : '') + (extra.length ? ' (' + extra.join(', ') + ')' : '');
+      return [sigla(k), (n ? ' ' + n : '') + (extra.length ? ' (' + extra.join(', ') + ')' : '')];
     }
     var linhas = SENTIDOS.map(function (s) {
       var gs = ordem.filter(function (k) { return g[k] === s[0]; }).map(grupo);
       fora.filter(function (x) { return x.sentido === s[0]; }).forEach(function (x) { gs.push(x.nome + ' (sem grupo parlamentar)'); });
-      return [s[1], gs.length ? gs.join(', ') : 'nenhum grupo'];
+      return [s[1], gs.length ? juntar(gs) : 'nenhum grupo'];
     });
     var semRegisto = props.unanime ? [] : props.semRegisto || [];
     var v = props.verificacao;
     return h('div', { className: 'rd-votacao' },
-      props.unanime ? h('p', { className: 'rd-votos-nota' }, (props.resultado || 'Aprovado') + ' por unanimidade.' + (ausentes.length ? ' Ausentes: ' + ausentes.join(', ') + '.' : ''))
+      props.unanime ? h('p', { className: 'rd-votos-nota' }, (props.resultado || 'Aprovado') + ' por unanimidade.', ausentes.length ? [' Ausentes: ', juntar(ausentes.map(sigla)), '.'] : null)
         : h('dl', { className: 'rd-votos' }, linhas.map(function (l) { return [h('dt', { key: l[0] + 't' }, l[0]), h('dd', { key: l[0] + 'd' }, l[1])]; }),
-          ausentes.length ? [h('dt', { key: 'at' }, 'Ausente'), h('dd', { key: 'ad' }, ausentes.join(', '))] : null,
-          semRegisto.length ? [h('dt', { key: 'st' }, 'Sem registo'), h('dd', { key: 'sd' }, semRegisto.join(', '))] : null),
+          ausentes.length ? [h('dt', { key: 'at' }, 'Ausente'), h('dd', { key: 'ad' }, juntar(ausentes.map(sigla)))] : null,
+          semRegisto.length ? [h('dt', { key: 'st' }, 'Sem registo'), h('dd', { key: 'sd' }, juntar(semRegisto.map(sigla)))] : null),
       v && !v.ok ? h('p', { className: 'rd-votos-aviso' }, h('strong', null, 'Atenção: '), 'o resultado registado não corresponde aos votos registados. Consulte o Diário da Assembleia da República.') : null,
       v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, (v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ') + v.favor + ' a favor, ' + v.contra + ' contra, ' + v.abstencao + (v.abstencao === 1 ? ' abstenção.' : ' abstenções.')) : null);
+  }
+
+  // ---- Termo -----------------------------------------------------------------
+  // A word of the glossary inside interface copy. The word is a button with a dotted underline
+  // (it is not a link). Click, Enter or Space opens the definition under it, and focus stays on
+  // the word; Tab then moves into the panel, which follows the word in the document. Esc closes
+  // it from the word or the panel and returns focus to the word. A click outside closes it.
+  // With a fine pointer, resting on the word for 400 ms opens it too. It stays open while the
+  // pointer is on the word or the panel (WCAG 1.4.13) and closes 300 ms after the pointer leaves
+  // both. A click after a hover pins it open. On a phone (coarse pointer or narrow screen),
+  // onAbrirFolha(id, button) lets the page open its bottom sheet instead.
+  // props: {id, texto, def: {termo, definicao: [], apoio: [], fonte: {rota | url, texto}}, onAbrirFolha?}
+  var nTermo = 0;
+  function combina(q) { return !!(window.matchMedia && window.matchMedia(q).matches); }
+  // The definition, the law that supports it, its source and how it was prepared. bloco: as
+  // paragraphs (a sheet, a page) instead of spans (inside a sentence).
+  function TermoConteudo(props) {
+    var def = props.def || {}, T = props.bloco ? 'p' : 'span', f = def.fonte || {};
+    var href = f.rota || f.url;
+    return h(React.Fragment, null,
+      props.bloco ? null : h('span', { className: 'rd-termo-nome' }, def.termo),
+      (def.definicao || []).map(function (t, k) { return h(T, { key: 'd' + k, className: 'rd-termo-def' }, t); }),
+      (def.apoio || []).slice(0, props.bloco ? 3 : 1).map(function (t, k) {
+        return h(T, { key: 'a' + k, className: 'rd-termo-lei' }, 'O que diz a lei: ', h('span', { 'data-citacao': '' }, '«…' + String(t).replace(/[\s.,;:]+$/, '') + '…»'));
+      }),
+      href ? h(T, { className: 'rd-termo-fonte' }, 'Fonte: ', f.url ? h('a', { href: href, target: '_blank', rel: 'noopener' }, f.texto + ' ↗') : h('a', { href: href }, f.texto)) : null,
+      h(T, { className: 'rd-termo-aviso' }, 'Definição preparada com ajuda de uma ferramenta automática.'),
+      props.semGlossario ? null : h(T, { className: 'rd-termo-ver' }, h('a', { href: '#/glossario/' + props.id }, 'Ver no glossário')));
+  }
+  function Termo(props) {
+    var st = React.useState(null);  // null (closed), 'clique', 'hover' or 'fixo'
+    var modo = st[0], setModo = st[1];
+    var ids = React.useRef(null);
+    if (!ids.current) ids.current = 'rd-termo-' + String(props.id || 't').replace(/[^a-z0-9-]/gi, '') + '-' + (++nTermo);
+    var raiz = React.useRef(null), btn = React.useRef(null), painel = React.useRef(null), relogio = React.useRef(null);
+    var aberto = modo != null;
+    function parar() { if (relogio.current) { clearTimeout(relogio.current); relogio.current = null; } }
+    function fechar(foco) { parar(); setModo(null); if (foco && btn.current) btn.current.focus(); }
+    React.useEffect(function () { return parar; }, []);
+    // A click outside closes it.
+    React.useEffect(function () {
+      if (!aberto) return;
+      function fora(e) { if (raiz.current && !raiz.current.contains(e.target)) fechar(false); }
+      document.addEventListener('pointerdown', fora);
+      return function () { document.removeEventListener('pointerdown', fora); };
+    }, [aberto]);
+    // Under the word; above it near the bottom of the screen; inside the screen on both sides.
+    React.useLayoutEffect(function () {
+      var p = painel.current;
+      if (!aberto || !p) return;
+      p.style.left = ''; p.classList.remove('is-acima');
+      var r = p.getBoundingClientRect(), w = window.innerWidth || 0, a = window.innerHeight || 0;
+      if (r.right > w - 16) p.style.left = Math.round(-(r.right - (w - 16))) + 'px';
+      r = p.getBoundingClientRect();
+      if (r.left < 16) p.style.left = Math.round((parseFloat(p.style.left) || 0) + 16 - r.left) + 'px';
+      var b = btn.current.getBoundingClientRect();
+      if (r.bottom > a - 8 && b.top - r.height - 8 > 0) p.classList.add('is-acima');
+    }, [aberto]);
+    function clique() {
+      if (props.onAbrirFolha && combina('(max-width: 760px), (pointer: coarse)')) { fechar(false); props.onAbrirFolha(props.id, btn.current); return; }
+      parar();
+      if (modo === 'hover') setModo('fixo');
+      else setModo(aberto ? null : 'clique');
+    }
+    function entrar() {
+      if (!combina('(hover: hover) and (pointer: fine)') || combina('(max-width: 760px)')) return;
+      parar();
+      if (!aberto) relogio.current = setTimeout(function () { setModo('hover'); }, 400);
+    }
+    function sair() {
+      parar();
+      if (modo === 'hover') relogio.current = setTimeout(function () { setModo(null); }, 300);
+    }
+    return h('span', { className: 'rd-termo', ref: raiz,
+      onKeyDown: function (e) { if (e.key === 'Escape' && aberto) { e.stopPropagation(); fechar(true); } } },
+      h('button', { type: 'button', className: 'rd-termo-btn', ref: btn, 'aria-expanded': aberto, 'aria-controls': ids.current,
+        onClick: clique, onMouseEnter: entrar, onMouseLeave: sair },
+        props.texto, h('span', { className: 'rd-sr' }, ', definição')),
+      h('span', { id: ids.current, ref: painel, className: 'rd-termo-painel', role: 'group', 'aria-label': (props.def || {}).termo || props.texto,
+        hidden: !aberto, onMouseEnter: function () { parar(); }, onMouseLeave: sair },
+        aberto ? h(TermoConteudo, { def: props.def, id: props.id }) : null));
   }
 
   // ---- Citation --------------------------------------------------------------
@@ -487,6 +580,6 @@
         props.verification ? h(StatusPill, { status: props.verification }) : null));
   }
 
-  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
+  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Termo: Termo, TermoConteudo: TermoConteudo, Citation: Citation, SourceNote: SourceNote, dataPorExtenso: dataPorExtenso };
   window.Redacao = Object.assign(window.Redacao || {}, api);
 })();

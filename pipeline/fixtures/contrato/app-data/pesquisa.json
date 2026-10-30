@@ -1,0 +1,26 @@
+[
+ [
+  "lei-teste",
+  "artigo-1",
+  "Artigo 1.º",
+  "Objeto",
+  "vigente",
+  null
+ ],
+ [
+  "lei-teste",
+  "artigo-2",
+  "Artigo 2.º",
+  "Requisitos",
+  "vigente",
+  null
+ ],
+ [
+  "lei-teste",
+  "artigo-3",
+  "Artigo 3.º",
+  "Regime",
+  "vigente",
+  null
+ ]
+]

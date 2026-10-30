@@ -21,9 +21,10 @@ from dataclasses import asdict, dataclass, field
 # Event names (IniEventos[].Fase) that mark the end of the legislative path.
 PUBLICATION_PHASES = {"Lei (Publicação DR)", "Resolução da AR (Publicação DR)"}
 
-# "A Favor: <I>PSD</I>, <I> CH</I><BR>Contra:<I>PCP</I><BR>Abstenção:<I>PS</I>"
-_SECTION = re.compile(r"(A Favor|Contra|Absten[çc][ãa]o)\s*:\s*(.*?)(?=(A Favor|Contra|Absten[çc][ãa]o)\s*:|$)", re.S)
-_SENTIDO = {"A Favor": "favor", "Contra": "contra"}
+# "A Favor: <I>PSD</I>, <I> CH</I><BR>Contra:<I>PCP</I><BR>Abstenção:<I>PS</I><BR>Ausência:<I>CDS</I>"
+# «Ausência» lists who was not there: a group in it did not vote (R-4).
+_SECTION = re.compile(r"(A Favor|Contra|Absten[çc][ãa]o|Aus[êe]ncia)\s*:\s*(.*?)(?=(A Favor|Contra|Absten[çc][ãa]o|Aus[êe]ncia)\s*:|$)", re.S)
+_SENTIDO = {"A Favor": "favor", "Contra": "contra", "Ausência": "ausente", "Ausencia": "ausente"}
 
 
 @dataclass
@@ -35,6 +36,8 @@ class Vote:
     positions: dict[str, str] = field(default_factory=dict)  # group/deputy -> favor|contra|abstencao
     absent: list[str] = field(default_factory=list)
     description: str | None = None
+    id: str | None = None    # the AR's id of the vote: the same vote recorded twice has one id
+    obs: str | None = None   # ObsFase of its event ("Votação do novo Decreto … sobre "…"")
 
 
 @dataclass
@@ -51,6 +54,9 @@ class Initiative:
     joint_with: list[str]
     # Diplomas Aprovados id from the "Lei (Publicação DR)" event: the exact link to the law.
     approved_text_id: str | None = None
+    # Every event with its note and the texts it published: [{"data", "fase", "obs", "textos"}],
+    # in date order. ObsFase names the decree ("Decreto n.º 17/XVII - Acórdão do Tribunal …").
+    details: list[dict] = field(default_factory=list)
 
 
 def parse_positions(detalhe: str | None) -> dict[str, str]:
@@ -87,11 +93,15 @@ def _authors(ini: dict) -> list[str]:
 
 
 def normalise(ini: dict) -> Initiative:
-    events, votes, joint = [], [], set()
+    events, votes, joint, details = [], [], set(), []
     published = approved = None
     for e in ini.get("IniEventos") or []:
         date, phase = (e.get("DataFase") or "")[:10], e.get("Fase") or ""
         events.append((date, phase))
+        obs = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", e.get("ObsFase") or ""))).strip() or None
+        textos = e.get("TextosAprovados")
+        textos = [str(t) for t in (textos if isinstance(textos, list) else [textos] if textos else [])]
+        details.append({"data": date, "fase": phase, "obs": obs, "textos": textos})
         if phase in PUBLICATION_PHASES and not published:
             published = date
             approved = e.get("TextosAprovados") or None
@@ -107,14 +117,15 @@ def normalise(ini: dict) -> Initiative:
                 date=(v.get("data") or date)[:10], phase=phase, result=v.get("resultado"),
                 unanimous={"unanime": True}.get(str(v.get("unanime")).lower(), None),
                 positions=parse_positions(v.get("detalhe")), absent=list(absent),
-                description=v.get("descricao"),
+                description=v.get("descricao"), id=str(v["id"]) if v.get("id") else None, obs=obs,
             ))
     events.sort()
+    details.sort(key=lambda d: d["data"])
     return Initiative(
         id=int(ini["IniId"]), legislature=ini.get("IniLeg") or "", kind=ini.get("IniDescTipo") or "",
         number=str(ini.get("IniNr")), title=(ini.get("IniTitulo") or "").strip(), authors=_authors(ini),
         events=events, votes=votes, published_dr=published, joint_with=sorted(joint),
-        approved_text_id=str(approved) if approved else None,
+        approved_text_id=str(approved) if approved else None, details=details,
     )
 
 

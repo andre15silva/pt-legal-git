@@ -1,0 +1,114 @@
+{
+ "descricao": "Presidentes da República desde o que promulgou o Decreto de Aprovação da Constituição (1976). inicio = posse; fim = posse do sucessor (intervalos [inicio, fim)). Fontes: presidencia.pt (página de cada Presidente) e as indicadas em «fontes».",
+ "verificado": "2026-10-30: datas lidas nas páginas oficiais; comparadas com os nomes e as datas de promulgação dos blocos de assinaturas (pipeline/assinaturas.json).",
+ "presidentes": [
+  {
+   "id": "francisco-da-costa-gomes",
+   "nome": "Francisco da Costa Gomes",
+   "nomes_dr": [
+    "FRANCISCO DA COSTA GOMES"
+   ],
+   "inicio": "1974-09-30",
+   "fim": "1976-07-14",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/francisco-da-costa-gomes/",
+   "fontes": {
+    "primeira_linha": "https://diariodarepublica.pt/dr/detalhe/decreto-aprovacao-constituicao/1976-502635",
+    "fim": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/antonio-ramalho-eanes/"
+   },
+   "notas": [
+    "Promulgou o Decreto de Aprovação da Constituição a 2/04/1976 (texto do decreto no Diário da República).",
+    "presidencia.pt: assumiu a Presidência após a demissão do general Spínola a 30/09/1974; a página diz que ocupou o cargo «até 27 de Junho de 1976», data da eleição do sucessor. Usamos como fim a posse do sucessor (14/07/1976): o Diário da República tem atos promulgados por ele até 13/07/1976 (Decreto-Lei n.º 605/76)."
+   ],
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "antonio-ramalho-eanes",
+   "nome": "António Ramalho Eanes",
+   "nomes_dr": [
+    "ANTÓNIO RAMALHO EANES"
+   ],
+   "inicio": "1976-07-14",
+   "fim": "1986-03-09",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/antonio-ramalho-eanes/",
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "mario-soares",
+   "nome": "Mário Soares",
+   "nomes_dr": [
+    "MÁRIO SOARES"
+   ],
+   "inicio": "1986-03-09",
+   "fim": "1996-03-09",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/mario-soares/",
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "jorge-sampaio",
+   "nome": "Jorge Sampaio",
+   "nomes_dr": [
+    "JORGE SAMPAIO"
+   ],
+   "inicio": "1996-03-09",
+   "fim": "2006-03-09",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/jorge-sampaio/",
+   "fontes": {
+    "fim": "https://www.defesa.gov.pt/pt/comunicacao/noticias/Documents/20160217_discurso_emgfa.pdf"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "anibal-cavaco-silva",
+   "nome": "Aníbal Cavaco Silva",
+   "nomes_dr": [
+    "ANÍBAL CAVACO SILVA",
+    "Aníbal Cavaco Silva"
+   ],
+   "inicio": "2006-03-09",
+   "fim": "2016-03-09",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/anibal-cavaco-silva/",
+   "fontes": {
+    "inicio": "https://www.defesa.gov.pt/pt/comunicacao/noticias/Documents/20160217_discurso_emgfa.pdf"
+   },
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "marcelo-rebelo-de-sousa",
+   "nome": "Marcelo Rebelo de Sousa",
+   "nomes_dr": [
+    "Marcelo Rebelo de Sousa",
+    "Marcelo Rebelo De Sousa"
+   ],
+   "inicio": "2016-03-09",
+   "fim": "2026-03-09",
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/marcelo-rebelo-de-sousa/",
+   "consultado_em": "2026-10-30"
+  },
+  {
+   "id": "antonio-jose-seguro",
+   "nome": "António José Seguro",
+   "nomes_dr": [
+    "António José Martins Seguro"
+   ],
+   "inicio": "2026-03-09",
+   "fim": null,
+   "fonte": "https://www.presidencia.pt/presidente-da-republica/o-presidente/biografia/",
+   "fontes": {
+    "inicio": "https://portugal.gov.pt/gc25/comunicacao/noticias/primeiro-ministro-deseja-maior-sucesso-a-antonio-jose-seguro-no-inicio-do-mandato-presidencial",
+    "fim_do_antecessor": "https://www.presidencia.pt/presidente-da-republica/a-presidencia/antigos-presidentes/marcelo-rebelo-de-sousa/"
+   },
+   "consultado_em": "2026-10-30"
+  }
+ ],
+ "interinos": [
+  {
+   "nome": "Francisco Manuel Lopes Vieira de Oliveira Dias",
+   "nomes_dr": [
+    "FRANCISCO MANUEL LOPES VIEIRA DE OLIVEIRA DIAS"
+   ],
+   "cargo": "Presidente da República Interino",
+   "fonte": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/328-1981-567884",
+   "nota": "Promulgou o Decreto-Lei n.º 328/81 como «Presidente da República Interino» (bloco de assinaturas). Não é uma linha da tabela: o ato mostra o nome do bloco sem presidente da tabela."
+  }
+ ]
+}

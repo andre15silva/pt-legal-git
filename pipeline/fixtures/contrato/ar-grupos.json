@@ -1,0 +1,658 @@
+{
+ "descricao": "Legislaturas e grupos parlamentares tirados dos ficheiros InformacaoBase da Assembleia da República (pipeline/quem.py, classe Grupos). Factos reais, usados pelo fixture do contrato.",
+ "legislaturas": [
+  {
+   "sigla": "Constituinte",
+   "inicio": "1975-06-02",
+   "fim": "1976-04-03"
+  },
+  {
+   "sigla": "IA",
+   "inicio": "1976-06-03",
+   "fim": "1980-01-03"
+  },
+  {
+   "sigla": "IB",
+   "inicio": "1980-01-03",
+   "fim": "1980-11-13"
+  },
+  {
+   "sigla": "II",
+   "inicio": "1980-11-13",
+   "fim": "1983-05-31"
+  },
+  {
+   "sigla": "III",
+   "inicio": "1983-05-31",
+   "fim": "1985-11-04"
+  },
+  {
+   "sigla": "IV",
+   "inicio": "1985-11-04",
+   "fim": "1987-08-13"
+  },
+  {
+   "sigla": "V",
+   "inicio": "1987-08-13",
+   "fim": "1991-11-04"
+  },
+  {
+   "sigla": "VI",
+   "inicio": "1991-11-04",
+   "fim": "1995-10-27"
+  },
+  {
+   "sigla": "VII",
+   "inicio": "1995-10-27",
+   "fim": "1999-10-25"
+  },
+  {
+   "sigla": "VIII",
+   "inicio": "1999-10-25",
+   "fim": "2002-04-05"
+  },
+  {
+   "sigla": "IX",
+   "inicio": "2002-04-05",
+   "fim": "2005-03-10"
+  },
+  {
+   "sigla": "X",
+   "inicio": "2005-03-10",
+   "fim": "2009-10-15"
+  },
+  {
+   "sigla": "XI",
+   "inicio": "2009-10-15",
+   "fim": "2011-06-20"
+  },
+  {
+   "sigla": "XII",
+   "inicio": "2011-06-20",
+   "fim": "2015-10-23"
+  },
+  {
+   "sigla": "XIII",
+   "inicio": "2015-10-23",
+   "fim": "2019-10-25"
+  },
+  {
+   "sigla": "XIV",
+   "inicio": "2019-10-25",
+   "fim": "2022-03-29"
+  },
+  {
+   "sigla": "XV",
+   "inicio": "2022-03-29",
+   "fim": "2024-03-26"
+  },
+  {
+   "sigla": "XVI",
+   "inicio": "2024-03-26",
+   "fim": "2025-06-03"
+  },
+  {
+   "sigla": "XVII",
+   "inicio": "2025-06-03",
+   "fim": null
+  }
+ ],
+ "grupos": {
+  "ps": {
+   "id": "ps",
+   "nomes": [
+    {
+     "sigla": "PS",
+     "nome": "Partido Socialista",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII",
+      "XIII",
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "ppm": {
+   "id": "ppm",
+   "nomes": [
+    {
+     "sigla": "PPM",
+     "nome": "Partido Popular Monárquico",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II"
+     ]
+    }
+   ]
+  },
+  "psd": {
+   "id": "psd",
+   "nomes": [
+    {
+     "sigla": "PPD",
+     "nome": "Partido Popular Democrata",
+     "legislaturas": [
+      "Constituinte",
+      "IA"
+     ]
+    },
+    {
+     "sigla": "PSD",
+     "nome": "Partido Social Democrata",
+     "legislaturas": [
+      "IB",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII",
+      "XIII",
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "pcp": {
+   "id": "pcp",
+   "nomes": [
+    {
+     "sigla": "PCP",
+     "nome": "Partido Comunista Português",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII",
+      "XIII",
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "cds-pp": {
+   "id": "cds-pp",
+   "nomes": [
+    {
+     "sigla": "CDS",
+     "nome": "Centro Democrático Social",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II",
+      "III",
+      "IV",
+      "V"
+     ]
+    },
+    {
+     "sigla": "CDS-PP",
+     "nome": "Centro Democrático Social - Partido Popular",
+     "legislaturas": [
+      "VI",
+      "XIII",
+      "XIV",
+      "XVI",
+      "XVII"
+     ]
+    },
+    {
+     "sigla": "CDS-PP",
+     "nome": "Partido Popular",
+     "legislaturas": [
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII"
+     ]
+    }
+   ]
+  },
+  "mdp-cde": {
+   "id": "mdp-cde",
+   "nomes": [
+    {
+     "sigla": "MDP/CDE",
+     "nome": "Movimento Democrático Português - Coligação Democrática Eleita",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II",
+      "III",
+      "IV"
+     ]
+    }
+   ]
+  },
+  "udp": {
+   "id": "udp",
+   "nomes": [
+    {
+     "sigla": "UDP",
+     "nome": "União Democrática Popular",
+     "legislaturas": [
+      "Constituinte",
+      "IA",
+      "IB",
+      "II"
+     ]
+    }
+   ]
+  },
+  "id": {
+   "id": "id",
+   "nomes": [
+    {
+     "sigla": "ID",
+     "nome": "Intervenção Democrática",
+     "legislaturas": [
+      "IA",
+      "IB",
+      "II",
+      "V"
+     ]
+    }
+   ]
+  },
+  "dr": {
+   "id": "dr",
+   "nomes": [
+    {
+     "sigla": "DR",
+     "nome": "Deputados Reformadores",
+     "legislaturas": [
+      "IB"
+     ]
+    }
+   ]
+  },
+  "asdi": {
+   "id": "asdi",
+   "nomes": [
+    {
+     "sigla": "ASDI",
+     "nome": "Acção Social Democrata Independente",
+     "legislaturas": [
+      "II",
+      "III"
+     ]
+    }
+   ]
+  },
+  "ueds": {
+   "id": "ueds",
+   "nomes": [
+    {
+     "sigla": "UEDS",
+     "nome": "União da Esquerda para a Democracia Socialista",
+     "legislaturas": [
+      "II",
+      "III"
+     ]
+    }
+   ]
+  },
+  "prd": {
+   "id": "prd",
+   "nomes": [
+    {
+     "sigla": "PRD",
+     "nome": "Partido Renovador Democrático",
+     "legislaturas": [
+      "IV",
+      "V"
+     ]
+    }
+   ]
+  },
+  "pev": {
+   "id": "pev",
+   "nomes": [
+    {
+     "sigla": "PEV",
+     "nome": "Partido Ecologista \"Os Verdes\"",
+     "legislaturas": [
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII",
+      "XIII",
+      "XIV"
+     ]
+    }
+   ]
+  },
+  "psn": {
+   "id": "psn",
+   "nomes": [
+    {
+     "sigla": "PSN",
+     "nome": "Partido Solidariedade Nacional",
+     "legislaturas": [
+      "VI"
+     ]
+    }
+   ]
+  },
+  "be": {
+   "id": "be",
+   "nomes": [
+    {
+     "sigla": "BE",
+     "nome": "Bloco de Esquerda",
+     "legislaturas": [
+      "VIII",
+      "IX",
+      "X",
+      "XI",
+      "XII",
+      "XIII",
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "pan": {
+   "id": "pan",
+   "nomes": [
+    {
+     "sigla": "PAN",
+     "nome": "Pessoas-Animais-Natureza",
+     "legislaturas": [
+      "XIII",
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "ch": {
+   "id": "ch",
+   "nomes": [
+    {
+     "sigla": "CH",
+     "nome": "Chega",
+     "legislaturas": [
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "il": {
+   "id": "il",
+   "nomes": [
+    {
+     "sigla": "IL",
+     "nome": "Iniciativa Liberal",
+     "legislaturas": [
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "l": {
+   "id": "l",
+   "nomes": [
+    {
+     "sigla": "L",
+     "nome": "Livre",
+     "legislaturas": [
+      "XIV",
+      "XV",
+      "XVI",
+      "XVII"
+     ]
+    }
+   ]
+  },
+  "jpp": {
+   "id": "jpp",
+   "nomes": [
+    {
+     "sigla": "JPP",
+     "nome": "Juntos Pelo Povo",
+     "legislaturas": [
+      "XVII"
+     ]
+    }
+   ]
+  }
+ },
+ "siglas": {
+  "IB": {
+   "PSD": "psd",
+   "PS": "ps",
+   "PCP": "pcp",
+   "CDS": "cds-pp",
+   "PPM": "ppm",
+   "MDP/CDE": "mdp-cde",
+   "UDP": "udp",
+   "DR": "dr",
+   "ID": "id"
+  },
+  "X": {
+   "PS": "ps",
+   "PSD": "psd",
+   "PCP": "pcp",
+   "CDS-PP": "cds-pp",
+   "BE": "be",
+   "PEV": "pev"
+  },
+  "V": {
+   "PSD": "psd",
+   "PS": "ps",
+   "PCP": "pcp",
+   "PRD": "prd",
+   "CDS": "cds-pp",
+   "PEV": "pev",
+   "ID": "id"
+  },
+  "XIII": {
+   "PSD": "psd",
+   "PS": "ps",
+   "BE": "be",
+   "CDS-PP": "cds-pp",
+   "PCP": "pcp",
+   "PEV": "pev",
+   "PAN": "pan"
+  },
+  "XI": {
+   "PS": "ps",
+   "PSD": "psd",
+   "CDS-PP": "cds-pp",
+   "BE": "be",
+   "PCP": "pcp",
+   "PEV": "pev"
+  },
+  "VI": {
+   "PSD": "psd",
+   "PS": "ps",
+   "PCP": "pcp",
+   "CDS-PP": "cds-pp",
+   "PEV": "pev",
+   "PSN": "psn"
+  },
+  "III": {
+   "PS": "ps",
+   "PSD": "psd",
+   "PCP": "pcp",
+   "CDS": "cds-pp",
+   "UEDS": "ueds",
+   "ASDI": "asdi",
+   "MDP/CDE": "mdp-cde"
+  },
+  "XII": {
+   "PSD": "psd",
+   "PS": "ps",
+   "CDS-PP": "cds-pp",
+   "PCP": "pcp",
+   "BE": "be",
+   "PEV": "pev"
+  },
+  "VII": {
+   "PS": "ps",
+   "PSD": "psd",
+   "CDS-PP": "cds-pp",
+   "PCP": "pcp",
+   "PEV": "pev"
+  },
+  "XVI": {
+   "PSD": "psd",
+   "PS": "ps",
+   "CH": "ch",
+   "IL": "il",
+   "BE": "be",
+   "PCP": "pcp",
+   "L": "l",
+   "CDS-PP": "cds-pp",
+   "PAN": "pan"
+  },
+  "IV": {
+   "PSD": "psd",
+   "PS": "ps",
+   "PRD": "prd",
+   "PCP": "pcp",
+   "CDS": "cds-pp",
+   "MDP/CDE": "mdp-cde"
+  },
+  "XVII": {
+   "PSD": "psd",
+   "CH": "ch",
+   "PS": "ps",
+   "IL": "il",
+   "L": "l",
+   "PCP": "pcp",
+   "CDS-PP": "cds-pp",
+   "BE": "be",
+   "PAN": "pan",
+   "JPP": "jpp"
+  },
+  "XIV": {
+   "PS": "ps",
+   "PSD": "psd",
+   "BE": "be",
+   "PCP": "pcp",
+   "CDS-PP": "cds-pp",
+   "PAN": "pan",
+   "PEV": "pev",
+   "CH": "ch",
+   "IL": "il",
+   "L": "l"
+  },
+  "IX": {
+   "PSD": "psd",
+   "PS": "ps",
+   "CDS-PP": "cds-pp",
+   "PCP": "pcp",
+   "BE": "be",
+   "PEV": "pev"
+  },
+  "XV": {
+   "PS": "ps",
+   "PSD": "psd",
+   "CH": "ch",
+   "IL": "il",
+   "PCP": "pcp",
+   "BE": "be",
+   "PAN": "pan",
+   "L": "l"
+  },
+  "Constituinte": {
+   "PS": "ps",
+   "PPM": "ppm",
+   "PPD": "psd",
+   "PCP": "pcp",
+   "CDS": "cds-pp",
+   "MDP/CDE": "mdp-cde",
+   "UDP": "udp"
+  },
+  "IA": {
+   "PS": "ps",
+   "PPD": "psd",
+   "CDS": "cds-pp",
+   "PCP": "pcp",
+   "UDP": "udp",
+   "ID": "id",
+   "MDP/CDE": "mdp-cde",
+   "PPM": "ppm"
+  },
+  "II": {
+   "PSD": "psd",
+   "PS": "ps",
+   "CDS": "cds-pp",
+   "PCP": "pcp",
+   "PPM": "ppm",
+   "ASDI": "asdi",
+   "UEDS": "ueds",
+   "MDP/CDE": "mdp-cde",
+   "UDP": "udp",
+   "ID": "id"
+  },
+  "VIII": {
+   "PS": "ps",
+   "PSD": "psd",
+   "PCP": "pcp",
+   "CDS-PP": "cds-pp",
+   "PEV": "pev",
+   "BE": "be"
+  }
+ }
+}

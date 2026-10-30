@@ -1,0 +1,24 @@
+{
+  "descricao": "Grupos parlamentares. As siglas e os nomes mostrados vêm do ficheiro InformacaoBase de cada legislatura (dados abertos da Assembleia da República). Este ficheiro diz só que siglas são o mesmo partido (famílias), que correções de grafia aplicamos aos nomes do ficheiro e que siglas não são grupos. Uma sigla fora das famílias tem o id slug(sigla).",
+  "familias": {
+    "psd": {
+      "siglas": ["PPD", "PSD", "PPD/PSD"],
+      "nota": "Inscrito a 25/01/1975 como Partido Popular Democrático (PPD); passou a designar-se Partido Social Democrata, sigla PPD/PSD, desde 13/10/1976.",
+      "fonte": "https://www.cne.pt/partido/partido-social-democrata",
+      "consultado_em": "2026-10-30"
+    },
+    "cds-pp": {
+      "siglas": ["CDS", "CDS-PP", "CDS/PP"],
+      "nota": "Inscrito a 13/01/1975 como Partido do Centro Democrático Social (CDS); denominação Partido do Centro Democrático Social - Partido Popular e sigla CDS-PP pelo Acórdão do Tribunal Constitucional n.º 282/93.",
+      "fonte": "https://www.cne.pt/partido/cds-partido-popular",
+      "consultado_em": "2026-10-30"
+    }
+  },
+  "grafia": {
+    "Bloco De Esquerda": "Bloco de Esquerda",
+    "Partido Comunista Portugues": "Partido Comunista Português",
+    "União Da Esquerda Para A Democracia Socialista": "União da Esquerda para a Democracia Socialista"
+  },
+  "excluir": ["DESC"],
+  "sem_grupo": ["Ninsc", "NiCR", "Indep"]
+}

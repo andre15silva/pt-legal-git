@@ -1,0 +1,115 @@
+{
+ "slug": "lei-teste",
+ "titulo": "Lei de teste",
+ "sigla": "LT",
+ "genitivo": "da Lei de teste",
+ "vigor_original": null,
+ "inicio_historia": null,
+ "parte": null,
+ "designacao": "Decreto-Lei n.º 90001",
+ "inicio_codigo": null,
+ "ato_original": "decreto-lei-90001",
+ "publicacao": "1970-03-02",
+ "link": null,
+ "eli": null,
+ "sumario": "Aprova a Lei de teste.",
+ "copia": null,
+ "arvore": [
+  {
+   "nivel": 1,
+   "tipo": "divisao",
+   "rotulo": "Capítulo I",
+   "epigrafe": "Disposições de teste"
+  },
+  {
+   "nivel": 2,
+   "tipo": "artigo",
+   "rotulo": "Artigo 1.º",
+   "epigrafe": "Objeto",
+   "artigo": "artigo-1",
+   "estado": "vigente",
+   "n": 6,
+   "ultima": "2022-01-01",
+   "datas": [
+    "1970-03-07",
+    "1974-02-06",
+    "1977-06-06",
+    "2020-10-16",
+    "2020-10-16",
+    "2022-01-01"
+   ],
+   "atos": [
+    "decreto-lei-90001",
+    "decreto-lei-90002",
+    "decreto-lei-901-1977",
+    "lei-901-2020",
+    "declaracao-de-retificacao-901-2020",
+    "lei-901-2022"
+   ],
+   "tipos": [
+    "original",
+    "alterado",
+    "alterado",
+    "alterado",
+    "retificado",
+    "alterado"
+   ]
+  },
+  {
+   "nivel": 2,
+   "tipo": "artigo",
+   "rotulo": "Artigo 2.º",
+   "epigrafe": "Requisitos",
+   "artigo": "artigo-2",
+   "estado": "vigente",
+   "n": 4,
+   "ultima": "2023-06-02",
+   "datas": [
+    "1970-03-07",
+    "2010-06-25",
+    "2019-02-13",
+    "2023-06-02"
+   ],
+   "atos": [
+    "decreto-lei-90001",
+    "decreto-lei-902-2010",
+    "lei-902-2019",
+    "lei-901-2023"
+   ],
+   "tipos": [
+    "original",
+    "alterado",
+    "alterado",
+    "alterado"
+   ]
+  },
+  {
+   "nivel": 2,
+   "tipo": "artigo",
+   "rotulo": "Artigo 3.º",
+   "epigrafe": "Regime",
+   "artigo": "artigo-3",
+   "estado": "vigente",
+   "n": 4,
+   "ultima": "2018-07-11",
+   "datas": [
+    "1970-03-07",
+    "1997-09-25",
+    "2012-03-01",
+    "2018-07-11"
+   ],
+   "atos": [
+    "decreto-lei-90001",
+    "lei-constitucional-901-1997",
+    "decreto-lei-903-2012",
+    "lei-organica-901-2018"
+   ],
+   "tipos": [
+    "original",
+    "alterado",
+    "alterado",
+    "alterado"
+   ]
+  }
+ ]
+}
