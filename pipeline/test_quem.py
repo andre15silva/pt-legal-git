@@ -169,6 +169,28 @@ class Tabelas(unittest.TestCase):
             for x in g["em_gestao"]:
                 self.assertTrue(g["inicio"] <= x["inicio"] and (g["fim"] is None or x["fim"] <= g["fim"]))
 
+    def test_parties_of_governments_xvii_to_xxv(self):
+        # D-3: only parties with ministers. Parliamentary support (XXI) and an electoral partner without
+        # ministers (PPM in the AD, XXIV) go in nota_partidos, never in partidos.
+        gs = {g["romano"]: g for g in self.g["governos"]}
+        self.assertTrue(all(g["partidos"] is not None for g in gs.values()))
+        self.assertEqual(gs["XXI"]["partidos"], ["ps"])
+        self.assertEqual(gs["XIX"]["partidos"], ["psd", "cds-pp"])
+        esperado = {"XVII": ["ps"], "XVIII": ["ps"], "XX": ["psd", "cds-pp"], "XXII": ["ps"], "XXIII": ["ps"],
+                    "XXIV": ["psd", "cds-pp"], "XXV": ["psd", "cds-pp"]}
+        for r, ps in esperado.items():
+            self.assertEqual(gs[r]["partidos"], ps, r)
+            self.assertTrue(gs[r]["fontes"]["partidos"].startswith("https://"), r)
+        self.assertEqual(gs["XXI"]["nota_partidos"]["texto"], "apoio_parlamentar")
+        self.assertEqual(gs["XXI"]["nota_partidos"]["partidos"], ["be", "pcp", "pev"])
+        self.assertEqual(gs["XXIV"]["nota_partidos"]["texto"], "coligacao_eleitoral")
+        self.assertEqual(gs["XXIV"]["nota_partidos"]["partidos"], ["ppm"])
+        for g in gs.values():
+            n = g["nota_partidos"]
+            if n is not None:
+                self.assertTrue(n["fonte"].startswith("https://"), g["romano"])
+                self.assertFalse(set(n.get("partidos") or []) & set(g["partidos"]), g["romano"])
+
     def test_presidents_contiguous_and_sourced(self):
         ps = self.p["presidentes"]
         for a, b in zip(ps, ps[1:]):

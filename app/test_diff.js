@@ -308,7 +308,25 @@ const J = x => JSON.parse(JSON.stringify(x));  // objects from the app's context
 if (fs.existsSync(path.join(__dirname, 'data', 'quem.json'))) {
   const D = f => JSON.parse(fs.readFileSync(path.join(__dirname, 'data', f), 'utf8'));
   const ref = { atos: D('atos.json'), quem: D('quem.json'), passagem: D('passagem.json'), governos: D('governos.json'), index: D('index.json') };
-  const modelo = (dip, artigo) => { const art = D('d/' + dip + '/' + artigo + '.json'); return { art, m: A.originModel(art, art.versoes.length - 1, ref.atos, null, null) }; };
+  // Parties of Governments XVII to XXV (pipeline/governos.json, docs/QUEM.md §1.1): only parties with ministers.
+  const gv = r => ref.governos.governos.find(g => g.romano === r);
+  assert.deepStrictEqual(gv('XXI').partidos, ['ps']);
+  assert.deepStrictEqual(gv('XIX').partidos, ['psd', 'cds-pp']);
+  assert.ok(ref.governos.governos.every(g => g.partidos !== null), 'every Government has its parties');
+  assert.strictEqual(A.textoDe(A.frasePartidos(gv('XXI'), ref, 'XIII')), 'Partido no Governo: Partido Socialista (PS). Fonte ↗');
+  assert.strictEqual(A.textoDe(A.fraseNotaPartidos(gv('XXI'), ref, 'XIII')),
+    'O Bloco de Esquerda (BE), o Partido Comunista Português (PCP) e o Partido Ecologista "Os Verdes" (PEV) apoiaram o Governo no Parlamento. Estes partidos não tiveram membros no Governo. Fonte ↗');
+  assert.ok(/^Partidos no Governo: .+ \(PSD\), .+ \(CDS-PP\)\. Fonte ↗$/.test(A.textoDe(A.frasePartidos(gv('XIX'), ref, 'XII'))));
+  assert.strictEqual(A.textoDe(A.fraseNotaPartidos(gv('XXIV'), ref, 'XVI')), 'O Partido Popular Monárquico (PPM) também fez parte da coligação eleitoral, mas não teve ministros. Fonte ↗');
+  assert.strictEqual(A.fraseNotaPartidos(gv('XIX'), ref, 'XII'), null);
+  assert.strictEqual(A.fraseNotaPartidos(gv('III'), ref, 'I'), null);  // «presidencial» has its own sentence
+  // A decree-law of the XXI Government says both sentences.
+  const dl21 = Object.keys(ref.quem).find(id => ref.quem[id].tipo_ato === 'decreto-lei' && ref.quem[id].d_cm && (ref.quem[id].governo || {}).numero === 21);
+  if (dl21) {
+    const r21 = A.registo(ref, dl21), t21 = A.frasesQuem(r21.quem, r21.p, r21.ato, ref).map(A.textoDe).join(' ');
+    assert.ok(t21.includes('Partido no Governo: Partido Socialista (PS). Fonte ↗ O Bloco de Esquerda (BE)'), t21);
+  }
+  const modelo =(dip, artigo) => { const art = D('d/' + dip + '/' + artigo + '.json'); return { art, m: A.originModel(art, art.versoes.length - 1, ref.atos, null, null) }; };
   // Runs (R2) on real articles.
   const ln6 = modelo('lei-nacionalidade', 'artigo-6');
   assert.strictEqual(ln6.m.runs.length, 4);

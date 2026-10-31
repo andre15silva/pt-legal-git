@@ -18,9 +18,38 @@ The pipeline writes facts and reason codes. The app writes the sentences. Shapes
 | Initiatives, votes, events | AR open data, `Iniciativas<leg>` and `Diplomas<leg>` | read at build time |
 
 Every row of the three hand-made tables has a source URL and a `consultado_em` date. A fact without a
-source is `null`, never a guess: the parties of Governments XVII to XXV are `null` because no official
-page we could read states them (the archive does not, and the current portal loads its content with
-JavaScript). The app then leaves the sentence out.
+source is `null`, never a guess, and the app then leaves the sentence out.
+
+### 1.1 Parties of Governments XVII to XXV
+
+The archive does not state the parties of Governments XVII to XXV, and the current portal loads its
+content with JavaScript. For these nine rows we accept secondary sources (2026-10-31), in this order:
+a party's own publication, the Assembleia da República, then the press (Lusa, RTP, Observador). Each
+row has one URL in `fontes.partidos` and quotes the sentence in `notas`. `partidos` lists only the parties
+with ministers (D-3).
+
+| Government | `partidos` | Source (`fontes.partidos`) |
+|---|---|---|
+| XVII (2005–09) | `ps` | *Acção Socialista* (PS newspaper) n.º 1239, 10/03/2005: «Oito militantes do PS e oito independentes» |
+| XVIII (2009–11) | `ps` | RTP, 22/10/2009: «um Governo de responsabilidade do Partido Socialista» |
+| XIX (2011–15) | `psd`, `cds-pp` | Lusa (RTP), 17/06/2011: «três pertencem ao CDS-PP, quatro são do PSD e quatro […] independentes» |
+| XX (2015) | `psd`, `cds-pp` | RTP, 30/10/2015: «o novo Governo minoritário de PSD e CDS-PP» |
+| XXI (2015–19) | `ps` | Assembleia da República, «As legislaturas»: Government of the PS «apoiado por uma maioria parlamentar, constituída pelo BE, PCP e PEV» |
+| XXII (2019–22) | `ps` | Lusa (Observador), 30/03/2022: «um executivo minoritário» without written agreements «com os partidos à esquerda do PS» |
+| XXIII (2022–24) | `ps` | Observador, 28/03/2024: the ministers not in the PS were «sete ministros» without a party card |
+| XXIV (2024–25) | `psd`, `cds-pp` | Lusa (Observador), 01/04/2024: «o Governo PSD/CDS-PP», Nuno Melo «ministro do CDS-PP» |
+| XXV (2025–) | `psd`, `cds-pp` | Lusa (RTP), 04/06/2025: «o segundo de coligação PSD/CDS-PP» |
+
+`nota_partidos` holds a code and a source. The app writes the sentence (`fraseNotaPartidos` in
+`app/app.js`):
+
+- `presidencial` (III to V, `partidos: []`): the parties did not name the ministers.
+- `apoio_parlamentar` (XXI, `partidos: ["be", "pcp", "pev"]`): these parties supported the Government
+  in Parliament and had no members in it. They are not coalition partners.
+- `coligacao_eleitoral` (XXIV, `partidos: ["ppm"]`): the PPM was in the AD electoral coalition but had
+  no minister (Lusa and DN list the 17 ministers: PSD, one CDS-PP, independents).
+
+Independent ministers are not a party and are not listed.
 
 ## 2. The signature block
 
@@ -105,7 +134,7 @@ and the group's position in each generalidade vote, by diploma. No counts, no pe
 
 ## 6. Known gaps
 
-- Parties of Governments XVII–XXV: `null` (see §1).
+- Parties of Governments XVII–XXV: from a party newspaper, the Assembleia da República or the press, not from an official Government page (see §1.1).
 - Gestão periods (`em_gestao`): empty. We found no DR or AR source for their start dates this round, so
   the «Governo demitido» note (R-24) is not shown.
 - Governments III, IV and V: the DR published the Prime Minister's appointment one day before the

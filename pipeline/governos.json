@@ -1,6 +1,6 @@
 {
- "descricao": "Governos Constitucionais desde 1976. inicio = data de posse do Governo; fim = posse do Governo seguinte (intervalos [inicio, fim)). Fontes: o decreto de nomeação do Primeiro-Ministro no Diário da República (assinado no dia da posse; para III, IV e V, na véspera) e a página «Tomada de posse» do arquivo histórico do Governo (historico.portugal.gov.pt), que diz os partidos dos Governos I a XVI. «partidos»: só os partidos com ministros (D-3), com os ids de pipeline/grupos.json; [] com nota_partidos nos Governos de iniciativa presidencial (III a V); null quando nenhuma fonte oficial o diz. em_gestao: vazio, porque não temos fontes do Diário da República ou da Assembleia para os períodos de gestão (R-24 fica cortado).",
- "verificado": "2026-10-30: datas de posse confirmadas em duas fontes oficiais por linha (decreto no DR e arquivo histórico, I–XX; decreto no DR, XXI–XXV). Comparado com os nomes nas assinaturas dos atos (pipeline/assinaturas.json).",
+ "descricao": "Governos Constitucionais desde 1976. inicio = data de posse do Governo; fim = posse do Governo seguinte (intervalos [inicio, fim)). Fontes: o decreto de nomeação do Primeiro-Ministro no Diário da República (assinado no dia da posse; para III, IV e V, na véspera) e a página «Tomada de posse» do arquivo histórico do Governo (historico.portugal.gov.pt), que diz os partidos dos Governos I a XVI. O arquivo não diz os partidos dos Governos XVII a XXV: para estes, fontes.partidos é o jornal do PS (XVII), a Assembleia da República (XXI) ou a imprensa (RTP, Lusa, Observador), e cada linha cita a frase em «notas». «partidos»: só os partidos com ministros (D-3), com os ids de pipeline/grupos.json; [] com nota_partidos nos Governos de iniciativa presidencial (III a V); null quando nenhuma fonte o diz. nota_partidos: {texto, fonte}, com um código em texto: «presidencial» (III a V); «apoio_parlamentar» (XXI) e «coligacao_eleitoral» (XXIV), com a lista dos outros partidos em nota_partidos.partidos. A aplicação escreve a frase. em_gestao: vazio, porque não temos fontes do Diário da República ou da Assembleia para os períodos de gestão (R-24 fica cortado).",
+ "verificado": "2026-10-30: datas de posse confirmadas em duas fontes oficiais por linha (decreto no DR e arquivo histórico, I–XX; decreto no DR, XXI–XXV). Comparado com os nomes nas assinaturas dos atos (pipeline/assinaturas.json). 2026-10-31: partidos dos Governos XVII a XXV confirmados na fonte de cada linha (fontes.partidos e notas).",
  "governos": [
   {
    "numero": 1,
@@ -411,18 +411,21 @@
    "nomes_dr": [
     "José Sócrates Carvalho Pinto de Sousa"
    ],
-   "partidos": null,
+   "partidos": [
+    "ps"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777",
     "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc17/composicao.aspx",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/19-2005-301777",
+    "partidos": "https://as.ps.pt/pdf/2005/AS1239.pdf"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: o «Acção Socialista» (jornal do PS), n.º 1239, de 10/03/2005, diz «Oito militantes do PS e oito independentes são os ministros do novo Governo de Portugal». Consultado a 31/10/2026."
    ]
   },
   {
@@ -434,18 +437,21 @@
    "nomes_dr": [
     "José Sócrates Carvalho Pinto de Sousa"
    ],
-   "partidos": null,
+   "partidos": [
+    "ps"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888",
     "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc18/composicao.aspx",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/100-b-2009-355888",
+    "partidos": "https://www.rtp.pt/noticias/politica/socrates-apresenta-novo-elenco-de-ministros-a-belem_n289133"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a RTP (22/10/2009) diz que José Sócrates prometeu «um Governo de responsabilidade do Partido Socialista» e descreve «Uma estratégia de abertura a personalidades independentes». A Lusa (RTP, 17/06/2011) diz que o XVIII Governo tinha «16 ministros, cinco dos quais apresentados como independentes». Consultado a 31/10/2026."
    ]
   },
   {
@@ -458,18 +464,22 @@
     "Pedro Manuel Mamede Passos Coelho",
     "Pedro Passos Coelho"
    ],
-   "partidos": null,
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360",
     "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc19/composicao.aspx",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/54-b-2011-316360",
+    "partidos": "https://www.rtp.pt/noticias/politica/executivo-tem-11-ministros-tres-do-cds-pp-quatro-do-psd-e-quatro-independentes_n452677"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a Lusa (RTP, 17/06/2011) diz que o Governo tem «11 ministros, dos quais três pertencem ao CDS-PP, quatro são do PSD e quatro apresentados como independentes». Consultado a 31/10/2026."
    ]
   },
   {
@@ -482,18 +492,22 @@
     "Pedro Manuel Mamede Passos Coelho",
     "Pedro Passos Coelho"
    ],
-   "partidos": null,
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134",
     "posse": "https://www.historico.portugal.gov.pt/pt/o-governo/arquivo-historico/governos-constitucionais/gc20/composicao.aspx",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/124-b-2015-70881134",
+    "partidos": "https://www.rtp.pt/noticias/politica/tomada-de-posse-do-novo-governo-reveja-os-principais-momentos_e869955"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a RTP (30/10/2015) diz «o novo Governo minoritário de PSD e CDS-PP, encabeçado por Pedro Passos Coelho, assumiu funções». O Jornal de Negócios (27/10/2015) nomeia os ministros do CDS-PP: Paulo Portas, Assunção Cristas, Pedro Mota Soares e Luís Morais Leitão. Consultado a 31/10/2026."
    ]
   },
   {
@@ -506,18 +520,29 @@
     "António Luís Santos da Costa",
     "António Luís Santos Costa"
    ],
-   "partidos": null,
-   "nota_partidos": null,
+   "partidos": [
+    "ps"
+   ],
+   "nota_partidos": {
+    "texto": "apoio_parlamentar",
+    "partidos": [
+     "be",
+     "pcp",
+     "pev"
+    ],
+    "fonte": "https://www.rtp.pt/noticias/politica/antonio-costa-indigitado-a-lista-dos-novos-ministros-de-portugal_n876431"
+   },
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
     "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/129-b-2015-71124503",
+    "partidos": "https://www.parlamento.pt/Parlamento/Paginas/dias-democracia-art4.aspx"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a Assembleia da República diz que o Governo foi «formado a partir do partido político que ficou em segundo lugar nas eleições – PS –, apoiado por uma maioria parlamentar, constituída pelo BE, PCP e PEV». A RTP (24/11/2015) diz «Um executivo socialista, apoiado pelas bancadas do PCP, BE e PEV». O BE, o PCP e o PEV não tiveram membros no Governo. Consultado a 31/10/2026."
    ]
   },
   {
@@ -530,18 +555,21 @@
     "António Luís Santos da Costa",
     "António Luís Santos Costa"
    ],
-   "partidos": null,
+   "partidos": [
+    "ps"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
     "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/60-2019-125754983",
+    "partidos": "https://observador.pt/2022/03/30/novo-governo-de-costa-toma-posse-esta-quarta-feira/"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a Lusa (Observador, 30/03/2022) diz que o segundo Governo de António Costa foi «um executivo minoritário que ao contrário do anterior não teve o suporte de acordos escritos com os partidos à esquerda do PS». Consultado a 31/10/2026."
    ]
   },
   {
@@ -554,18 +582,21 @@
     "António Luís Santos da Costa",
     "António Luís Santos Costa"
    ],
-   "partidos": null,
+   "partidos": [
+    "ps"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
     "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/81-b-2022-181424625",
+    "partidos": "https://observador.pt/2024/03/28/tantos-ministros-como-costa-as-mesmas-idades-ligeiramente-menos-mulheres-e-menos-independentes-o-que-muda-com-montenegro/"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: o Observador (28/03/2024) diz que, no fim do Governo, «há sete ministros que cessam agora funções que não têm cartão de militante do PS». A Lusa (RTP, 09/11/2023) diz que o PS conseguiu «uma maioria absoluta de deputados, e formou o XXIII Governo Constitucional». Consultado a 31/10/2026."
    ]
   },
   {
@@ -578,18 +609,28 @@
     "Luís Filipe Montenegro Cardoso de Morais Esteves",
     "Luís Montenegro"
    ],
-   "partidos": null,
-   "nota_partidos": null,
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
+   "nota_partidos": {
+    "texto": "coligacao_eleitoral",
+    "partidos": [
+     "ppm"
+    ],
+    "fonte": "https://observador.pt/2024/04/01/marcelo-da-posse-pela-terceira-vez-a-um-executivo-o-primeiro-liderado-pelo-psd/"
+   },
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
     "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
     "fim": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/40-f-2024-858664732",
+    "partidos": "https://observador.pt/2024/04/01/marcelo-da-posse-pela-terceira-vez-a-um-executivo-o-primeiro-liderado-pelo-psd/"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a Lusa (Observador, 01/04/2024) diz que a AD é a «coligação pré-eleitoral formada por PSD, CDS-PP e PPM», que o Governo «integra como ministro do CDS-PP o seu presidente, Nuno Melo» e chama-lhe «o Governo PSD/CDS-PP». O DN (28/03/2024) diz que, dos 17 ministros, «sete são do núcleo “mais próximo” de Luís Montenegro [...]; sete são “gente” do partido, um é do CDS e só dois chegam ao Governo sem experiência política ou partidária». O PPM não teve ministros. Consultado a 31/10/2026."
    ]
   },
   {
@@ -602,17 +643,21 @@
     "Luís Filipe Montenegro Cardoso de Morais Esteves",
     "Luís Montenegro"
    ],
-   "partidos": null,
+   "partidos": [
+    "psd",
+    "cds-pp"
+   ],
    "nota_partidos": null,
    "em_gestao": [],
    "fontes": {
     "inicio": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
     "posse": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
-    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259"
+    "primeiro_ministro": "https://diariodarepublica.pt/dr/detalhe/decreto-presidente-republica/47-b-2025-920796259",
+    "partidos": "https://www.rtp.pt/noticias/politica/presidente-da-republica-aceita-composicao-do-xxv-governo-constitucional_e1659828"
    },
    "consultado_em": "2026-10-30",
    "notas": [
-    "Não encontrámos uma fonte oficial que diga os partidos deste Governo: o arquivo histórico do Governo não o diz para os Governos XVII a XXV e o portal atual carrega a composição por JavaScript. Fica null até haver fonte (a página omite a frase)."
+    "Partidos: a Lusa (RTP, 04/06/2025) diz que é «o segundo de coligação PSD/CDS-PP chefiado por Luís Montenegro» e que «A pasta da Defesa Nacional continua com Nuno Melo», «presidente do CDS-PP». Consultado a 31/10/2026."
    ]
   }
  ]

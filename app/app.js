@@ -301,14 +301,32 @@
     var f = [(nomes.length === 1 ? 'Partido no Governo: ' : 'Partidos no Governo: ') + nomes.join(', ') + '.'];
     return g.fontes && g.fontes.partidos ? f.concat([' ', lig(g.fontes.partidos, 'Fonte ↗')]) : f;
   }
+  // The other parties of a Government's note (XXI: parliamentary support; XXIV: the electoral coalition).
+  // «O Bloco de Esquerda (BE), o Partido Comunista Português (PCP) e o … apoiaram o Governo no Parlamento. Estes partidos não tiveram membros no Governo.»
+  function fraseNotaPartidos(g, ref, leg) {
+    var n = g && g.nota_partidos;
+    if (!n || !(g.partidos || []).length || !(n.partidos || []).length || !n.fonte) return null;
+    var grupos = (ref.governos || {}).grupos || {}, um = n.partidos.length === 1;
+    var nomes = lista(n.partidos.map(function (id) {
+      var ns = (grupos[id] || {}).nomes || [];
+      var x = ns.filter(function (y) { return (y.legislaturas || []).indexOf(leg) >= 0; })[0] || ns[ns.length - 1];
+      return x ? (GRUPO_F.test(x.nome) ? 'a ' : 'o ') + x.nome + ' (' + x.sigla + ')' : 'o ' + id.toUpperCase();
+    }));
+    nomes = nomes.charAt(0).toUpperCase() + nomes.slice(1);
+    var t = n.texto === 'apoio_parlamentar' ? nomes + (um ? ' apoiou' : ' apoiaram') + ' o Governo no Parlamento. ' + (um ? 'Este partido não teve' : 'Estes partidos não tiveram') + ' membros no Governo.'
+      : n.texto === 'coligacao_eleitoral' ? nomes + ' também ' + (um ? 'fez' : 'fizeram') + ' parte da coligação eleitoral, mas não ' + (um ? 'teve' : 'tiveram') + ' ministros.'
+      : null;
+    return t ? [t, ' ', lig(n.fonte, 'Fonte ↗')] : null;
+  }
   function frasesDL(quem, ref, ato) {
     var out = [], m = quem.motivos || {}, dr = fonteDR(quem, ato);
     if (quem.governo && quem.governo.numero != null && quem.d_cm) {
       var g = governoDe(ref, quem.governo.numero);
       out.push(['O ', gov(quem.governo.numero), ' aprovou este decreto-lei em Conselho de Ministros a ', data(dr, quem.d_cm), '.']);
       if (g && g.primeiro_ministro) out.push(['Primeiro-Ministro: ', g.fontes && g.fontes.primeiro_ministro ? lig(g.fontes.primeiro_ministro, g.primeiro_ministro) : g.primeiro_ministro, '.']);
-      var pt = frasePartidos(g, ref, quem.legislatura);
+      var pt = frasePartidos(g, ref, quem.legislatura), np = fraseNotaPartidos(g, ref, quem.legislatura);
       if (pt) out.push(pt);
+      if (pt && np) out.push(np);
       if (quem.em_gestao && quem.em_gestao.fonte) out.push(['Nesta data, o Governo estava demitido. A Constituição limita os atos de um Governo demitido à gestão corrente. ', lig(quem.em_gestao.fonte, 'Fonte ↗')]);
     } else {
       var f = ['Não sabemos que Governo aprovou este decreto-lei.'], c = m.governo || m.d_cm;
@@ -2837,8 +2855,10 @@
       var meta = [];
       if (g) {
         if (g.primeiro_ministro) meta.push(['Primeiro-Ministro: ' + g.primeiro_ministro]);
-        var pt = frasePartidos(g, ref, legislaturasDe(g, gj).slice(-1)[0]);
-        if (pt) meta.push(pt.map(function (x) { return typeof x === 'string' ? x.replace(/\.$/, '') : x; }));
+        var ul = legislaturasDe(g, gj).slice(-1)[0], pt = frasePartidos(g, ref, ul), np = fraseNotaPartidos(g, ref, ul);
+        var semPonto = function (x) { return typeof x === 'string' ? x.replace(/\.$/, '') : x; };
+        if (pt) meta.push(pt.map(semPonto));
+        if (pt && np) meta.push(np.map(semPonto));
       }
       var ls = g ? legislaturasDe(g, gj) : [];
       var sub = g ? quando + (ls.length ? ' ' + (ls.length === 1 ? 'Legislatura ' : 'Legislaturas ') + lista(ls.map(function (x) { return x === 'Constituinte' ? 'Assembleia Constituinte' : x; })) + '.' : '')
@@ -3530,7 +3550,7 @@
       h('h2', { className: 'h2', id: 'quem', tabIndex: -1 }, 'Quem fez cada lei'),
       h('ul', null,
         h('li', null, 'Lemos as datas e os nomes nas assinaturas de cada ato no Diário da República.'),
-        h('li', null, 'O número do Governo e os partidos vêm de uma tabela que fizemos a partir de fontes oficiais.'),
+        h('li', null, 'O número do Governo e os partidos vêm de uma tabela que fizemos a partir de fontes oficiais. Para os partidos dos Governos XVII a XXV, a fonte é a Assembleia da República, um jornal de partido ou a imprensa. Cada frase tem a ligação para a fonte.'),
         h('li', null, 'Comparamos a tabela com os nomes nas assinaturas.'),
         h('li', null, 'Quando um facto falta, dizemos porquê.')),
       h('h2', { className: 'h2', id: 'textos', tabIndex: -1 }, 'Histórias e glossário'),
@@ -3612,7 +3632,7 @@
 
   window.RedacaoApp = { pick: pick, diff: diff, diffLines: diffLines, mudancas: mudancas, originModel: originModel, search: search, resolve: resolve, periodo: periodo, versionKey: versionKey,
     frasesQuem: frasesQuem, frasesProponentes: frasesProponentes, linhaPessoas: linhaPessoas, linhaVfg: linhaVfg, linhasEventos: linhasEventos, linhaAto: linhaAto,
-    nomeGrupo: nomeGrupo, ordinalExtenso: ordinalExtenso, marcarTermos: marcarTermos, termosPara: termosPara, chavePartilha: chavePartilha, partilhaUrl: partilhaUrl,
+    nomeGrupo: nomeGrupo, frasePartidos: frasePartidos, fraseNotaPartidos: fraseNotaPartidos, ordinalExtenso: ordinalExtenso, marcarTermos: marcarTermos, termosPara: termosPara, chavePartilha: chavePartilha, partilhaUrl: partilhaUrl,
     metaDiploma: metaDiploma, tituloDe: tituloDe, textoDe: textoDe, fraseOE: fraseOE, avisoTransitorias: avisoTransitorias, faixasLegislaturas: faixasLegislaturas,
     ledeGeneralidade: ledeGeneralidade, registo: registo, rotular: rotular, escolhida: escolhida, linhaFalta: linhaFalta, curtoAto: curtoAto,
     origemLinhas: origemLinhas, notaOrigem: notaOrigem, escopoLinhas: escopoLinhas, rotuloOrigem: rotuloOrigem, resumoOrigem: resumoOrigem, contaOrigem: contaOrigem, linhaHonesta: linhaHonesta,

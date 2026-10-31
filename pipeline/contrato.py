@@ -351,6 +351,12 @@ def validar_governos(obj) -> list[str]:
                     e.append(f"{w}.partidos: {p!r} não está em grupos")
             if ps == [] and not (isinstance(g.get("nota_partidos"), dict) and URL.match(str(g["nota_partidos"].get("fonte")))):
                 e.append(f"{w}: partidos [] sem nota_partidos com fonte")
+        nota = g.get("nota_partidos")
+        if e.tipo(f"{w}.nota_partidos", nota, dict, nulo=True) and nota is not None:
+            e.url(f"{w}.nota_partidos.fonte", nota.get("fonte"))
+            for p in nota.get("partidos") or []:
+                if p not in grupos:
+                    e.append(f"{w}.nota_partidos.partidos: {p!r} não está em grupos")
         for x in g.get("em_gestao") or []:
             if not (g["inicio"] <= x.get("inicio", "") and (g.get("fim") is None or (x.get("fim") or "9999") <= g["fim"])):
                 e.append(f"{w}.em_gestao: {x} fora da linha")
