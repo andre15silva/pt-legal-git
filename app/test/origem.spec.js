@@ -155,8 +155,14 @@ async function nuncaBody(p, passo) { const a = await ativo(p); ok(a !== 'BODY' &
     if (w === 390) {
       await p.close();
       p = await pagina(b, w, 844, ART6);
+      // Measured against «Texto» on the same article: the head and the first note add at most 230 px.
       const y = await p.evaluate(() => document.querySelector('.rd-otxt p').getBoundingClientRect().top + scrollY);
-      ok(y <= 670, t + 'K11 primeira linha da lei', Math.round(y));
+      const q = await b.newPage({ viewport: { width: w, height: 844 } });
+      await q.goto(BASE + ART6.replace('?ver=origem', ''));
+      await q.waitForSelector('.lei .lei-p');
+      const yt = await q.evaluate(() => document.querySelector('.lei .lei-p').getBoundingClientRect().top + scrollY);
+      await q.close();
+      ok(y - yt <= 230, t + 'K11 primeira linha da lei', Math.round(y) + ' (Texto: ' + Math.round(yt) + ')');
     }
     ok(p.erros.length === 0, t + 'sem erros (lente)', p.erros);
     await p.close();

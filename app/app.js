@@ -511,7 +511,7 @@
   // Step 1 names who started each law, not who worded each line: every law's note says «Iniciativa»
   // and every law's sheet carries the honesty line. Siglas appear in a note only as the complete
   // list of the act's proposers, in AR order, at most 4 (R6); never a vote.
-  var HONESTA = ['Mostramos quem apresentou a iniciativa que deu origem a esta lei. Na especialidade, os grupos parlamentares propõem alterações ao texto. Ainda não sabemos que alteração escreveu cada frase.'];
+  var HONESTA = ['Mostramos quem apresentou a iniciativa que deu origem a esta lei. No Parlamento, os grupos parlamentares podem propor alterações ao texto antes da votação final.'];
   var LENTE_HONESTA = 'Mostra quem apresentou a iniciativa que deu origem à lei, não quem escreveu cada frase.';
   // The lens categories (R7), in the order of the legend.
   var CATEGORIAS = [['gov', 'Governo'], ['dep', 'Deputados'], ['mix', 'Governo e deputados'], ['dl', 'Decreto-lei do Governo'], ['ret', 'Retificação'],
@@ -761,7 +761,7 @@
   // The foot of the sheet: how sure we are (§2.3).
   function confiancaOrigem(ref, id) {
     var t = tipoOrigem(ref, id);
-    if (LEIS[t]) return (registo(ref, id).quem.proponentes || []).length ? 'Origem verificada ao nível do diploma. Ainda não sabemos que proposta de alteração escreveu cada frase.' : 'Origem não identificada no Parlamento.';
+    if (LEIS[t]) return (registo(ref, id).quem.proponentes || []).length ? 'Origem verificada ao nível do diploma.' : 'Origem não identificada no Parlamento.';
     if (t === 'desconhecido') return 'Origem não identificada.';
     return 'Origem verificada: o Diário da República publica este diploma.';
   }
@@ -1959,7 +1959,7 @@
   // and marcar=iniciativa. Each write replaces the history entry, so Back still leaves the article.
   var COMO_LEMOS = [
     'Comparamos cada redação com a anterior, palavra a palavra. A nota de cada grupo de linhas nomeia o diploma que mudou essas linhas por último. Uma mudança só de pontuação não muda a nota.',
-    'Para uma lei, mostramos quem apresentou a iniciativa. Na especialidade, os grupos parlamentares propõem alterações ao texto. Ainda não sabemos que alteração escreveu cada frase.'
+    'Para uma lei, mostramos quem apresentou a iniciativa. No Parlamento, os grupos parlamentares podem propor alterações ao texto antes da votação final.'
   ];
   var POR_PARTIDO = 'Nenhuma votação do Parlamento é sobre uma frase. A votação na generalidade é sobre o texto inicial de cada iniciativa. A votação final global é sobre a lei inteira. Por isso, mostramos como cada grupo votou em cada diploma, com todos os grupos.';
   // What takes focus after the next render: the sheet's heading, a walk button or a note. Never BODY.

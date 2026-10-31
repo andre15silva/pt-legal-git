@@ -772,7 +772,10 @@ abbr[title] { text-decoration: none; }
   .art-num { font-size: 30px; line-height: 34px; }
   .art-ep { font-size: 26px; line-height: 32px; }
   .art-head { margin-top: 16px; }
-  .art-acoes { padding-bottom: 0; }
+  .art-acoes { padding-bottom: 0; flex-wrap: nowrap; gap: 4px 14px; font-size: 14px; }
+  .art-acoes .rd-btn { padding-left: 0; padding-right: 0; }
+  .art-acoes .rd-btn, .art-acoes .rd-link { font-size: 14px; }
+  .artigo > .legenda-regua { display: none; }
   .estado { font-size: 16px; line-height: 24px; margin-top: 12px; }
   .artigo > .rd-ruler { margin-top: 24px; }
   .so-largo { display: none; }
@@ -854,3 +857,11 @@ abbr[title] { text-decoration: none; }
 
 /* A deletion followed straight by an insertion (a rewritten paragraph): keep a gap between them. */
 del.rd-del + ins.rd-ins { margin-left: 0.3em; }
+
+/* Phone: the law starts close to where it starts in «Texto». The summary repeats what the notes say,
+   so it stays on wider screens only. */
+@media (max-width: 720px) {
+  .oc-cabeca { gap: 2px; margin-bottom: 16px; }
+  .oc-resumo { display: none; }
+  .oc-intro { font-size: 14px; line-height: 20px; }
+}
