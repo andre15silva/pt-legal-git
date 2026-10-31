@@ -2881,9 +2881,23 @@
     var pos = ls.map(function (x) { return ordem.indexOf(x); }).filter(function (i) { return i >= 0; }).sort(function (a, b) { return a - b; });
     var runs = [];
     pos.forEach(function (i) { var r = runs[runs.length - 1]; if (r && r[1] === i - 1) r[1] = i; else runs.push([i, i]); });
-    return runs.map(function (r) { return r[0] === r[1] ? ordem[r[0]] : r[1] === r[0] + 1 ? ordem[r[0]] + ' e ' + ordem[r[1]] : ordem[r[0]] + ' a ' + ordem[r[1]]; }).join(', ');
+    // The AR keeps legislatura I in two files (IA, IB): readers see «I».
+    function nome(i) { return /^I[AB]$/.test(ordem[i]) ? 'I' : ordem[i]; }
+    return runs.map(function (r) { var a = nome(r[0]), b = nome(r[1]); return a === b ? a : r[1] === r[0] + 1 ? a + ' e ' + b : a + ' a ' + b; }).join(', ');
   }
-  function legislaturasTexto(ls, ordem, minuscula) { return (minuscula ? 'l' : 'L') + (ls.length === 1 ? 'egislatura ' : 'egislaturas ') + faixasLegislaturas(ls, ordem); }
+  // One entry per sigla: the AR named the CDS-PP two ways, under the same sigla.
+  function siglasDoGrupo(nomes) {
+    var out = [];
+    nomes.forEach(function (n) {
+      var x = out.filter(function (o) { return o.sigla === n.sigla; })[0];
+      if (x) x.legislaturas = x.legislaturas.concat(n.legislaturas || []); else out.push({ sigla: n.sigla, legislaturas: (n.legislaturas || []).slice() });
+    });
+    return out;
+  }
+  function legislaturasTexto(ls, ordem, minuscula) {
+    var n = ls.filter(function (x, i) { return ls.map(function (y) { return y.replace(/^I[AB]$/, 'I'); }).indexOf(x.replace(/^I[AB]$/, 'I')) === i; }).length;
+    return (minuscula ? 'l' : 'L') + (n === 1 ? 'egislatura ' : 'egislaturas ') + faixasLegislaturas(ls, ordem);
+  }
   function ordemLegs(gj) { return ((gj && gj.legislaturas) || []).map(function (l) { return l.sigla; }); }
   function Grupos() {
     var r = useData(['grupos/index.json', 'governos.json']);
@@ -2920,7 +2934,7 @@
       h(Crumbs, { items: [['Leis e códigos', '#/'], ['Grupos parlamentares', '#/grupos'], [ultimo.nome]] }),
       h('header', { className: 'ato-cabeca' },
         h('h1', { className: 'display' }, 'Grupo parlamentar: ' + nome),
-        h('p', { className: 'lead' }, 'Nomes nos registos do Parlamento: ' + g.nomes.map(function (n) { return n.sigla + ', ' + legislaturasTexto(n.legislaturas, ordem, true) + '.'; }).join(' ')),
+        h('p', { className: 'lead' }, 'Nomes nos registos do Parlamento: ' + siglasDoGrupo(g.nomes).map(function (n) { return n.sigla + ', ' + legislaturasTexto(n.legislaturas, ordem, true) + '.'; }).join(' ')),
         h(Guia, { tipo: 'grupo' })),
       h('aside', { className: 'regra grupo-notas', 'aria-labelledby': 'notas-g' },
         h('p', { id: 'notas-g' }, h('strong', null, 'Notas')),
