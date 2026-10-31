@@ -123,6 +123,26 @@ each line: the especialidade amendments are not in the data yet, and the page sa
 
 The story figures (`FigOrigem`) still use `R.TextOrigin` with the older single palette (`corDe`), as does the register's colour band.
 
+## Motion
+
+The motion layer is one module, described in [docs/DESIGN-DIRECTION.md](../docs/DESIGN-DIRECTION.md) §10: `app/motion.css` (the
+animations of the pages) and `app/motion.js` (its script half). `motion.js` loads before `app.js`; it sets the house style (page
+entry, drawn rules, diff ink, blocks that wait until seen, counts), the phone sheets that follow the finger and the vote group lit
+across a page, and `app.js` calls `RedacaoMotion.criar(…)` once for its React parts: the time ruler as a scrubber (`Maquina`), the
+morph between redações (`Morph`), the replay clock (`useReplay`), the strip of «Quem fez cada alteração» (`LinhaTempo`), the
+passage line of an act (`Passagem`, from the stages `frasesQuem` tags with `etapa`), the story ruler (`ReguaHistoria`), the
+step-through figure (`FigPassos`) and the diploma's reading hairline (`Progresso`). The design system adds `R.Conta` (a number
+that counts once), `R.Feito` (a copy confirmation with a tick) and `data-grupo` on the siglas of `R.Votacao`. Add `?semtl` before
+the `#` to see what a browser without scroll timelines gets.
+
+- `node app/test_diff.js` checks the pure helpers (replay timing, the spring, a story's law-time, a step's lines, the passage
+  stages of the fixture acts).
+- `app/test/movimento.spec.js` (Playwright, real data): reduced motion runs nothing, the scrubber's keys and drag (the ruler
+  stays under the pointer), the morph, replay and its stop, the Origem replay, the phone sheets' drag, the vote group by pointer
+  and keyboard, the vote tallies, the passage line, the step-through states at 1280 and 390 px, the story ruler, the strip of
+  «Quem fez», no horizontal scroll at 390 px, the fallback without scroll timelines, and no console errors.
+  `python3 -m http.server 8931 -d app &` then `BASE=http://localhost:8931/ node app/test/movimento.spec.js`.
+
 ## Data (`app/data/`)
 
 Built by `pipeline/build.py`; checked by `python -I pipeline/contrato.py app/data`. The same validator runs on the shared fixture
@@ -155,7 +175,8 @@ params, retida, aviso}`. `partes` are strings, links `{href, texto}` (or `{href,
 and `{t:'nota', n, id}`. `params` hold ids and indices the build resolved, so a figure needs no lookup: `diff` `{diploma, artigo, de_i,
 para_i, mostrar[{n, al}], vista}`, `votacao` `{ato, item}`, `cronologia` `{diploma, por, desde, ate, atos[{ato, data, grupo, como, n,
 marcado}], marcar}`, `origem` `{diploma, artigo, redacao_i, mostrar, destacar_i}`, `ficha` `{ato, campos}`, `imagem` `{arquivo, alt,
-credito, licenca}` (images are copied to `historias/img/`). `historias/index.json` lists the published stories and, under `artigos`,
+credito, licenca}` (images are copied to `historias/img/`), `passos` `{diploma, artigo, rotulo, passos[{i, redacao, mostrar,
+rotulo, ano, partes}]}`. `historias/index.json` lists the published stories and, under `artigos`,
 the anchor (`fig-<id>` or a subhead) each cited article's page links to.
 
 **The story page.** `Historia()` in `app.js` draws the header (title, dek, byline with the reading time, the disclosure line), the body
@@ -164,7 +185,8 @@ span 1014 px), then `Notas e fontes`, `Sobre este texto` and `Continuar a ler`. 
 sub-line, Atenção line when stale, body, caption, source, «Abrir no site») around a body drawn live from `app/data` with the site's own
 functions: `FigDiff` (`diffLines` + `segsLei`, with `mostrar` and folds), `FigVotacao` (`VotosAto`/`Voto`, `linhaVfg`,
 `linhasEventos`, `linhaPresidente`), `FigCronologia` (an SVG ruler sized to its box, then a ledger by Government or legislatura),
-`FigOrigem` (`originModel` + `R.TextOrigin`), `FigFicha` and `FigImagem`. A withheld figure (`retida`) keeps its frame and says it
+`FigOrigem` (`originModel` + `R.TextOrigin`), `FigFicha`, `FigImagem` and `FigPassos` (motion.js: the step-through figure,
+pinned while its steps scroll past; the step on the reading line chooses the redação shown). A withheld figure (`retida`) keeps its frame and says it
 is under review. Links inside the page (notes, `fig:`, subheads) change only `ir=`, with `history.replaceState`. On a phone (≤ 760 px)
 everything is one column, `Nesta história` is a closed `<details>`, and note markers have a 44 px target.
 To see every figure type on real data: `python -I pipeline/historias.py --exemplo`, then open `#/historia/exemplo`.

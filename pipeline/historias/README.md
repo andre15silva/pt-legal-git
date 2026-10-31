@@ -196,6 +196,37 @@ legenda: …
 Documents and facsimiles only: no photographs of people, no party logos, no generated images. The link
 under the figure is «Ver a fonte ↗».
 
+### `passos`: one part of an article, redação by redação, step by step
+
+````
+```figura passos
+id: solo-passos
+artigo: lei-nacionalidade/artigo-1
+largura: larga                 recommended: the steps go beside the figure from 1100 px
+titulo: A alínea do direito de solo, redação a redação
+legenda: …
+passo: lei-37-81 1/c
+  Em 1981, a [Lei n.º 37/81](ato:lei-37-81) só dava a nacionalidade de origem aos filhos de estrangeiros …
+passo: lei-25-94 1/c
+  Em 1994, a [Lei n.º 25/94](ato:lei-25-94) passou a contar só a residência com «título válido …».
+```
+````
+
+The figure stays on screen (it sticks) while short steps of text pass beside it, or under it on a phone. The
+step on the reading line chooses what the figure shows: that redação of one número or alínea, compared with the
+step before (the first step shows its text plain). Scrolling back goes back a step. Nothing moves while the
+reader does not scroll.
+
+- One `passo:` line per step, 2 to 8 steps: the redação key (as in section 3), one label (`1/c`, `2`, `/b`, as
+  `mostrar`), then the text. The text can go on over lines indented by two spaces.
+- Each step is one or two sentences (W P4 above two, or above 50 words), taken from the story's own sentences.
+  Each step links to the act that wrote its redação, and every act it names is a link (R2).
+- The steps follow the order of the redações, and each step changes the text shown (R2). A step can name the
+  alínea's new letter: the build compares the text without the label.
+- At most two step-through figures in a story (F2), so the reader keeps control of the page. The story's slim
+  ruler (after its first `cronologia`) steps aside while a step-through figure is on screen.
+- A screen reader hears each step with the full text of that redação of the número or alínea.
+
 ## 6. The checks
 
 E stops a strict build (CI on push, `REDACAO_ESTRITO=1`); in the daily build an E inside a figure withholds
@@ -204,9 +235,9 @@ that figure («em revisão»), and any other E withholds the whole story. W neve
 | Rule | What | Level |
 |---|---|---|
 | F1 | front matter: required keys, slug = file name, dates, preparacao, dek ≤ 320 | E |
-| F2 | only the Markdown subset; no https in prose or captions; known schemes, figure types and keys | E |
+| F2 | only the Markdown subset; no https in prose or captions; known schemes, figure types and keys; `passo:` lines; at most two `passos` figures | E |
 | R1 | every site link resolves (act, article, redação, initiative, group, date…) | E |
-| R2 | every figure resolves (redações, `mostrar` labels, a change in the selection, a vote, a marked act, the image file) | E |
+| R2 | every figure resolves (redações, `mostrar` labels, a change in the selection, a vote, a marked act, the image file; each step of a `passos` figure in order, changing the text and linking its act) | E |
 | R3 | a designation in a link's text matches the target; a date after an `ato:` link matches its publication | E |
 | R4 | the first plain mention of an act on the site is a link | E |
 | R5 | «o PS votou a favor / contra», «absteve-se» is checked against the generalidade vote of the act linked in the sentence (else the last one in the paragraph). Several sentidos in one sentence, or no act: W «confirme com a figura». A vote claim about the votação final global, especialidade, confirmação or reapreciação needs a note | E/W |
@@ -217,7 +248,7 @@ that figure («em revisão»), and any other E withholds the whole story. W neve
 | P1 | neutrality words outside «…» (`tools/estilo.py`: «chumbou», «travou», «luz verde», «oposição» as a camp…) | E |
 | P2 | model or vendor names anywhere | E |
 | P3 | motive or editorial words («quis», «polémico», «finalmente»…) outside «…», unless the sentence attributes them («argumentou», «segundo», «na exposição de motivos»…) and has a note or link | W |
-| P4 | a figure nobody links to; a caption outside 15–70 words; prose outside 1 500–7 000 words | W |
+| P4 | a figure nobody links to; a caption outside 15–70 words; a step of more than two sentences or 50 words; prose outside 1 500–7 000 words | W |
 | S1–S3 | after the lock: a pinned redação's text or a vote changed (S1), a cited article has a newer redação (S2), a pinned item is not in the lock (S3). The reader sees an Atenção line | W |
 
 ## 7. The lock

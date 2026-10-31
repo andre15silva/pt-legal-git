@@ -40,7 +40,7 @@ SENTIDOS_GRUPO = {"favor", "contra", "abstencao", "ausente", "sem_registo", None
 MOTIVOS_DESCARTE = {"outro_decreto", "depois_da_publicacao", "sem_correspondencia", "passos_fora_de_ordem", "duplicado"}
 LISTAS = ("decretos_leis", "propostas", "outras", "publicados_sem_d_cm")
 FORA_DIPLOMA = ("revisoes", "acordaos", "antes_1976", "retificacoes_soltas", "outros")
-TIPOS_FIGURA = {"diff", "votacao", "cronologia", "origem", "ficha", "imagem"}
+TIPOS_FIGURA = {"diff", "votacao", "cronologia", "origem", "ficha", "imagem", "passos"}
 CHAVE_PARTILHA = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -583,6 +583,11 @@ def validar_historia(obj) -> list[str]:
             e.valor(f"{ww}.largura", b.get("largura"), {"texto", "larga", "lado"})
             e.tipo(f"{ww}.params", b.get("params"), dict)
             _partes(e, ww + ".legenda", b.get("legenda"))
+            if b.get("tipo") == "passos" and (b.get("params") or {}).get("passos") is not None:
+                for j, ps in enumerate(b["params"]["passos"]):
+                    if e.chaves(f"{ww}.params.passos[{j}]", ps, ("i", "redacao", "mostrar", "partes")):
+                        e.tipo(f"{ww}.params.passos[{j}].i", ps.get("i"), int)
+                        _partes(e, f"{ww}.params.passos[{j}].partes", ps.get("partes"))
             if "fig-" + str(b["id"]) in ids:
                 e.append(f"{ww}: id repetido {b['id']!r}")
             ids.add("fig-" + str(b["id"]))

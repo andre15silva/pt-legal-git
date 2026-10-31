@@ -2,7 +2,7 @@
 slug: exemplo
 titulo: História de exemplo: todas as peças do formato longo
 resumo: Uma história de teste, com dados reais do site, que usa cada tipo de ligação, as notas, uma
-  citação em destaque e as seis figuras. Não é publicada: serve para ver a página e as figuras.
+  citação em destaque e os sete tipos de figura. Não é publicada: serve para ver a página e as figuras.
 data: 2026-10-30
 autoria: Redação
 preparacao: assistida
@@ -107,6 +107,27 @@ por: legislatura
 desde: 2012-01-01
 legenda: As alterações ao regime do arrendamento urbano desde 2012, por legislatura, com o número de artigos
   que cada uma mudou. A figura conta só os artigos do próprio regime, não a cópia do Código Civil.
+```
+
+A [](fig:residencia-passos) segue o prazo de residência da naturalização de 1981 a 2026, um passo por lei.
+
+```figura passos
+id: residencia-passos
+artigo: lei-nacionalidade/artigo-6
+largura: larga
+titulo: O prazo de residência para a naturalização, redação a redação
+legenda: Um exemplo de figura passo a passo: a figura fica fixa enquanto os passos passam ao lado, e cada
+  passo compara a alínea b) do n.º 1 com a do passo anterior.
+passo: lei-37-81 1/b
+  Em 1981, a [](ato:lei-37-81) pedia seis anos de residência.
+passo: lei-25-94 1/b
+  Em 1994, a [](ato:lei-25-94) passou a pedir título de residência e seis ou dez anos, conforme a origem.
+passo: lei-organica-2-2006 1/b
+  Em 2006, a [](ato:lei-organica-2-2006) voltou aos seis anos para todos, de residência legal.
+passo: lei-organica-2-2018 1/b
+  Em 2018, a [](ato:lei-organica-2-2018) baixou o prazo para cinco anos.
+passo: lei-organica-1-2026 1/b
+  Em 2026, a [](ato:lei-organica-1-2026) subiu o prazo para sete ou dez anos, conforme a origem.
 ```
 
 ```figura imagem

@@ -67,7 +67,11 @@ FIGURAS = {
     "origem": ({"artigo", "redacao"}, {"mostrar", "destacar"}),
     "ficha": ({"ato"}, {"campos"}),
     "imagem": ({"arquivo", "alt", "titulo", "credito", "fonte", "licenca"}, set()),
+    # A step-through: one part of an article, redação by redação, beside short steps of text.
+    # Its steps are repeated «passo:» lines (PASSOS_MIN to PASSOS_MAX), read apart from the params.
+    "passos": ({"artigo"}, set()),
 }
+PASSOS_MIN, PASSOS_MAX, PASSOS_POR_HISTORIA = 2, 8, 2
 COMUNS = ({"id", "legenda"}, {"titulo", "largura"})
 CAMPOS_FICHA = ("proposta", "governo", "generalidade", "vfg", "tribunal", "veto", "novo_decreto", "confirmacao",
                 "d_cm", "promulgacao", "publicacao", "vigor")
@@ -78,6 +82,7 @@ FONTE_FIG = {
                 "global, só o resultado. Ordem dos grupos: a da Assembleia da República."),
     "cronologia": "Diário da República; Assembleia da República; tabela de Governos do site.",
     "ficha": "Dados do site: Diário da República, Assembleia da República, tabelas de Governos e de Presidentes.",
+    "passos": "Diário da República, legislação consolidada.",
 }
 HOSTS = ("diariodarepublica.pt", "dre.pt", "parlamento.pt", "tribunalconstitucional.pt", "presidencia.pt",
          "portugal.gov.pt", "eur-lex.europa.eu", "ine.pt", "pordata.pt", "arquivo.pt", "publico.pt", "expresso.pt",
@@ -648,6 +653,24 @@ class Fonte:
             elif re.search(r"@hoje\b|\.\.hoje\b", t["alvo"]):
                 self.erro(linha, "F2", f"«{t['bruto']}»: nunca «hoje»; use a redação (o ato que a escreveu)")
 
+    def _passos(self, passos: list[dict], fid: str, linha: int) -> list[dict]:
+        """«passo: <redação> <mostrar> <texto>»: the redação key, one label (1/c, 2, /b) and one or two sentences."""
+        if not PASSOS_MIN <= len(passos) <= PASSOS_MAX:
+            self.erro(linha, "F2", f"figura «{fid}»: {len(passos)} passos (de {PASSOS_MIN} a {PASSOS_MAX} linhas «passo:»)")
+        out = []
+        for ps in passos:
+            m = re.fullmatch(r"(\S+)\s+(\S+)\s+(.+)", ps["valor"], re.S)
+            sel = ler_mostrar(m.group(2)) if m else None
+            if not m or not sel or len(sel) != 1:
+                self.erro(ps["linha"], "F2", f"figura «{fid}»: escreva «passo: <redação> <número ou alínea> <texto>», "
+                          f"por exemplo «passo: lei-25-94 1/c Em 1994, …»: «{cortar(ps['valor'], 50)}»")
+                continue
+            if m.group(1) == "hoje":
+                self.erro(ps["linha"], "F2", "passo: nunca «hoje»; use o ato que escreveu a redação")
+            self._subset(m.group(3), ps["linha"], legenda=True)
+            out.append({"redacao": m.group(1), "mostrar": sel, "rotulo": m.group(2), "texto": m.group(3).strip(), "linha": ps["linha"]})
+        return out
+
     def _citacao(self, ls: list[str], linha: int):
         if len(ls) != 2 or not re.fullmatch(r"«.+»", ls[0]) or not ls[1].startswith("—"):
             self.erro(linha, "N4", "uma citação em destaque tem duas linhas: «> «…»» e «> — Atribuição[^id]»")
@@ -664,12 +687,16 @@ class Fonte:
     def _figura(self, tipo: str, ls: list[str], linha: int):
         params: dict[str, str] = {}
         plinha: dict[str, int] = {}
+        passos: list[dict] = []                # «passo:» lines, in order (figura passos)
         chave = None
         for k, l in enumerate(ls):
             if not l.strip():
                 continue
             if l.startswith("  ") and chave:
-                params[chave] = (params[chave] + " " + l.strip()).strip()
+                if chave == "passo":
+                    passos[-1]["valor"] = (passos[-1]["valor"] + " " + l.strip()).strip()
+                else:
+                    params[chave] = (params[chave] + " " + l.strip()).strip()
                 continue
             m = re.match(r"^([a-z_]+):\s?(.*)$", l)
             if not m:
@@ -677,14 +704,19 @@ class Fonte:
                 chave = None
                 continue
             chave = m.group(1)
+            if chave == "passo" and tipo == "passos":
+                passos.append({"valor": m.group(2).strip(), "linha": linha + k + 1})
+                continue
             params[chave] = m.group(2).strip()
             plinha[chave] = linha + k + 1
         fid = params.get("id") or f"sem-id-{linha}"
         b = {"t": "figura", "tipo": tipo, "params": params, "plinha": plinha, "linha": linha, "id": fid}
         self.blocos.append(b)
         if tipo not in FIGURAS:
-            self.erro(linha, "F2", f"tipo de figura desconhecido «{tipo}» (diff, votacao, cronologia, origem, ficha, imagem)")
+            self.erro(linha, "F2", f"tipo de figura desconhecido «{tipo}» ({', '.join(FIGURAS)})")
             return
+        if tipo == "passos":
+            b["passos"] = self._passos(passos, fid, linha)
         obrig, opc = FIGURAS[tipo]
         for k in sorted((obrig | COMUNS[0]) - set(params)):
             if k == "titulo" and tipo != "imagem":
@@ -851,6 +883,14 @@ class Historia:
                     self.aviso(b["plinha"].get("legenda", b["linha"]), "P4", f"legenda da figura «{b['id']}» com {n} palavras (15 a 70)")
                 if b["tipo"] == "imagem" and b["params"].get("arquivo"):
                     self._imagem(b["params"]["arquivo"], b["plinha"]["arquivo"], b, partilha=False)
+                for ps in b.get("passos") or []:
+                    pt = tokens_inline(ps["texto"])
+                    self._lint_texto(pt, ps["linha"], paragrafo=False)
+                    nf = len(frases(pt))
+                    if nf > 2 or palavras(texto_simples(pt)) > 50:
+                        self.aviso(ps["linha"], "P4", f"um passo da figura «{b['id']}» tem {nf} frases e "
+                                   f"{palavras(texto_simples(pt))} palavras (uma ou duas frases, até 50 palavras)")
+                    toks = toks + [" "] + pt
             else:
                 toks = []
             if b["t"] in ("p", "h2", "h3", "citacao", "figura"):
@@ -881,6 +921,10 @@ class Historia:
         for b in figs:
             if b["params"].get("id") and b["params"]["id"] not in usados_fig:
                 self.aviso(b["linha"], "P4", f"a figura «{b['id']}» não tem uma ligação «[](fig:{b['id']})» no texto")
+        n_passos = [b for b in figs if b["tipo"] == "passos"]
+        if len(n_passos) > PASSOS_POR_HISTORIA:
+            self.erro(n_passos[PASSOS_POR_HISTORIA]["linha"], "F2",
+                      f"{len(n_passos)} figuras «passos»: no máximo {PASSOS_POR_HISTORIA} por história")
         if not 1500 <= prosa_palavras <= 7000:
             self.aviso(1, "P4", f"{prosa_palavras} palavras de prosa (1500 a 7000)")
         self.palavras = prosa_palavras
@@ -1416,6 +1460,60 @@ class Historia:
         out["href"] = f"#/d/{slug}/{artigo}?redacao={chave_redacao(art, i)}&ver=origem"
         out["params"] = {"diploma": slug, "artigo": artigo, "redacao_i": i, "redacao": chave_redacao(art, i),
                          "mostrar": sel, "destacar_i": foco, "nome_original": None}
+
+    def _fig_passos(self, p: dict, out: dict, b: dict):
+        """Each step: a redação of the article, one número or alínea of it, and its text with links.
+
+        R2: every redação resolves, in order; the label exists in it; each step changes the text shown;
+        each step links to the act that wrote its redação; an act named in a step is a link."""
+        slug, _, artigo = p["artigo"].partition("/")
+        art = self._art(slug, artigo)
+        self._citar(p["artigo"])
+        passos, ant_i, ant_txt, erros = [], -1, None, []
+        for ps in b.get("passos") or []:
+            try:
+                i = self._indice(art, ps["redacao"], p["artigo"])
+            except Erro as e:
+                erros.append(f"passo «{ps['redacao']}»: {e}")
+                continue
+            if i <= ant_i:
+                erros.append(f"passo «{ps['redacao']}»: os passos seguem a ordem das redações")
+            rot = rotulos_linhas(texto_versao(art["versoes"][i]))
+            s = ps["mostrar"][0]
+            if not any(n == s["n"] and (s["al"] is None or al == s["al"]) for n, al, _ in rot):
+                erros.append(f"passo «{ps['redacao']}»: «{ps['rotulo']}» não existe nessa redação")
+                continue
+            txt = "\n".join(l for l, ok in zip([x[2] for x in rot], selecionadas(rot, ps["mostrar"])) if ok)
+            if ant_txt is not None and re.sub(r"^[a-z]+\) |^\d+ — ", "", txt, flags=re.M) == re.sub(r"^[a-z]+\) |^\d+ — ", "", ant_txt, flags=re.M):
+                erros.append(f"passo «{ps['redacao']}»: o texto de «{ps['rotulo']}» é igual ao do passo anterior")
+            self._pinar(slug, artigo, art, i)
+            toks = tokens_inline(ps["texto"])
+            partes = self.partes(toks, ps["linha"], b["id"])
+            self._r3(toks, ps["linha"])
+            aid = art["versoes"][i]["ato"]
+            ligados = {t["r"].get("ato") for t in toks if isinstance(t, dict) and t.get("r")}
+            if aid not in ligados:
+                erros.append(f"passo «{ps['redacao']}»: falta a ligação [](ato:{aid}) ao ato que escreveu a redação")
+            for tk in toks:
+                if isinstance(tk, str):
+                    for m in DESIG_ATO.finditer(re.sub(r"«[^»]*»", " ", tk)):
+                        if self.d.designacoes().get(m.group(0)):
+                            erros.append(f"passo «{ps['redacao']}»: «{m.group(0)}» sem ligação; num passo, cada ato é uma ligação")
+            pub = art["versoes"][i].get("publicacao") or ""
+            passos.append({"i": i, "redacao": chave_redacao(art, i), "mostrar": ps["mostrar"], "rotulo": ps["rotulo"],
+                           "ano": pub[:4], "partes": partes})
+            ant_i, ant_txt = i, txt
+        if erros:
+            raise Erro("; ".join(erros), regra="R2")
+        if not passos:
+            raise Erro("a figura não tem passos", regra="R2")
+        dip = self.d.diplomas_index.get(slug) or self.d.diploma(slug) or {}
+        rot_art = art.get("rotulo", artigo)
+        out["titulo"] = out["titulo"] or f"{rot_art} {dip.get('genitivo') or 'de ' + dip.get('titulo', slug)}, redação a redação"
+        out["sub"] = f"{len(passos)} redações, de {passos[0]['ano']} a {passos[-1]['ano']} · cada passo compara com o anterior"
+        ult = passos[-1]
+        out["href"] = f"#/d/{slug}/{artigo}?redacao={ult['redacao']}"
+        out["params"] = {"diploma": slug, "artigo": artigo, "rotulo": rot_art, "passos": passos}
 
     def _hash_votos(self, aid: str) -> str:
         p = self.d.passagem.get(aid) or {}

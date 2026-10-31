@@ -197,6 +197,32 @@ class Formato(Base):
             with self.subTest(mau=mau):
                 self.assertTrue(any(f"[{regra}]" in e for e in self.erros_de(com_paragrafo("Ver " + mau + "."))))
 
+    def test_step_through(self):
+        """figura passos: the steps resolve, in order, each changes the text and links its act (R2)."""
+        _, comp = self.compilar()
+        fig = next(b for b in comp["blocos"] if b["t"] == "figura" and b["tipo"] == "passos")
+        self.assertEqual([x["i"] for x in fig["params"]["passos"]], [0, 1, 3, 5])
+        self.assertEqual(fig["params"]["passos"][2]["mostrar"], [{"n": "2", "al": None}])
+        self.assertEqual(fig["params"]["passos"][0]["partes"][1]["href"], "#/ato/decreto-lei-90001")
+        self.assertEqual(fig["href"], "#/d/lei-teste/artigo-1?redacao=lei-901-2022")
+        self.assertIn("4 redações, de 1970 a 2022", fig["sub"])
+        passo = "passo: decreto-lei-90002 2\n  Em 1974, o [](ato:decreto-lei-90002) passou o prazo para seis anos.\n"
+        self.assertIn(passo, HISTORIA)
+        for mau in (passo.replace("decreto-lei-90002 2", "decreto-lei-90002 7"),        # no n.º 7
+                    passo.replace("decreto-lei-90002 2", "lei-999-2099 2"),              # unknown redação
+                    passo.replace("[](ato:decreto-lei-90002)", "Decreto-Lei n.º 90002"),  # no link to its act
+                    passo.replace("decreto-lei-90002 2", "decreto-lei-901-1977 2")):     # same n.º 2 as the step before
+            with self.subTest(mau=mau):
+                erros = self.erros_de(HISTORIA.replace(passo, mau))
+                self.assertTrue(any("[R2]" in e and "prazo-passos" in e for e in erros), erros)
+        # Three steps in order compile clean; a step before an earlier redação is an error.
+        trocado = HISTORIA.replace(passo, "").replace("passo: lei-901-2022 2", passo + "passo: lei-901-2022 2")
+        trocado = trocado.replace("passo: lei-901-2020 2\n  Em 2020, a [](ato:lei-901-2020) passou o prazo para dez anos, contados da entrada.\n", "")
+        self.assertEqual(self.erros_de(trocado), [])
+        fora = HISTORIA.replace(passo, "")
+        fora = fora.replace("passo: lei-901-2022 2", "passo: lei-901-2022 2\n  Em 2022, a [](ato:lei-901-2022) baixou o prazo.\n" + passo.rstrip("\n"), 1)
+        self.assertTrue(any("ordem" in e for e in self.erros_de(fora)))
+
     def test_annex_copy_is_refused(self):
         d = self.ler("d", "lei-teste.json")
         d["copia"] = {"inicio": 2, "diploma": "outro", "rotulo": "Anexo"}
@@ -390,6 +416,21 @@ class Sintaxe(unittest.TestCase):
         self.assertIn("P4", av)
         _, av = self.regras(HISTORIA.replace("[](fig:pagina) mostra", "imagem mostra"))
         self.assertIn("P4", av)
+
+    def test_step_through_syntax(self):
+        passo = "passo: decreto-lei-90002 2\n  Em 1974, o [](ato:decreto-lei-90002) passou o prazo para seis anos.\n"
+        self.assertIn("F2", self.regras(HISTORIA.replace(passo, "passo: decreto-lei-90002\n"))[0])           # no label
+        self.assertIn("F2", self.regras(HISTORIA.replace(passo, "passo: decreto-lei-90002 dois Texto.\n"))[0])
+        self.assertIn("F2", self.regras(HISTORIA.replace(passo, "passo: hoje 2 Texto[^dr].\n"))[0])
+        um = HISTORIA.split("```figura passos")[0] + "```figura passos\nid: so-um\nartigo: lei-teste/artigo-1\n" + \
+            "legenda: Uma figura com um passo só, que o compilador recusa porque precisa de dois passos pelo menos.\n" + \
+            "passo: decreto-lei-90001 2 Em 1970, o [](ato:decreto-lei-90001) fixou o prazo.\n```\n"
+        self.assertIn("F2", self.regras(um)[0])
+        bloco = "```figura passos" + HISTORIA.split("```figura passos")[1].split("```")[0] + "```\n"
+        tres = HISTORIA + "\n" + "\n".join(bloco.replace("id: prazo-passos", "id: p" + str(k)) for k in range(2))
+        self.assertIn("F2", self.regras(tres)[0])
+        longo = HISTORIA.replace("fixou o prazo em cinco anos.", "fixou o prazo. Era de cinco anos. Contava da entrada.")
+        self.assertIn("P4", self.regras(longo)[1])
 
     def test_image_checks(self):
         self.assertIn("R2", self.regras(HISTORIA.replace("img/pagina-exemplo.png", "img/nada.png"))[0])

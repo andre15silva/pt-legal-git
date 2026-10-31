@@ -1,0 +1,417 @@
+/* ==========================================================================================
+   Redação: the motion layer (docs/DESIGN-DIRECTION.md §10; the script half is motion.js).
+   Loaded after app.css. Every value is a token from design-system/tokens.json.
+   Prelo, the house style: rules are drawn, lines are set in reading order, a strike is drawn
+   through what was removed and new words are inked in. Nothing lifts, scales, bounces or loops.
+   prefers-reduced-motion: every animation and transition is instant (the last block, and the
+   design system's own rule). Print shows everything.
+   ========================================================================================== */
+
+@keyframes mo-aparecer { from { opacity: 0; } }
+@keyframes mo-sobe { from { opacity: 0; transform: translateY(var(--sobe)); } }
+@keyframes mo-regua { from { background-size: 0% var(--mo-esp, 1px); } }
+@keyframes mo-traco { from { transform: scaleX(0); } }
+@keyframes mo-tique { from { transform: scaleY(0); } }
+@keyframes mo-traco-svg { from { stroke-dashoffset: 1; } }
+@keyframes mo-desdobrar { from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-2px); } to { clip-path: inset(-40px); } }
+@keyframes mo-folha { from { clip-path: inset(-40px -40px -40px 100%); } to { clip-path: inset(-40px); } }
+@keyframes mo-folha-baixo { from { clip-path: inset(100% -40px -40px -40px); } to { clip-path: inset(-40px); } }
+
+/* ---- 1. Page entry: the block fades; the lines inside rise in reading order (motion.js sets --i) */
+.vista > * { animation: mo-aparecer var(--dur-2) var(--ease) backwards; }
+.mo-sobe { animation: mo-sobe var(--dur-3) var(--ease) calc(var(--i, 0) * var(--passo)) backwards; }
+.state[aria-busy] { animation: mo-aparecer var(--dur-2) var(--ease) 400ms both; }
+/* Loading: a hairline drawn once under «A carregar…». Never a spinner, never a loop. */
+.state[aria-busy] p::after { content: ""; display: block; width: 160px; height: 1px; margin-top: 8px; background: var(--rule-strong); transform-origin: left; animation: mo-traco 1200ms var(--ease-tinta) 400ms backwards; }
+
+/* Hairlines are drawn from the left, once, when their block mounts (or is first seen). The border
+   keeps its space; a gradient over the transparent border is what grows. */
+.cards, .list, .rd-reg, .voto, .secao, .fig, .cr-linhas, .fig-ficha, .oc-pe {
+  border-top-color: transparent;
+  background-image: linear-gradient(var(--mo-cor, var(--ink)), var(--mo-cor, var(--ink)));
+  background-repeat: no-repeat; background-origin: border-box; background-position: 0 0;
+  background-size: 100% var(--mo-esp, 1px);
+  animation: mo-regua var(--dur-regua) var(--ease-tinta) var(--mo-regua-atraso, 0ms) backwards;
+}
+.cards, .list, .rd-reg, .voto, .cr-linhas, .fig-ficha, .oc-pe { --mo-cor: var(--ink); --mo-esp: 1px; }
+.secao { --mo-cor: var(--rule); --mo-esp: 1px; }
+.fig { --mo-cor: var(--ink); --mo-esp: 2px; }
+.cr-linhas { --mo-regua-atraso: 340ms; }
+.secao.mo-sobe, .voto.mo-sobe, .cards.mo-sobe, .list.mo-sobe { animation-name: mo-regua, mo-sobe; animation-duration: var(--dur-regua), var(--dur-3); }
+/* Blocks below the fold wait until they are seen (motion.js; never without JS, released on print). */
+.mo-espera, .mo-espera * { animation-play-state: paused !important; }
+/* Scroll-scrubbed animations follow the scroll, never a wait. */
+.mo-tl .mo-espera .rd-votos > *, .mo-tl .mo-espera .rd-votos-nota { animation-play-state: running !important; }
+.secao.mo-espera, figure.mo-espera { animation-name: mo-regua, mo-aparecer; animation-duration: var(--dur-regua), var(--dur-3); }
+
+/* The time ruler on page entry: the line is drawn, the redações' ticks rise in date order, the
+   period is laid on it. Only when the article opens, never on a step. */
+.mo-entrada .rd-ruler-line { transform-origin: left; animation: mo-traco var(--dur-regua) var(--ease-tinta) backwards; }
+.mo-entrada .rd-ruler-tick { transform-origin: bottom; animation: mo-tique var(--dur-2) var(--ease) calc(120ms + var(--i, 0) * 18ms) backwards; }
+.mo-entrada .rd-ruler-marca { transform-origin: left; animation: mo-traco var(--dur-3) var(--ease-tinta) 360ms backwards; }
+.mo-entrada .rd-ruler-labels { animation: mo-aparecer var(--dur-3) var(--ease) 200ms backwards; }
+
+/* ---- 2. Alterações: the strike is drawn, the new words are inked in, in reading order --------- */
+.rd-del {
+  text-decoration-color: transparent;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat; background-position: 0 58%; background-size: 100% 2px;
+  animation: mo-riscar var(--dur-tinta) var(--ease-tinta) calc(var(--atraso-tinta) + var(--mo-di, 0) * var(--passo-tinta)) backwards;
+}
+.rd-ins {
+  background-color: transparent;
+  background-image: linear-gradient(var(--ins-bg), var(--ins-bg));
+  background-repeat: no-repeat; background-size: 100% 100%;
+  animation: mo-tinta var(--dur-tinta) var(--ease-tinta) calc(var(--atraso-tinta) + 60ms + var(--mo-di, 0) * var(--passo-tinta)) backwards;
+}
+@keyframes mo-riscar { from { background-size: 0% 2px; background-color: transparent; color: var(--ink); } }
+@keyframes mo-tinta { from { background-size: 0% 100%; color: var(--ink); text-decoration-color: transparent; } }
+/* The legend keys stay still. */
+.rd-key .rd-del, .rd-key .rd-ins, .rd-redline-legend del, .rd-redline-legend ins { animation: none; }
+@media (forced-colors: active) { .rd-del { text-decoration-color: currentColor; background-image: none; } }
+
+/* After a step forward: the words the newer redação wrote get a wash and an underline that is drawn
+   in, holds and fades (dur-marca). Nothing is marked after a step back. */
+.acabado {
+  background-image: linear-gradient(var(--ins-ink), var(--ins-ink));
+  background-repeat: no-repeat; background-position: 0 100%; background-size: 100% 0;
+  animation: mo-acabado var(--dur-marca) var(--ease) both;
+}
+@keyframes mo-acabado {
+  0% { background-color: transparent; background-size: 0% 2px; }
+  20%, 45% { background-color: var(--ins-bg); background-size: 100% 2px; }
+  100% { background-color: transparent; background-size: 100% 0; }
+}
+
+/* ---- 3. Another view or redação of the same article: the law text crossfades -------------------
+   A View Transition (motion.js) where there is one; else the keyed text fades in with a 4 px drift
+   from the side the reader moved to. In Texto, between redações, the words morph instead (section 6). */
+.art-lei { animation: mo-aparecer var(--dur-3) var(--ease) backwards; }
+.artigo[data-dir="seguinte"] .art-lei { animation-name: mo-entra-direita; }
+.artigo[data-dir="anterior"] .art-lei { animation-name: mo-entra-esquerda; }
+.art-lei.is-morph { animation: none; }
+html.mo-vt .art-lei { view-transition-name: mo-lei; animation: none; }
+html.mo-vt .artigo > .rd-vbar { view-transition-name: mo-barra; }
+::view-transition-old(mo-barra) { display: none; }
+::view-transition-new(mo-barra), ::view-transition-group(mo-barra) { animation: none; }
+::view-transition-old(root) { display: none; }
+::view-transition-new(root) { animation: none; }
+::view-transition-group(mo-lei) { animation-duration: var(--dur-3); animation-timing-function: var(--ease-move); }
+::view-transition-old(mo-lei) { animation: mo-sai var(--dur-2) var(--ease) both; }
+::view-transition-new(mo-lei) { animation: mo-aparecer var(--dur-3) var(--ease) 60ms both; }
+html.mo-dir-seguinte::view-transition-new(mo-lei) { animation-name: mo-entra-direita; }
+html.mo-dir-anterior::view-transition-new(mo-lei) { animation-name: mo-entra-esquerda; }
+@keyframes mo-sai { to { opacity: 0; } }
+@keyframes mo-entra-direita { from { opacity: 0; transform: translateX(4px); } }
+@keyframes mo-entra-esquerda { from { opacity: 0; transform: translateX(-4px); } }
+
+/* ---- 4. Sheets and popovers: uncovered from their edge with a clip ----------------------------
+   The type does not travel. On a phone the sheets also follow the finger (section 9). */
+.rd-folha { animation: mo-folha var(--dur-folha) var(--ease-tinta) backwards; }
+.folha[open] { animation: mo-folha-baixo var(--dur-folha) var(--ease-tinta) backwards; }
+@media (max-width: 1099px) { .rd-folha { animation-name: mo-folha-baixo; } }
+.rd-folha-corpo > * { animation: mo-sobe var(--dur-3) var(--ease) calc(80ms + var(--i, 0) * var(--passo)) backwards; }
+.rd-folha-corpo > :nth-child(2) { --i: 1; } .rd-folha-corpo > :nth-child(3) { --i: 2; } .rd-folha-corpo > :nth-child(4) { --i: 3; }
+.rd-folha-corpo > :nth-child(5) { --i: 4; } .rd-folha-corpo > :nth-child(6) { --i: 5; } .rd-folha-corpo > :nth-child(n+7) { --i: 6; }
+.oc-band { transform-origin: top; animation: mo-tique var(--dur-3) var(--ease-tinta) 160ms backwards; }
+.rd-onota-col { transition: border-left-color var(--dur-2) var(--ease); }
+.rd-onota-band { transition: height var(--dur-3) var(--ease-tinta); }
+.rd-ofr { transition: background-color var(--dur-1) var(--ease), text-decoration-thickness var(--dur-1) var(--ease); }
+.rd-pop[open] > .rd-pop-body, .pesq-caixa, .rd-termo-painel, .rd-origin-pop, .rd-reg-more,
+details:not(.rd-pop)[open] > :not(summary) { animation: mo-desdobrar var(--dur-2) var(--ease) backwards; }
+@supports (interpolate-size: allow-keywords) {
+  :root { interpolate-size: allow-keywords; }
+  details:not(.rd-pop)::details-content { block-size: 0; overflow-y: clip; transition: block-size var(--dur-2) var(--ease), content-visibility var(--dur-2) allow-discrete; }
+  details:not(.rd-pop)[open]::details-content { block-size: auto; }
+}
+
+/* ---- 5. Hover and press: typographic, never a lift or a scale ----------------------------------- */
+a { transition: color var(--dur-1) var(--ease), text-decoration-color var(--dur-1) var(--ease), text-decoration-thickness var(--dur-1) var(--ease), text-underline-offset var(--dur-1) var(--ease); }
+a:hover { text-underline-offset: .16em; }
+/* Titles without an underline get one drawn from the left (and back to the right on leave). */
+a.card-title, .toc-row .toc-ep, .top-nav a, .vizinhos a, .hist-indice-lista a, a.rd-reg-act, .mud-cab a {
+  text-decoration: none !important;
+  background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat;
+  background-position: 100% 100%; background-size: 0% 1px;
+  transition: background-size var(--dur-2) var(--ease-tinta), color var(--dur-1) var(--ease);
+}
+a.card-title:hover, a.card-title:focus-visible, .toc-row:hover .toc-ep, .top-nav a:hover, .top-nav a:focus-visible, .vizinhos a:hover,
+.hist-indice-lista a:hover, a.rd-reg-act:hover, .mud-cab a:hover { background-size: 100% 1px; background-position: 0 100%; }
+/* Press: a button goes down 1 px (dur-press) and comes back (dur-1). */
+.rd-btn, .btn, .rd-vbar-step, .rd-pop-btn, .rd-folha-fechar, .rd-folha-andar button, .tab, .rp-tocar, .oc-velho {
+  transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.rd-btn:active:not([aria-disabled="true"]), .btn:active, .rd-vbar-step:active:not([aria-disabled="true"]), .rd-pop-btn:active, .rd-folha-fechar:active,
+.rd-folha-andar button:active:not(:disabled), .tab:active, .rp-tocar:active { transform: translateY(var(--press)); transition-duration: var(--dur-press); }
+/* Copy and share: the label swaps and a tick draws itself (R.Feito). */
+.troca { animation: mo-aparecer var(--dur-2) var(--ease) both; }
+.rd-feito { display: inline-flex; align-items: center; gap: 6px; }
+.rd-visto { width: 14px; height: 14px; flex: none; }
+.rd-visto path { fill: none; stroke: var(--verde); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 0; animation: mo-visto var(--dur-3) var(--ease-tinta) 60ms backwards; }
+@keyframes mo-visto { from { stroke-dashoffset: 16; } }
+
+/* ---- 6. Rever o tempo: the time ruler as a scrubber, and the morph -------------------------------- */
+.rp { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; user-select: none; -webkit-user-select: none; }
+.rp-cab { display: flex; align-items: baseline; gap: 16px; min-height: 32px; }
+.rp-tocar { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px 0 8px; border: 1px solid var(--rule-mid); border-radius: var(--radius-sm); background: var(--paper);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.rp-tocar:hover { background: var(--paper-sunken); border-color: var(--rule-strong); }
+.rp-tocar[aria-pressed="true"] { border-color: var(--ink); }
+.rp-ico { display: inline-block; width: 12px; font-size: 10px; text-align: center; }
+.rp-curto { display: none; }
+.rp-onde { margin: 0; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rp-ano { font-size: 22px; font-weight: 600; color: var(--ink); font-variant-numeric: lining-nums tabular-nums; }
+.rp-ato { display: inline-block; animation: mo-aparecer var(--dur-2) var(--ease) backwards; }
+.rp-pista { position: relative; height: 34px; cursor: ew-resize; touch-action: none; }
+.rp-pista .rd-ruler-line, .rp-pista .rd-ruler-year, .rp-pista .rd-ruler-tick { bottom: 10px; }
+.rp-pista .rd-ruler-tick { background: var(--rule-strong); transition: background-color var(--dur-2) var(--ease), height var(--dur-2) var(--ease); }
+.rp-pista .rd-ruler-tick.is-passado { background: var(--ink); height: 13px; }
+.rp-pista .rd-ruler-tick.is-pending { background: var(--pendente); }
+.rp-vivido { position: absolute; left: 0; bottom: 10px; height: 2px; margin-bottom: -0.5px; background: var(--ink); transition: width var(--dur-agulha) var(--ease-move); }
+.rp-marca { bottom: 8px; height: 5px; opacity: .14; }
+.rp-pista .rd-ruler-today { bottom: 6px; }
+/* The needle: a hairline with a grip. It slides between redações; under a finger it follows exactly. */
+.rp-agulha { position: absolute; top: 0; bottom: 2px; width: 24px; margin-left: -12px; cursor: grab; outline: none; transition: left var(--dur-agulha) var(--ease-move); z-index: 1; }
+.rp-agulha::before { content: ""; position: absolute; left: 11px; top: 6px; bottom: 0; width: 2px; background: var(--verde); }
+.rp-agulha::after { content: ""; position: absolute; left: 6px; top: 0; width: 12px; height: 8px; border-radius: 2px; background: var(--verde); }
+.rp-agulha:focus-visible::after { outline: 2px solid var(--focus); outline-offset: 2px; }
+.rp.is-arrasto .rp-agulha, .rp.is-arrasto .rp-vivido { transition: none; }
+.rp.is-arrasto .rp-agulha, .rp.is-arrasto .rp-pista { cursor: grabbing; }
+.rp.is-tocar .rp-agulha, .rp.is-tocar .rp-vivido { transition-duration: 600ms; transition-timing-function: cubic-bezier(.45, 0, .25, 1); }
+@media (forced-colors: active) { .rp-agulha::before, .rp-agulha::after, .rp-vivido { background: CanvasText; forced-color-adjust: none; } }
+/* While the history plays or the needle is held, the notes about one redação below the ruler step
+   aside, so the text does not jump; they come back on pause or release. */
+.artigo.is-replay .art-texto > aside, html.mo-arrasto .artigo .art-texto > aside { display: none; }
+
+/* The morph: removed words are struck (dur-risca, in reading order) and close up; new words open
+   (dur-muda) and keep the new-words mark. The words that stay do not move. */
+.mx .mx-w { display: inline-block; white-space: pre; text-indent: 0; vertical-align: top; position: relative; overflow: hidden; }
+.mx .mx-del .mx-w, .mx [data-mx="sai"] { color: var(--del-ink); }
+.mx .mx-del .mx-w::after { content: ""; position: absolute; left: 0; right: 0; top: 52%; height: 1.5px; background: var(--del-ink); transform: scaleX(0); transform-origin: left;
+  animation: mo-risca var(--dur-risca) var(--ease) forwards; animation-delay: calc(min(var(--i), 10) * 14ms); }
+@keyframes mo-risca { to { transform: scaleX(1); } }
+
+/* Origem do texto, replayed: the words not written yet wait in grey; each act's colour comes in at its turn. */
+.mo-rp-origem .lei-o .rd-ofr { transition: color 280ms var(--ease), text-decoration-color 520ms var(--ease); }
+.lei-o .rd-ofr.rp-ainda { color: var(--rule-mid); text-decoration-color: transparent; }
+.mo-rp-origem .lei-o .rd-orun .rd-onota { transition: opacity 280ms var(--ease); }
+.lei-o .rd-orun.rp-ainda .rd-onota { opacity: .25; }
+
+/* A diploma's acts on one line (#/quem/<slug>): drawn once; sticky under the title (the page's only
+   sticky element); the band of the Government on the reading line is verde. */
+.lt { position: sticky; top: 0; z-index: 6; margin: 24px 0 8px; padding: 10px 0 6px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.lt-titulo { margin: 0 0 6px; font-family: var(--font-serif); font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.lt-pista { position: relative; height: 40px; }
+.lt-gov { position: absolute; top: 0; height: 14px; font-family: var(--font-sans); font-size: 10px; line-height: 14px; color: var(--ink-muted); text-align: center; overflow: hidden; border-left: 1px solid var(--rule); transition: background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease); }
+.lt-gov-par { background: var(--paper-sunken); }
+.lt-gov.is-em { background: var(--verde-soft); color: var(--verde); }
+.lt-linha { position: absolute; left: 0; right: 0; bottom: 8px; height: 1px; background: var(--ink); transform-origin: left; }
+.lt-ato { position: absolute; bottom: 8px; width: 13px; height: 18px; margin-left: -6px; padding: 0; border: 0; background: transparent; cursor: pointer; transform-origin: bottom; }
+.lt-ato::after { content: ""; position: absolute; left: 6px; bottom: 0; width: 1.5px; height: 18px; background: var(--ink); transition: background-color var(--dur-1) var(--ease), height var(--dur-1) var(--ease); }
+.lt-ato.is-ret::after { height: 9px; background: var(--ink-muted); }
+.lt-ato:hover::after, .lt-ato:focus-visible::after { background: var(--verde); height: 22px; }
+.lt-ato:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lt-ponta { position: absolute; bottom: 12px; transform: translateX(-50%); opacity: 0; font-family: var(--font-serif); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--paper); padding: 0 3px; font-variant-numeric: lining-nums tabular-nums; pointer-events: none; }
+.lt-anos { height: 14px; font-size: 11px; line-height: 14px; }
+.linha-ato { scroll-margin-top: 120px; }
+.linha-ato.lt-alvo { animation: mo-marca var(--dur-marca) var(--ease); }
+@keyframes mo-marca { 0%, 25% { background-color: var(--ins-bg); } 100% { background-color: transparent; } }
+
+/* ---- 7. O scroll é o relógio --------------------------------------------------------------------
+   Continuous things run on scroll timelines (html.mo-tl); discrete things come from the reading line
+   (motion.js). html.mo-sem-tl: the same states, from the reading line, with a short transition. */
+@keyframes mo-escala-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes mo-escala-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes mo-linha { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+/* The reading hairline (diploma pages): 2 px of verde, the share of the page read. */
+.mo-progresso { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 2px; background: var(--verde); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none; }
+.mo-tl .mo-progresso { animation: mo-escala-x linear both; animation-timeline: scroll(root block); }
+
+/* Numbers that count to their value (R.Conta): tabular, so nothing beside them moves. */
+.conta { display: inline-block; text-align: right; font-variant-numeric: tabular-nums lining-nums; }
+
+/* A vote tallies row by row as it comes up to the reading line: A favor, Contra, Abstenção. Scrubbed:
+   scrolling back un-tallies it. All rows are in before the vote's top reaches 3/4 of the screen.
+   Votes in the Origem sheet, which the reader opened, do not wait. */
+.mo-tl .rd-votacao { view-timeline: --mo-voto block; }
+.mo-tl .rd-votos > * { animation: mo-linha linear both; animation-timeline: --mo-voto; animation-range: cover 3% cover 11%; }
+.mo-tl .rd-votos > :nth-child(n+3) { animation-range: cover 7% cover 15%; }
+.mo-tl .rd-votos > :nth-child(n+5) { animation-range: cover 11% cover 19%; }
+.mo-tl .rd-votos > :nth-child(n+7) { animation-range: cover 15% cover 23%; }
+.mo-tl .rd-votacao .rd-votos-nota { animation: mo-aparecer linear both; animation-timeline: --mo-voto; animation-range: cover 15% cover 23%; }
+.mo-sem-tl .rd-votacao[data-espera] .rd-votos > * { opacity: 0; }
+.mo-sem-tl .rd-votacao.visto .rd-votos > * { animation: mo-linha var(--dur-3) var(--ease) backwards; }
+.mo-sem-tl .rd-votacao.visto .rd-votos > :nth-child(n+3) { animation-delay: 80ms; }
+.mo-sem-tl .rd-votacao.visto .rd-votos > :nth-child(n+5) { animation-delay: 160ms; }
+.mo-sem-tl .rd-votacao.visto .rd-votos > :nth-child(n+7) { animation-delay: 240ms; }
+.rd-folha .rd-votos > *, .rd-folha .rd-votos-nota { animation: none !important; opacity: 1 !important; }
+
+/* Tátil: one group lit in every vote on the page; the others dim. */
+[data-grupo] { transition: background-color var(--dur-1) var(--ease), opacity var(--dur-2) var(--ease), box-shadow var(--dur-1) var(--ease); border-radius: 2px; }
+.rd-votos [data-grupo]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mo-com-grupo .rd-votos [data-grupo]:not(.mo-grupo), .mo-com-grupo .tabela-votos [data-grupo]:not(.mo-grupo) { opacity: .45; }
+.rd-votos .mo-grupo, .tabela-votos .mo-grupo { background: var(--verde-soft); box-shadow: 0 0 0 3px var(--verde-soft), inset 0 -2px 0 var(--verde); color: var(--ink); }
+
+/* The passage of a law beside «Quem fez esta lei»: verde fills the line as the sentences cross the
+   reading line (a view timeline on the sentences, shared with timeline-scope). */
+.duas { timeline-scope: --mo-passagem; }
+.quem-frases { view-timeline: --mo-passagem block; view-timeline-inset: var(--ler) calc(100% - var(--ler) - 0.5%); }
+.passagem { --p: 0; }
+.passagem-t { margin: 0 0 14px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.passagem-v { position: sticky; top: 32px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.passagem-v .passagem-pista { position: relative; height: 420px; margin-left: 4px; }
+.passagem-eixo, .passagem-fill { position: absolute; display: block; }
+.passagem-v .passagem-eixo { left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule-strong); }
+.passagem-v .passagem-fill { left: -0.5px; top: 0; bottom: 0; width: 2px; background: var(--verde); transform-origin: 50% 0; transform: scaleY(var(--p)); transition: transform var(--dur-3) var(--ease-move); }
+.mo-tl .passagem-v .passagem-fill { animation: mo-escala-y linear both; animation-timeline: --mo-passagem; transition: none; }
+.passagem-paragem { position: absolute; }
+.passagem-v .passagem-paragem { left: 0; top: var(--pos); }
+.passagem-ponto { position: absolute; left: -4px; top: -4px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; border: 1px solid var(--rule-strong); background: var(--paper);
+  transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
+.is-feita .passagem-ponto { background: var(--verde); border-color: var(--verde); }
+.is-atual .passagem-ponto { box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 18%, transparent); }
+.passagem-nome { position: absolute; left: 16px; top: -11px; white-space: nowrap; font-size: 14px; line-height: 20px; color: var(--ink-muted); transition: color var(--dur-2) var(--ease); }
+.is-feita .passagem-nome { color: var(--ink); }
+.is-atual .passagem-nome { font-weight: 600; }
+.passagem-data { margin-left: 8px; font-weight: 400; color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
+.passagem-h { display: none; }
+.passagem-agora { animation: mo-aparecer var(--dur-2) var(--ease) both; color: var(--ink); font-weight: 600; }
+.passagem-agora .passagem-data { margin-left: 0; }
+
+/* The ruler of a story: sticky after its first chronology. Verde to the act the text has reached. */
+.rf { position: sticky; top: 0; z-index: 6; background: var(--paper); border-bottom: 1px solid var(--rule); padding: 10px 0 4px; margin: 0 0 24px; clear: both;
+  transition: opacity var(--dur-2) var(--ease), visibility 0s; }
+.rf.is-oculta { opacity: 0; visibility: hidden; transition: opacity var(--dur-1) var(--ease), visibility 0s linear var(--dur-1); }
+.rf-topo { display: flex; justify-content: space-between; gap: 12px; margin: 0 0 4px; font-size: 14px; line-height: 20px; min-height: 20px; }
+.rf-onde { font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: mo-aparecer var(--dur-2) var(--ease) both; }
+.rf-quando { color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; flex: none; }
+.rf-pista { position: relative; height: 38px; margin: 0 4px; }
+.rf-eixo { position: absolute; left: 0; right: 0; top: 24px; height: 1px; background: var(--rule-strong); }
+.rf-fill { position: absolute; left: 0; right: 0; top: 23.5px; height: 2px; background: var(--verde); transform-origin: 0 50%; transition: transform var(--dur-3) var(--ease-move); }
+.rf-t { position: absolute; top: 19px; width: 1px; height: 10px; margin-left: -0.5px; background: var(--rule-strong); transition: background-color var(--dur-2) var(--ease); }
+.rf-t.is-marca { width: 2px; margin-left: -1px; }
+.rf-t.is-lido { background: var(--ink); }
+.rf-t.is-ativo { top: 15px; height: 18px; width: 3px; margin-left: -1.5px; background: var(--verde); }
+.rf-rot { position: absolute; bottom: calc(100% + 1px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; line-height: 14px; font-weight: 600; color: var(--ink); animation: mo-aparecer var(--dur-2) var(--ease) both; }
+.rf-rot.rf-esq { transform: none; left: 0; }
+.rf-rot.rf-dir { transform: translateX(-100%); left: 100%; }
+.rf-g { position: absolute; top: 31px; height: 4px; box-sizing: border-box; border: 1px solid var(--rule); border-top: 0; }
+.rf-anos { display: flex; justify-content: space-between; margin: 0 4px; font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: lining-nums; }
+.hist-corpo > .rf { width: 1014px; max-width: none; box-sizing: border-box; }
+@media (max-width: 1099px) { .hist-corpo > .rf { width: auto; } }
+
+/* The step-through figure: steps on the left, the figure sticky on the right; on a phone, the figure
+   sticky on top and the steps under it. The state on show leaves in dur-1; the next one arrives after
+   it in dur-3, rising shift (coming down on a step back): never two texts at once. */
+.passos { display: grid; grid-template-columns: 300px minmax(0, 1fr); column-gap: 56px; margin-top: 8px; }
+.ps-passos { grid-column: 1; grid-row: 1; list-style: none; margin: 0; padding: 0; }
+.ps-passo { min-height: 64vh; }
+.ps-passo:last-child { min-height: 40vh; }
+.ps-passo-t { margin: 0; padding: 2px 0 2px 14px; border-left: 2px solid var(--rule); font-family: var(--font-serif); font-size: 18px; line-height: 28px; color: var(--ink-muted); transition: color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
+.ps-passo.is-atual .ps-passo-t { color: var(--ink); border-left-color: var(--verde); }
+.ps-painel { grid-column: 2; grid-row: 1; position: sticky; top: 32px; align-self: start; }
+.ps-regua { --k: 0; position: relative; height: 36px; margin: 6px 12px 18px; }
+.ps-eixo { position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: var(--rule-strong); }
+.ps-fill { position: absolute; left: 0; right: 0; top: 3.5px; height: 2px; background: var(--verde); transform-origin: 0 50%; transform: scaleX(var(--k)); transition: transform var(--dur-3) var(--ease-move); }
+.ps-ponto { position: absolute; top: 0; width: 9px; height: 9px; margin-left: -4.5px; box-sizing: border-box; border-radius: 50%; border: 1px solid var(--rule-strong); background: var(--paper); transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
+.ps-ponto.is-feito { background: var(--verde); border-color: var(--verde); }
+.ps-ponto.is-atual { border: 2px solid var(--verde); box-shadow: 0 0 0 4px color-mix(in srgb, var(--verde) 18%, transparent); }
+.ps-ano { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: lining-nums; }
+.is-atual > .ps-ano { color: var(--ink); font-weight: 600; }
+.ps-pilha { display: grid; }
+.ps-estado { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(var(--shift));
+  transition: opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), visibility 0s linear var(--dur-1); }
+.ps-estado.is-antes { transform: translateY(calc(-1 * var(--shift))); }
+.ps-estado.is-atual { opacity: 1; visibility: visible; transform: none; transition: opacity var(--dur-3) var(--ease) var(--dur-1), transform var(--dur-3) var(--ease) var(--dur-1), visibility 0s; }
+/* Each state inks its changes when it becomes the one on show (and again when the reader comes back). */
+.ps-estado:not(.is-atual) .rd-del, .ps-estado:not(.is-atual) .rd-ins { animation: none; }
+.ps-estado.is-atual .rd-del, .ps-estado.is-atual .rd-ins { animation-delay: calc(var(--dur-1) + var(--atraso-tinta) + var(--mo-di, 0) * var(--passo-tinta)); }
+.ps-quem { margin: 0; font-family: var(--font-serif); font-size: 20px; line-height: 28px; }
+.ps-ano-g { font-weight: 600; font-variant-numeric: lining-nums; }
+.ps-al { margin: 2px 0 12px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.ps-lei .lei-p { margin: 0; }
+.ps-painel > .rd-redline-legend { margin: 10px 0 0; }
+
+/* Below 1100 px the step-through figure is one column: the figure pinned on top, the steps under it. */
+@media (max-width: 1099px) {
+  .passos { grid-template-columns: minmax(0, 1fr); }
+  .ps-painel { grid-column: 1; grid-row: 1; position: sticky; top: 0; z-index: 3; background: var(--paper); padding: 10px 0 12px; border-bottom: 1px solid var(--rule); }
+  .ps-passos { grid-row: 2; padding-top: 24px; }
+  .ps-passo { min-height: 58vh; }
+  .ps-passo:last-child { min-height: 30vh; }
+}
+@media (max-width: 760px) {
+  .rp-cab { gap: 10px; }
+  .rp-ano { font-size: 19px; }
+  .rp-onde { font-size: 14px; }
+  .rp-pista { height: 40px; }
+  .rp-agulha { width: 32px; margin-left: -16px; }
+  .rp-agulha::before { left: 15px; }
+  .rp-agulha::after { left: 9px; width: 14px; height: 10px; }
+  .rp-longo { display: none; }
+  .rp-curto { display: inline; }
+  .rp-tocar { min-height: 40px; }
+  .passagem-v { display: none; }
+  .passagem-h { display: block; position: sticky; top: 0; z-index: 5; background: var(--paper); padding: 10px 0 12px; margin: 0 0 4px; border-bottom: 1px solid var(--rule); }
+  .passagem-h .passagem-t { margin: 0 0 10px; }
+  .passagem-h .passagem-pista { position: relative; height: 9px; margin: 0 5px; }
+  .passagem-h .passagem-eixo { left: 0; right: 0; top: 4px; height: 1px; background: var(--rule-strong); }
+  .passagem-h .passagem-fill { left: 0; right: 0; top: 3.5px; height: 2px; background: var(--verde); transform-origin: 0 50%; transform: scaleX(var(--p)); transition: transform var(--dur-3) var(--ease-move); }
+  .mo-tl .passagem-h .passagem-fill { animation: mo-escala-x linear both; animation-timeline: --mo-passagem; transition: none; }
+  .passagem-h .passagem-paragem { left: var(--pos); top: 4px; }
+  .rf-topo { font-size: 13px; }
+  .ps-passo-t { font-size: 17px; line-height: 26px; }
+  .ps-quem { font-size: 17px; line-height: 24px; }
+  .ps-lei .lei-p { font-size: 15px; line-height: 23px; }
+  .ps-painel > .rd-redline-legend { display: none; }
+  .ps-lei del { display: none; }   /* a phone shows the new text, its new words marked; the step says what went */
+}
+
+/* ---- 8. Story figures assemble once, as they enter the viewport ---------------------------------- */
+.fig-cabeca > * { animation: mo-sobe var(--dur-3) var(--ease) calc(120ms + var(--i, 0) * var(--passo)) backwards; }
+.fig-cabeca > :nth-child(2) { --i: 1; } .fig-cabeca > :nth-child(3) { --i: 2; }
+.fig-pe { animation: mo-aparecer var(--dur-3) var(--ease) 400ms backwards; }
+.cr-eixo { transform-box: fill-box; transform-origin: left; animation: mo-traco var(--dur-regua) var(--ease-tinta) 120ms backwards; }
+.cr-tick { transform-box: fill-box; transform-origin: 50% 70%; animation: mo-tique var(--dur-2) var(--ease) calc(240ms + var(--i, 0) * 22ms) backwards; }
+.cr-rot, .cr-ano, .cr-gov-t { animation: mo-aparecer var(--dur-3) var(--ease) calc(300ms + var(--i, 0) * 22ms) backwards; }
+.cr-gov { stroke-dasharray: 1; stroke-dashoffset: 0; animation: mo-traco-svg var(--dur-regua) var(--ease-tinta) 420ms backwards; }
+.cr-grupo-h, .cr-linha { animation: mo-sobe var(--dur-3) var(--ease) calc(380ms + var(--i, 0) * var(--passo)) backwards; }
+.fig-ficha-l { animation: mo-sobe var(--dur-3) var(--ease) calc(160ms + var(--i, 0) * var(--passo)) backwards; }
+
+/* ---- 9. Tátil: phone sheets with a grab bar (motion.js drags them) -------------------------------- */
+@media (max-width: 1099px) {
+  .rd-folha-topo { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .rd-folha-topo::before { content: ""; display: block; width: 36px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: var(--rule-mid); transition: background-color var(--dur-1) var(--ease), width var(--dur-2) var(--ease); }
+  .rd-folha.mo-a-puxar .rd-folha-topo { cursor: grabbing; }
+  .rd-folha.mo-a-puxar .rd-folha-topo::before { background: var(--rule-strong); width: 44px; }
+  .rd-folha.mo-a-puxar { user-select: none; }
+}
+@media (max-width: 760px) {
+  .folha-cab { touch-action: none; cursor: grab; flex-wrap: wrap; user-select: none; -webkit-user-select: none; }
+  .folha-cab::before { content: ""; flex: 0 0 100%; height: 4px; margin: 0 auto 2px; max-width: 36px; border-radius: 2px; background: var(--rule-mid); }
+  .folha.mo-a-puxar { user-select: none; }
+  .folha.mo-a-puxar .folha-cab::before { background: var(--rule-strong); }
+}
+@media (forced-colors: active) { .rd-folha-topo::before, .folha-cab::before { background: CanvasText; } }
+
+/* ---- Print: everything, at rest; no rulers, rails or hairlines ----------------------------------- */
+@media print {
+  .mo-progresso, .rf, .passagem, .rp, .lt, .ps-painel { display: none !important; }
+  .ps-passo { min-height: 0; }
+  .rd-votos > *, .rd-votos-nota { opacity: 1 !important; clip-path: none !important; }
+  .rd-del { text-decoration-color: currentColor; background-image: none; }
+  .rd-ins { background-image: none; }
+  .acabado { background: none; }
+}
+
+/* ---- Reduced motion: every state is final at once. Scrubbing and replay still step; scroll-tied
+   states show their current state; the hairline is not drawn. ------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .mo-progresso { display: none; }
+  .ps-estado, .ps-estado.is-antes { transform: none; }
+  .mx .mx-del .mx-w::after { transform: scaleX(1); }
+  .rd-votos > *, .rd-votos-nota { opacity: 1 !important; clip-path: none !important; }
+}

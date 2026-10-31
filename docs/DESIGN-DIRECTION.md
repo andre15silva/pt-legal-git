@@ -52,8 +52,8 @@ From top to bottom. Desktop measure about 64ch, a 46 px hang for números, and a
 5. **Time ruler.**
    - A 1 px `rule-strong` line, with a tick at each redação start and half ticks for retificações.
    - Year labels in serif 12 at their true positions, and a "hoje" mark.
-   - The redação shown is a 5 px ink span.
-   - Each span is a button. The whole ruler is one radiogroup with one tab stop, and arrow keys move within it.
+   - The redação shown is a faint span; a verde needle marks the date on screen, and the line is ink up to it.
+   - The ruler is a scrubber (section 10): the needle is one slider with one tab stop, and arrow keys move it. «▶ Rever a história» sits above it.
    - A redação that lasted zero days merges into the one that replaced it on the same day.
 6. **Sticky row (48 px, the only sticky thing, `paper` ground, 2 px ink rule on top, 1 px rule below, no shadow).**
    - Left: "‹ Anterior" and "Seguinte ›".
@@ -189,7 +189,7 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
   7. Warnings: a 3 px ochre rule and the word "Atenção".
   8. No uppercase labels, eyebrows, decorative icons or gradients.
   9. Origin colour only as a band next to the act's name.
-  10. One sticky element: the 48 px row on desktop, the 56 px bar on a phone.
+  10. One sticky element: the 48 px row on desktop, the 56 px bar on a phone. Other pages have at most one of their own (section 10).
 
 ## 9. Order of work
 
@@ -209,25 +209,90 @@ The owner asked for a white ground and a Scandinavian, minimal style. The refere
 
 ## 10. Motion
 
-Motion says what changed and where it came from. It never decorates. The values are tokens (`--dur-1` 120 ms, `--dur-2` 180 ms, `--dur-3` 240 ms, `--dur-marca` 1600 ms, `--ease`, `--ease-move`, `--shift` 8 px) in `design-system/tokens.json`.
+*Rewritten on 2026-10-31. The owner chose one house style and three borrowed pieces from five prototypes: Prelo (the house style), Rever o tempo on article pages, two pieces of Tátil, and O scroll é o relógio. The code is one module: [`app/motion.js`](../app/motion.js) and [`app/motion.css`](../app/motion.css), with small hooks in `app/app.js` and the design system (`R.Conta`, `R.Feito`, `data-grupo` on vote siglas). The checks are [`app/test/movimento.spec.js`](../app/test/movimento.spec.js) and the motion helpers in `app/test_diff.js`.*
 
-| What happens | What moves | How |
+Motion says what changed and where it came from. It is drawn the way print is made: rules, strikes, ink, lines set in order. It never decorates.
+
+### Principles
+
+1. **Ink, not objects.** Things are drawn (rules, strikes, underlines), set (lines rising 6 px into place) or inked (a wash sweeping in from the left). Cards never lift, buttons never scale, nothing bounces or loops.
+2. **Reading order is the timeline.** Staggers follow the DOM, top to bottom. A diff inks its changes in the order they are read.
+3. **Once.** A rule draws, a figure assembles and a number counts once per mount. Nothing moves while it is being read.
+4. **Only the reader starts motion.** A replay plays after a press and stops on any other input. Scroll-tied things follow the scroll in both directions and stop when the reader stops. The one thing that plays on arrival is a page's entry (≤ 320 ms of stagger) and the act strip of «Quem fez» (≤ 2.2 s, once).
+5. **Change keeps its colours.** Blue and orange only in the diff, the morph and the new-words mark. Verde only for "you are here": the needle, the fill of a ruler, the lit vote group.
+6. **One sticky element at a time.** The version row on the article page (the bar on a phone), the act strip on «Quem fez», the story ruler (or a pinned step-through figure, never both), the passage line on an act page.
+
+### Tokens (`design-system/tokens.json`)
+
+| Token | Value | Use |
 |---|---|---|
-| A new page | The page content | Fades in and rises `--shift`, `--dur-3`. The header and footer stay still. |
-| Next or previous redação | The text of the law | Comes in from the side the reader moved to (right for "Seguinte", left for "Anterior"), `--dur-3`. The title, status and register do not move. |
-| A step forward | The words the newer redação wrote | Start on `ins-bg` and fade to white over `--dur-marca`. The reader sees what is new without opening "Alterações". No mark on a step back. |
-| The redação changes | The marker on the time ruler | Slides to the new period, `--dur-3`, `--ease-move`. |
-| The redação changes | The register | The verde rule grows down the new row and its details unfold, `--dur-2`. |
-| Another tab | The tab underline, the text | The underline slides to the tab, `--dur-2`. The text cross-fades. |
-| A popover, a fold, a phrase in Origem do texto | The panel | Unfolds 4 px from its button, `--dur-2`. Folds animate their height where the browser can (`interpolate-size`). |
-| Hover and press | Colour, underline, wash | `--dur-1`. "‹ Anterior" and "Seguinte ›" nudge 2 px towards where they go. |
-| Copy | The button label | Cross-fades to "Citação copiada". |
-| Data still loading | "A carregar…" | Shows only after 400 ms. Pages whose data is already loaded render at once, with no loading state. |
+| `dur-1` · `dur-2` · `dur-3` | 120 · 180 · 240 ms | hover and press · things that open, an outgoing state · things that arrive, an incoming state |
+| `dur-folha` | 280 ms | a sheet uncovered from its edge (a clip: the type does not travel) |
+| `dur-tinta` | 320 ms | a strike drawn, new words inked in |
+| `dur-regua` | 480 ms | one-time: a hairline, a ruler's line, a figure's axis |
+| `dur-conta` | 640 ms | one-time: a number counting to its value |
+| `dur-marca` | 1600 ms | the new-words mark: wash and underline drawn in, held, faded |
+| `passo` | 40 ms, at most 8 steps | stagger of lines set in reading order |
+| `passo-tinta` · `atraso-tinta` | 55 ms (at most 10) · 120 ms | stagger of a diff's changes, after the text has arrived |
+| `dur-risca` · `dur-muda` | 160 · 260 ms | morph: a removed word struck (14 ms apart, at most 10), then closed up while new words open; a whole step ≤ 420 ms |
+| `dur-agulha` | 240 ms (600 ms in a replay, 0 under the finger) | the needle of the time ruler |
+| `dur-press` · `press` | 70 ms · 1 px | a pressed button goes down 1 px and comes back in `dur-1` |
+| `sobe` · `shift` | 6 px · 8 px | a line set in place · a step-through state |
+| `ease` · `ease-move` · `ease-tinta` | `cubic-bezier(.2,0,0,1)` · `(.4,0,.2,1)` · `(.3,0,.1,1)` | fades and rises · markers that move · a pen (rules, strikes, sheets) |
+| `ler` | 55 % of the viewport (78 % under a pinned figure) | the reading line: what crosses it is "now" |
+| Spring (JS) | ζ ≥ 0.9, k 380–520 | a released phone sheet: it keeps the finger's speed and lands without a visible bounce (< 0.5 %, ≤ 0.6 s) |
+| Replay step | `clamp(750, 7000 / (n − 1), 1500)` ms | one redação (or one act in Origem) per step: a history takes 2–8 s |
 
-Rules:
-- Nothing bounces, loops or moves on its own. No motion longer than 240 ms, except the fade of new words.
-- `prefers-reduced-motion: reduce` turns every animation and transition into an instant change.
-- Animations run in CSS on elements that mount (keyed by page, by redação and view) or on transitions of elements that stay. No View Transitions: the data loads asynchronously, and a transition would capture the loading state.
+### Catalogue
+
+| Where | What moves | How |
+|---|---|---|
+| A new page | The block; its first lines | The block fades in (`dur-2`). Lines in the first 1.5 screens rise `sobe` and fade, `passo` apart, at most 8. Header and footer stay still. |
+| Hairlines | `.list`, `.cards`, the register, sections, votes, figures | Drawn from the left once (`dur-regua`). Blocks below the fold wait until seen. |
+| Article: the time ruler | The needle, the lived line, the year | A scrubber. Drag the needle or press the line: the article changes to the redação in force there and settles on it on release. The needle is a slider: ← → ↑ ↓ one redação, PgUp/PgDn three, Home/End. The year counts to its value. On page entry the line is drawn and the ticks rise in date order. |
+| Article: the ruler stays put | The page | While the needle is held, the status lines above keep their tallest height. After any change of redação the page scrolls by what the lines above changed, so the ruler never moves under the pointer. |
+| Article, Texto: a step | The words of the law | The text turns into the new redação in place: removed words are struck (`dur-risca`) and close, new words open (`dur-muda`) with the new-words mark. Words that stay do not move. Only paragraphs on screen animate; above 160 changed words it crossfades by word. Struck words are `aria-hidden` and leave the DOM at the end. A jump (replay back to the start) fades instead. |
+| Article, Alterações or Origem: a step; another tab | The law text | A crossfade (View Transition, old text out in `dur-2`, new in `dur-3` with a 4 px drift towards the side moved to). The diff then draws a strike through each removed word and inks each added word, in reading order. |
+| Article: ▶ «Rever a história» / «Continuar até hoje» | The needle and the text | One redação per replay step, each a morph. ❚❚ or Esc pauses; any other key or pointer press stops it. On a phone: «Rever», «Continuar», «Pausa». |
+| Origem: ▶ «Ver quem escreveu, por ordem» | Colours of the text | Today's text goes grey; then each act, oldest first, takes its colour in reading order, the needle walks to its date and its margin note lights. |
+| A step forward | The new words | Wash and underline drawn in, held and faded (`dur-marca`). No mark on a step back. |
+| Origem sheet, phone sheet, popovers, folds | The panel | Uncovered from its edge with a clip (`dur-folha`; popovers and folds `dur-2`), then its lines rise. On a phone the sheets have a grab bar: they follow the finger; down a third or a flick closes, up opens to 92 %, otherwise they spring back. |
+| Votes (act pages, stories) | The rows; the counts | Rows tally (A favor, Contra, Abstenção) as the vote reaches the reading line, scrubbed by the scroll and undone on the way back. The seat counts count once (`dur-conta`). Votes in the Origem sheet do not wait. |
+| Votes: a group | The siglas | Hovering or focusing a group lights it in every vote on the page and dims the others to 45 %. Each vote block is one tab stop; the arrows move between its groups. |
+| Act page: the passage of a law | A line of stages | Beside «Quem fez esta lei» (on a phone: above it, sticky): one stop per stage, named from the data (iniciativa, votação final global, Tribunal Constitucional, veto, novo decreto, confirmação, promulgação, publicação, entrada em vigor), placed where its sentence is. Verde fills it as the sentences cross the reading line. |
+| «Quem fez cada alteração» | The act strip | Drawn once on arrival: a pen draws the diploma's life to today and each act lands as it passes (≤ 2.2 s). Sticky; the band of the Government (or legislatura) on the reading line is verde. A tick scrolls to its act and marks it. |
+| Stories: figures | Axis, ticks, brackets, rows | Assembled once when they enter: the chronology's axis is drawn, ticks rise in date order, Government brackets are drawn, rows are set. Diff figures ink. |
+| Stories: a step-through figure (`passos`) | The figure's state | The figure stays (sticky) while short steps pass beside it (under it below 1100 px). The step on the reading line chooses the redação shown, compared with the step before; the old state leaves in `dur-1`, the new one arrives in `dur-3`. Scrolling back goes back. One or two per story. |
+| Stories: the ruler | A slim ruler | After the first chronology, sticky at the top: verde to the act the text has reached, the acts of the paragraph being read named, the section on the left. It steps aside while a step-through figure is being read. |
+| Diploma pages | A 2 px verde hairline | The share of the page read, at the top of the window. |
+| Hover and press | Underlines, wash, 1 px | Underlines thicken and tighten (`dur-1`); titles without one get it drawn from the left. Buttons go down 1 px. |
+| Copy and share | The label | It swaps to the confirmation and a tick draws itself. |
+| Counts | «63 leis e códigos», «N atos neste período», vote counts | Count once when seen. Years, dates, article numbers and numbers under 10 never count. |
+| Data still loading | «A carregar…» | Only after 400 ms, with a hairline drawn once under it. Never a spinner. |
+
+### What never moves
+
+- The words of the law once they have arrived, a story's prose, quotations, notes and sources.
+- The header, the footer, the crumbs, the status line, the register's rows.
+- Nothing scrolls by itself, and there is no parallax, marquee, ticker, cursor effect, idle drift or loop. Search results do not stagger (they change at each key).
+- Colour meaning: motion uses the existing ins, del and verde tokens only.
+
+### Reduced motion, keyboard, screen readers, print
+
+- `prefers-reduced-motion: reduce`: every animation and transition is instant, View Transitions too. The scrubber and the replay still step, as a slideshow. Drags still follow the hand; springs jump to their end. Scroll-tied states show the current state at once; vote rows and counts are final; the reading hairline is hidden. The check: `document.getAnimations()` has nothing running.
+- Nothing is hidden waiting for an observer without a fail-safe: a waiting block is released when seen, every 3 s and on each scroll frame if it is in or above the viewport, on keyboard focus inside it, on print, and when reduced motion turns on. Without JavaScript nothing waits.
+- Rulers, rails, the strip's bands, the step-through panel and the grab bars are `aria-hidden`: the sentences beside them say everything. Each step of a step-through figure carries its redação's full text for screen readers. A counting number keeps its value in the DOM. The needle is a `role="slider"` whose `aria-valuetext` names the redação; the status line announces each step.
+- Print shows everything at rest: no rulers, rails, hairline or pinned panels; vote rows visible; strikes as `line-through`.
+
+### Fallbacks
+
+- Without scroll timelines (Firefox today; preview with `?semtl` before the `#`): `html.mo-sem-tl`. Fills move to the discrete state of the reading line with a `dur-3` transition; a vote below the fold waits and then tallies once (80 ms between rows); the hairline is set from `scrollY`.
+- Without View Transitions: the keyed law text fades in with the 4 px drift; nothing else changes.
+- A View Transition runs only between views or redações of one loaded article, never during a drag or a replay, so it never captures a loading state. Its names exist only while it runs (a `view-transition-name` makes a stacking context, and the Origem sheet lives inside the text).
+
+### Performance
+
+Transform, opacity, clip-path and short background sizes, except the needle's `left`, the morph's word widths (measured once per step) and a sheet's height while it is dragged up. Scroll-scrubbed motion runs on the compositor. One MutationObserver and one IntersectionObserver for the house style; one reading-line observer per scroll-tied component, plus a rAF-throttled scroll check. Only what is on screen animates.
 
 ## 11. Space
 

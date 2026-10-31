@@ -18,7 +18,36 @@ Imagine-se uma criança que nasce num hospital português, filha de dois estrang
 
 Se tivesse nascido em 1990, não. A [Lei n.º 37/81](ato:lei-37-81), a Lei da Nacionalidade, só dava a nacionalidade de origem aos filhos de estrangeiros nascidos cá se os pais residissem no país «habitualmente há, pelo menos, seis anos» e se fosse feita uma declaração nesse sentido[^art1]. Em 2010, também não: eram precisos uma declaração e cinco anos de residência legal de um dos pais. Em 2019, sim, e sem pedir nada: bastavam dois anos. Entre novembro de 2020 e maio de 2026, a resposta seria sim mesmo que os pais estivessem cá há um ano sem autorização de residência. Se nascer hoje, volta a ser não.
 
-A regra que decide esta resposta, uma alínea do [](artigo:lei-nacionalidade/artigo-1), foi reescrita cinco vezes: em 1994, 2006, 2018, 2020 e 2026. Para a naturalização, a via pela qual um estrangeiro adulto pede a nacionalidade, a residência exigida era de seis anos em 1981; passou a seis ou dez, conforme a origem, em 1994; a seis para todos em 2006; a cinco em 2018; e a sete ou dez desde 2026[^art6].
+A regra que decide esta resposta, uma alínea do [](artigo:lei-nacionalidade/artigo-1), foi reescrita cinco vezes: em 1994, 2006, 2018, 2020 e 2026. A [](fig:solo-passos) segue-a redação a redação. Para a naturalização, a via pela qual um estrangeiro adulto pede a nacionalidade, a residência exigida era de seis anos em 1981; passou a seis ou dez, conforme a origem, em 1994; a seis para todos em 2006; a cinco em 2018; e a sete ou dez desde 2026[^art6].
+
+```figura passos
+id: solo-passos
+artigo: lei-nacionalidade/artigo-1
+largura: larga
+titulo: A alínea do direito de solo, redação a redação
+legenda: Cada passo mostra a alínea do [](artigo:lei-nacionalidade/artigo-1) sobre os filhos de estrangeiros
+  nascidos em Portugal e compara-a com a do passo anterior. As palavras sublinhadas são as que cada lei escreveu e,
+  num ecrã largo, as riscadas são as que apagou. Em 2024 a alínea não mudou.
+passo: lei-37-81 1/c
+  Em 1981, a [Lei n.º 37/81](ato:lei-37-81) só dava a nacionalidade de origem aos filhos de estrangeiros nascidos
+  cá se os pais residissem no país «habitualmente há, pelo menos, seis anos» e se fosse feita uma declaração nesse sentido.
+passo: lei-25-94 1/c
+  Em 1994, a [Lei n.º 25/94](ato:lei-25-94) passou a contar só a residência com «título válido de autorização de
+  residência»: seis anos para os pais de países de língua oficial portuguesa, dez para os restantes.
+passo: lei-organica-2-2006 1/e
+  Em 2006, com a [Lei Orgânica n.º 2/2006](ato:lei-organica-2-2006), passaram a bastar uma declaração e cinco anos
+  de residência legal de um dos pais, qualquer que fosse a origem. A regra passou para a alínea e).
+passo: lei-organica-2-2018 1/f
+  Em 2018, a [Lei Orgânica n.º 2/2018](ato:lei-organica-2-2018) passou a atribuir a nacionalidade salvo recusa e a
+  pedir dois anos de residência legal de um dos pais. A regra estava na alínea f) desde a
+  [Lei Orgânica n.º 9/2015](ato:lei-organica-9-2015), que não lhe mudou o texto.
+passo: lei-organica-2-2020 1/f
+  Em 2020, com a [Lei Orgânica n.º 2/2020](ato:lei-organica-2-2020), a alínea passou a pedir que um dos pais
+  «resida legalmente no território português, ou aqui resida, independentemente do título, há pelo menos um ano».
+passo: lei-organica-1-2026 1/f
+  Em 2026, com a [Lei Orgânica n.º 1/2026](ato:lei-organica-1-2026), a alínea f) voltou ao desenho de 2006:
+  declaração expressa e cinco anos de residência legal de um dos pais.
+```
 
 No fim de junho de 2025, segundo dados do Instituto dos Registos e do Notariado citados pela Lusa, havia 515 334 pedidos de nacionalidade por decidir[^pendentes]. A 25 de junho, o Governo de Luís Montenegro entregara no Parlamento a proposta que viria a ser a [](ato:lei-organica-1-2026)[^pl1]. Esta é a história da lei que essa proposta alterou: quem a mudou, com que argumentos e com que votos. A [](fig:todas) dá o mapa.
 

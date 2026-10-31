@@ -115,6 +115,41 @@ assert.strictEqual(mud('2019-01-01', '2026-10-29'), 'artigo-2:alterado:lei-93-20
 assert.strictEqual(mud('2020-01-01', '2023-04-30'), '');
 assert.strictEqual(mud('2019-10-01', '2019-10-01'), '');
 
+// ---- The motion layer's pure helpers (app/motion.js) ---------------------------------------
+const MOw = {};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'motion.js'), 'utf8'), { window: MOw, Date, Math });
+const MO = MOw.RedacaoMotion;
+// Replay: 750 to 1500 ms per redação, so a whole history takes about 2 to 8 s.
+assert.strictEqual(MO.passoReplay(2), 1500);
+assert.strictEqual(MO.passoReplay(11), 750);
+assert.strictEqual(MO.passoReplay(8), 1000);
+// The redação at a date on the scrubber.
+const vsR = [{ start: '1981-10-03' }, { start: '1994-11-01' }, { start: '2006-12-15' }];
+assert.deepStrictEqual(JSON.parse(JSON.stringify([MO.naData(vsR, '1970-01-01'), MO.naData(vsR, '1994-11-01'), MO.naData(vsR, '2000-01-01'), MO.naData(vsR, '2030-01-01')])), [-1, 1, 1, 2]);
+// The sheet's spring (ζ 0.9): it lands without a visible bounce (< 0.5 %) and settles within 0.6 s.
+for (const k of [380, 420, 520]) {
+  const m = { k, z: 0.9, x: 0, v: 0, to: 100 };
+  let t = 0, max = 0, fim = false;
+  while (!fim && t < 2) { fim = MO.molaPasso(m, 1 / 60); t += 1 / 60; max = Math.max(max, m.x); }
+  assert.ok(fim && t < 0.6 && max < 100.5, 'mola k=' + k + ': ' + t.toFixed(3) + ' s, máx. ' + max.toFixed(2));
+}
+// A story's law-time: a section opening with a year starts at that year's first act; links move it on.
+const atosH = { a81: { publicacao: '1981-10-03' }, a94: { publicacao: '1994-08-19' }, a06: { publicacao: '2006-04-17' } };
+const lei = MO.leituraDe([
+  { t: 'p', partes: ['Antes ', { href: '#/ato/a06', texto: 'x' }] },
+  { t: 'h2', texto: '1981: o começo' }, { t: 'p', partes: ['Nada.'] },
+  { t: 'h2', texto: '1994: o título' }, { t: 'p', partes: [{ href: '#/ato/a06?ir=generalidade', texto: 'y' }] },
+  { t: 'figura', tipo: 'passos', partes: null }],
+  atosH, [{ ato: 'a81', data: '1981-10-03' }, { ato: 'a94', data: '1994-08-19' }]);
+assert.deepStrictEqual(JSON.parse(JSON.stringify(lei.map(x => [x.ate, x.secao, x.atos.length, x.passos]))),
+  [[null, null, 1, false], ['1981-10-03', '1981: o começo', 0, false], ['1981-10-03', '1981: o começo', 0, false],
+   ['1994-08-19', '1994: o título', 0, false], ['2006-04-17', '1994: o título', 1, false], ['2006-04-17', '1994: o título', 0, true]]);
+// A step shows one alínea, or a whole número.
+const lsP = ['1 — São portugueses:', 'a) Uns;', 'b) Outros;', '2 — Mais.'];
+const rotP = window.RedacaoApp.rotular(lsP);
+assert.deepStrictEqual(JSON.parse(JSON.stringify(MO.linhasPasso(lsP, rotP, { n: '1', al: 'b' }))), ['b) Outros;']);
+assert.deepStrictEqual(JSON.parse(JSON.stringify(MO.linhasPasso(lsP, rotP, { n: '2', al: null }))), ['2 — Mais.']);
+
 // ---- Who made each law (§6.2), on the shared contract fixture (pipeline/fixtures/contrato) ----
 const A = window.RedacaoApp;
 const F = path.join(__dirname, '..', 'pipeline', 'fixtures', 'contrato', 'app-data');
@@ -132,6 +167,14 @@ if (fs.existsSync(path.join(F, 'quem.json'))) {
   assert.ok(blocos['decreto-lei-902-2010'].includes('Partido no Governo: Partido Socialista (PS).'));
   assert.strictEqual(blocos['decreto-lei-903-2012'].split(' O Parlamento')[0],
     'Não sabemos que Governo aprovou este decreto-lei. Não encontrámos a data do Conselho de Ministros no texto do decreto-lei. Porquê? Publicado durante o III Governo Constitucional.');
+  // The passage line of an act page (app/motion.js) reads its stages from the data, not from the words.
+  const r901 = A.registo(ref, 'lei-901-2020');
+  const et = MO.etapasDe(A.frasesQuem(r901.quem, r901.p, r901.ato, ref));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(et.map(e => [e.nome, e.data]))), [['Iniciativa', '2020-02-01'], ['Votação final global', '2020-07-10'],
+    ['Tribunal Constitucional', null], ['Veto', '2020-08-20'], ['Confirmação', '2020-09-25'], ['Promulgação', '2020-10-05'], ['Publicação', ref.atos['lei-901-2020'].publicacao],
+    ['Entrada em vigor', ref.atos['lei-901-2020'].alteracoes[0].vigor]].filter(x => x[0] !== 'Entrada em vigor' || x[1]));
+  const rdl = A.registo(ref, 'decreto-lei-901-1977');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(MO.etapasDe(A.frasesQuem(rdl.quem, rdl.p, rdl.ato, ref)).map(e => e.nome).slice(0, 2))), ['Conselho de Ministros', 'Promulgação']);
   // R-6: a committee text names every initiative, with the part it took; no initiative is singled out.
   const tc = blocos['lei-902-2019'];
   assert.ok(tc.startsWith('Uma comissão do Parlamento juntou 3 iniciativas num só texto: Proposta de Lei n.º 902/XIII, do III Governo Constitucional · Projeto de Lei n.º 901/XIII, de deputados do Bloco de Esquerda (BE) · o artigo 8.º do Projeto de Lei n.º 903/XIII, de deputados do Partido Social Democrata (PSD)'), tc);
@@ -434,5 +477,5 @@ if (fs.existsSync(path.join(__dirname, 'data', 'quem.json'))) {
 // R-25: the old sentence is gone.
 assert.ok(!fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8').includes('Não temos dados deste ato no Parlamento.'));
 
-console.log('ok: ' + cases.length + ' diff cases, 10 URL cases, 6 search cases, 3 diploma-diff cases' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : '') +
+console.log('ok: ' + cases.length + ' diff cases, 10 URL cases, 6 search cases, 3 diploma-diff cases, motion helpers' + (pairs ? ', ' + pairs + ' version pairs rebuild exactly' : '') +
   (quemCasos ? ', ' + quemCasos + ' fixture acts' : ', no fixture') + ', ' + origemCasos + ' origem cases');

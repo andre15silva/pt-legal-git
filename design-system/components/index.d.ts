@@ -29,6 +29,10 @@ export interface VoteBarProps { votes: GroupVote[]; title?: string; result?: str
 export declare function VoteBar(props: VoteBarProps): React.ReactElement;
 export interface VotacaoProps { grupos: Record<string, 'favor' | 'contra' | 'abstencao'>; ordem?: string[]; contagens?: Record<string, Record<string, number>>; dissidencia?: { grupo: string; sentido: string; n?: number; nome?: string }[]; foraDeGrupo?: { nome: string; sentido: string }[]; ausentes?: string[]; semRegisto?: string[]; unanime?: boolean; resultado?: string; verificacao?: { ok: boolean; metodo: string; favor: number; contra: number; abstencao: number }; mostrarConta?: boolean; nomes?: Record<string, string>; destaque?: string[] }
 export declare function Votacao(props: VotacaoProps): React.ReactElement;
+/** A number that counts to its value once, when seen (app/motion.js). The value is always in the DOM for screen readers. */
+export declare function Conta(props: { n: number }): React.ReactElement;
+/** A copy or share button's label: it swaps to the confirmation and a tick draws itself. */
+export declare function Feito(props: { feito: boolean; sim: React.ReactNode; nao: React.ReactNode }): React.ReactElement;
 export interface Definicao { termo: string; definicao: string[]; apoio?: string[]; fonte?: { rota?: string; url?: string; texto: string } }
 export interface TermoProps { id: string; texto: string; def: Definicao; onAbrirFolha?: (id: string, botao: HTMLButtonElement) => void }
 export declare function Termo(props: TermoProps): React.ReactElement;
@@ -53,4 +57,4 @@ export interface FolhaOrigemProps { aberta: boolean; titulo: React.ReactNode; an
 export declare function FolhaOrigem(props: FolhaOrigemProps): React.ReactElement;
 export interface LenteOrigemProps { valor: 'diploma' | 'iniciativa'; onEscolher: (v: 'diploma' | 'iniciativa') => void; categorias: [OrigemCategoria, string][]; honesta: string }
 export declare function LenteOrigem(props: LenteOrigemProps): React.ReactElement;
-declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Votacao: typeof Votacao; Termo: typeof Termo; TermoConteudo: typeof TermoConteudo; Citation: typeof Citation; SourceNote: typeof SourceNote; OrigemTexto: typeof OrigemTexto; NotaOrigem: typeof NotaOrigem; FolhaOrigem: typeof FolhaOrigem; LenteOrigem: typeof LenteOrigem; dataPorExtenso(iso: string): string } } }
+declare global { interface Window { Redacao: { Button: typeof Button; StatusPill: typeof StatusPill; ActChip: typeof ActChip; Redline: typeof Redline; TextOrigin: typeof TextOrigin; VersionBar: typeof VersionBar; DateLens: typeof DateLens; VersionTimeline: typeof VersionTimeline; ProcessTrack: typeof ProcessTrack; VoteBar: typeof VoteBar; Votacao: typeof Votacao; Conta: typeof Conta; Feito: typeof Feito; Termo: typeof Termo; TermoConteudo: typeof TermoConteudo; Citation: typeof Citation; SourceNote: typeof SourceNote; OrigemTexto: typeof OrigemTexto; NotaOrigem: typeof NotaOrigem; FolhaOrigem: typeof FolhaOrigem; LenteOrigem: typeof LenteOrigem; dataPorExtenso(iso: string): string } } }

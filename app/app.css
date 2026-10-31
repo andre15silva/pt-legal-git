@@ -134,7 +134,6 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 
 /* Phone sheet (native dialog) */
 .folha { margin: auto 0 0; padding: 0; width: 100%; max-width: none; max-height: 86vh; border: 0; border-top: 1px solid var(--rule-strong); border-radius: var(--radius-md) var(--radius-md) 0 0; background: var(--paper-raised); color: var(--ink); box-shadow: var(--shadow-sheet); }
-.folha[open] { animation: rd-entrar var(--dur-3) var(--ease) both; }
 .folha::backdrop { background: color-mix(in srgb, var(--ink) 30%, transparent); }
 .folha-in { padding: 8px 16px max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 16px; }
 .folha-cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; position: sticky; top: 0; background: var(--paper-raised); padding-top: 8px; }
@@ -351,12 +350,7 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .fase-data { font-family: var(--font-serif); color: var(--ink-muted); font-variant-numeric: lining-nums tabular-nums; }
 .reg-parl { color: var(--ink); }
 
-/* Motion (tokens --dur-*, --ease*). A new page fades in and rises --shift. A new redação of the
-   text comes from the side the reader moved to. Words a step forward added fade from ins-bg. */
-/* backwards, not both: a transform kept after the animation would hold the fixed sheet of Origem do texto. */
-.vista > * { animation: rd-entrar var(--dur-3) var(--ease) backwards; }
-.art-lei { animation: rd-aparecer var(--dur-2) var(--ease) backwards; }
-.artigo[data-dir="seguinte"] .art-lei { animation-name: rd-de-direita; animation-duration: var(--dur-3); }
+/* Motion: the animations (page entry, steps, sheets, figures, votes) are in app/motion.css (DESIGN-DIRECTION §10). */
 
 /* ---- «Origem do texto» (FINAL-SPEC §3) ---------------------------------------------------------
    Runs of lines, each with one note: beside the text at ≥ 1100 px, above it (a rubrica) below that.
@@ -440,7 +434,7 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .dobra-o[open] > summary { margin-bottom: 6px; }
 
 /* The sheet: at the side (≥ 1100 px), over the notes; the text stays visible and usable. */
-.rd-folha { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0; box-sizing: border-box; width: 440px; overflow: auto; overscroll-behavior: contain; background: var(--paper); border-left: 1px solid var(--rule-strong); box-shadow: var(--shadow-sheet); animation: rd-folha-lado var(--dur-2) var(--ease) backwards; }
+.rd-folha { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0; box-sizing: border-box; width: 440px; overflow: auto; overscroll-behavior: contain; background: var(--paper); border-left: 1px solid var(--rule-strong); box-shadow: var(--shadow-sheet); }
 .rd-folha[hidden] { display: none; }
 .rd-folha-topo { position: sticky; top: 0; z-index: 1; background: var(--paper); border-bottom: 1px solid var(--rule); }
 .rd-folha-barra { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px 0; }
@@ -482,9 +476,6 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
 .oc-conf, .oc-fonte { margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
 .oc-fonte { margin-top: 8px; }
 .oc-copiar { font: inherit; color: var(--verde); background: none; border: 0; padding: 0; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--verde) 45%, transparent); text-underline-offset: .2em; cursor: pointer; }
-@keyframes rd-folha-lado { from { opacity: 0; transform: translateX(8px); } }
-@keyframes rd-folha-baixo { from { opacity: 0; transform: translateY(8px); } }
-@media (prefers-reduced-motion: reduce) { .rd-folha { animation: none; } }
 
 /* < 1100 px: each run starts with its rubrica (the note, full width); a bottom sheet. */
 @media (max-width: 1099px) {
@@ -500,7 +491,7 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
   .rd-onota-tit, .rd-onota-l1, .rd-onota-l2 { grid-column: 2; }
   .rd-otxt { border-left: 1px solid var(--rule-mid); padding-left: 11px; }
   .rd-orun.is-hover .rd-otxt, .rd-orun.is-open .rd-otxt { border-left-color: var(--ink); }
-  .rd-folha { top: auto; left: 0; width: auto; max-height: 64vh; border-left: 0; border-top: 1px solid var(--rule-strong); border-radius: var(--radius-md) var(--radius-md) 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); animation-name: rd-folha-baixo; }
+  .rd-folha { top: auto; left: 0; width: auto; max-height: 64vh; border-left: 0; border-top: 1px solid var(--rule-strong); border-radius: var(--radius-md) var(--radius-md) 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .rd-folha-barra { padding: 6px 16px 0; }
   .rd-folha-barra h2 { font-size: 18px; line-height: 24px; padding-top: 10px; }
   .rd-folha-andar { padding: 0 16px 2px; }
@@ -518,16 +509,8 @@ a.card-title:hover { color: var(--verde); text-decoration: underline; }
   .rd-onota-band, .rd-onota::before, .oc-band { background: CanvasText; forced-color-adjust: none; }
 }
 
-.artigo[data-dir="anterior"] .art-lei { animation-name: rd-de-esquerda; animation-duration: var(--dur-3); }
-.acabado { animation: rd-marca var(--dur-marca) var(--ease) both; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.troca { display: inline-block; animation: rd-aparecer var(--dur-2) var(--ease) both; }
-.state[aria-busy] { animation: rd-aparecer var(--dur-2) var(--ease) 400ms both; }
-details:not(.rd-pop)[open] > :not(summary) { animation: rd-abrir var(--dur-2) var(--ease) both; }
-@supports (interpolate-size: allow-keywords) {
-  :root { interpolate-size: allow-keywords; }
-  details:not(.rd-pop)::details-content { block-size: 0; overflow-y: clip; transition: block-size var(--dur-2) var(--ease), content-visibility var(--dur-2) allow-discrete; }
-  details:not(.rd-pop)[open]::details-content { block-size: auto; }
-}
+.acabado { border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.troca { display: inline-block; }
 
 .lado-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; font-size: 14px; line-height: 20px; color: var(--ink-muted); border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
 

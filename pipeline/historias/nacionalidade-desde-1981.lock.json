@@ -1,5 +1,5 @@
 {
- "atualizado": "2026-10-30",
+ "atualizado": "2026-10-31",
  "redacoes": {
   "lei-nacionalidade/artigo-15@lei-organica-1-2024": "sha256:4c438b1a3d9a1359ffff5c9624a79e6421b45b8b57c58102a1de3b211e0a0965",
   "lei-nacionalidade/artigo-15@lei-organica-1-2026": "sha256:08af3c0ec5729b3579b94d31494bc7766071bfbdfe0077b211287d424348fca0",
@@ -33,7 +33,7 @@
   "lei-nacionalidade/artigo-9": "lei-organica-1-2026"
  },
  "votos": {
-  "lei-organica-1-2026": "sha256:961db69095bab3c357f5c5aa1946a7475532741fe11b04d7760aad4eb581f8e5",
-  "lei-organica-2-2018": "sha256:a76602e8781cddaa43ab9e9cfcc43001ef719ccdcf6e943ac7b94a8a121ac55b"
+  "lei-organica-1-2026": "sha256:31a0726fb9de3c67260e611a77e5bdddf775a8d2f62edc30d749818bdfb3da4f",
+  "lei-organica-2-2018": "sha256:f316e3909587c874a24a2ea06eda35cdae4172feb0495d604136d72168e75a32"
  }
 }

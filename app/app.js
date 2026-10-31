@@ -3,6 +3,7 @@
 (function () {
   var h = React.createElement;
   var R = window.Redacao;
+  var M = null;   // the motion layer's React parts (app/motion.js), set before the first render
   var useState = React.useState, useEffect = React.useEffect, useMemo = React.useMemo;
 
   // ---- Data -------------------------------------------------------------------------------
@@ -59,9 +60,13 @@
     var st = useState(parseHash());
     useEffect(function () {
       lastPath = location.hash.split('?')[0];
+      var antes = location.hash;
       function on() {
-        var path = location.hash.split('?')[0];
-        st[1](parseHash());
+        var path = location.hash.split('?')[0], era = antes;
+        antes = location.hash;
+        // Motion: another view or redação of the same article crossfades its text (motion.js).
+        var aplicar = function () { st[1](parseHash()); };
+        if (window.RedacaoMotion && window.RedacaoMotion.passo && path === lastPath) window.RedacaoMotion.passo(era, location.hash, aplicar); else aplicar();
         if (path !== lastPath) window.scrollTo({ top: 0, behavior: 'instant' });
         lastPath = path;
       }
@@ -113,6 +118,9 @@
   // The sentence of a reason code and the link that explains the limits of the data.
   function motivo(code) { return MOTIVOS[code] ? [MOTIVOS[code], ' ', lig('#/sobre/limites', 'Porquê?')] : []; }
   function lig(href, texto) { return { t: 'link', href: href, texto: texto }; }
+  // A sentence of «Quem fez» that is a stage of the law's passage, with its date from the data
+  // (quem.json, atos.json): the passage line beside it reads these (motion.js, etapasDe).
+  function etapa(f, nome, data) { if (f) f.etapa = { nome: nome, data: data || null }; return f; }
   function gov(n) { return { t: 'governo', numero: n }; }
   function textoDe(partes) {
     return (partes || []).map(function (x) {
@@ -269,12 +277,12 @@
     (eventos || []).slice().sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; }).forEach(function (e) {
       var d = href ? lig(href, extenso(e.data)) : extenso(e.data);
       if (e.tipo === 'veto') {
-        if (e.acordao_tc) out.push(['O Tribunal Constitucional decidiu sobre o decreto (Acórdão n.º ' + e.acordao_tc + ').']);
+        if (e.acordao_tc) out.push(etapa(['O Tribunal Constitucional decidiu sobre o decreto (Acórdão n.º ' + e.acordao_tc + ').'], 'Tribunal Constitucional'));
         var pr = presidenteDe(ref, e.presidente);
-        out.push(['O Parlamento recebeu o veto do Presidente da República' + (pr ? ', ' + pr.nome + ',' : '') + ' a ', d, '.']);
-      } else if (e.tipo === 'tribunal') out.push(['O Tribunal Constitucional decidiu sobre o decreto a ', d, '.']);
-      else if (e.tipo === 'confirmacao') out.push(['O Parlamento confirmou o decreto a ', d, '.']);
-      else if (e.tipo === 'novo_decreto') out.push(['O Parlamento aprovou um novo decreto a ', d, '.']);
+        out.push(etapa(['O Parlamento recebeu o veto do Presidente da República' + (pr ? ', ' + pr.nome + ',' : '') + ' a ', d, '.'], 'Veto', e.data));
+      } else if (e.tipo === 'tribunal') out.push(etapa(['O Tribunal Constitucional decidiu sobre o decreto a ', d, '.'], 'Tribunal Constitucional', e.data));
+      else if (e.tipo === 'confirmacao') out.push(etapa(['O Parlamento confirmou o decreto a ', d, '.'], 'Confirmação', e.data));
+      else if (e.tipo === 'novo_decreto') out.push(etapa(['O Parlamento aprovou um novo decreto a ', d, '.'], 'Novo decreto', e.data));
     });
     return out;
   }
@@ -285,8 +293,8 @@
     var pr = quem.presidente, dr = fonteDR(quem, ato);
     if (!pr || !pr.d_promulgacao) return ['Não temos a data da promulgação.'].concat((quem.motivos || {}).presidente ? [' '].concat(motivo(quem.motivos.presidente)) : []);
     var row = presidenteDe(ref, pr.id), nome = (row && row.nome) || pr.nome;
-    if (!nome) return ['O Presidente da República promulgou ' + objeto + ' a ', data(dr, pr.d_promulgacao), '.'];
-    return [pr.interino ? 'O Presidente da República Interino, ' : 'O Presidente da República, ', row && row.fonte ? lig(row.fonte, nome) : nome, ', promulgou' + (objeto === 'o' ? '-o' : ' ' + objeto) + ' a ', data(dr, pr.d_promulgacao), '.'];
+    if (!nome) return etapa(['O Presidente da República promulgou ' + objeto + ' a ', data(dr, pr.d_promulgacao), '.'], 'Promulgação', pr.d_promulgacao);
+    return etapa([pr.interino ? 'O Presidente da República Interino, ' : 'O Presidente da República, ', row && row.fonte ? lig(row.fonte, nome) : nome, ', promulgou' + (objeto === 'o' ? '-o' : ' ' + objeto) + ' a ', data(dr, pr.d_promulgacao), '.'], 'Promulgação', pr.d_promulgacao);
   }
   // «Partidos no Governo: Partido Social Democrata (PSD), CDS – Partido Popular (CDS-PP).»
   function frasePartidos(g, ref, leg) {
@@ -322,7 +330,7 @@
     var out = [], m = quem.motivos || {}, dr = fonteDR(quem, ato);
     if (quem.governo && quem.governo.numero != null && quem.d_cm) {
       var g = governoDe(ref, quem.governo.numero);
-      out.push(['O ', gov(quem.governo.numero), ' aprovou este decreto-lei em Conselho de Ministros a ', data(dr, quem.d_cm), '.']);
+      out.push(etapa(['O ', gov(quem.governo.numero), ' aprovou este decreto-lei em Conselho de Ministros a ', data(dr, quem.d_cm), '.'], 'Conselho de Ministros', quem.d_cm));
       if (g && g.primeiro_ministro) out.push(['Primeiro-Ministro: ', g.fontes && g.fontes.primeiro_ministro ? lig(g.fontes.primeiro_ministro, g.primeiro_ministro) : g.primeiro_ministro, '.']);
       var pt = frasePartidos(g, ref, quem.legislatura), np = fraseNotaPartidos(g, ref, quem.legislatura);
       if (pt) out.push(pt);
@@ -341,12 +349,12 @@
   // «Publicada no Diário da República a 6 de outubro de 2023.» and the entry into force.
   function frasesPublicacao(ato) {
     var out = [];
-    if (ato.publicacao) out.push([(feminino(ato.designacao) ? 'Publicada' : 'Publicado') + ' no Diário da República a ', data(ato.link, ato.publicacao), '.']);
+    if (ato.publicacao) out.push(etapa([(feminino(ato.designacao) ? 'Publicada' : 'Publicado') + ' no Diário da República a ', data(ato.link, ato.publicacao), '.'], 'Publicação', ato.publicacao));
     var vs = [];
     (ato.alteracoes || []).forEach(function (c) { if (c.vigor && vs.indexOf(c.vigor) < 0) vs.push(c.vigor); });
     vs.sort();
     if (vs.length > 1) out.push(['Entrou em vigor em datas diferentes. Veja cada artigo.']);
-    else if (vs.length === 1) out.push([(vs[0] > hoje() ? 'Entra em vigor a ' : 'Entrou em vigor a ') + extenso(vs[0]) + '.']);
+    else if (vs.length === 1) out.push(etapa([(vs[0] > hoje() ? 'Entra em vigor a ' : 'Entrou em vigor a ') + extenso(vs[0]) + '.'], 'Entrada em vigor', vs[0]));
     else out.push(['O Diário da República não indica a data de entrada em vigor.']);
     return out;
   }
@@ -401,10 +409,13 @@
     if (tipo === 'decreto-lei') out = out.concat(frasesDL(quem, ref, ato));
     else if (LEIS[tipo]) {
       if ((quem.proponentes || []).length || quem.texto_comissao) {
-        out = out.concat(frasesProponentes(quem, ref, p));
+        var ini = frasesProponentes(quem, ref, p);
+        var entradas = (quem.proponentes || []).map(function (x) { return x.entrada; }).filter(Boolean).sort();
+        if (ini.length) etapa(ini[0], 'Iniciativa', entradas[0]);
+        out = out.concat(ini);
         if (m.passos) out.push(motivo(m.passos));
         var ar = hrefAR(quem, p);
-        if (!quem.provisorio) out.push(linhaVfg(quem.vfg, m.vfg, ar));
+        if (!quem.provisorio) out.push(quem.vfg ? etapa(linhaVfg(quem.vfg, m.vfg, ar), 'Votação final global', quem.vfg.data) : linhaVfg(quem.vfg, m.vfg, ar));
         out = out.concat(linhasEventos(quem.eventos, ref, ar));
       } else {
         var f = m.passagem ? motivo(m.passagem) : ['Não temos os dados da passagem desta lei no Parlamento.'];
@@ -816,6 +827,7 @@
       marcarTexto(x, vistos, ids).forEach(function (y) { out.push(y); });
     });
     if (partes && partes.classe) out.classe = partes.classe;
+    if (partes && partes.etapa) out.etapa = partes.etapa;
     return out;
   }
   function marcarTexto(s, vistos, ids) {
@@ -1491,7 +1503,7 @@
           }))) : null),
       h('div', { className: 'duas duas-largo' },
         h('section', { 'aria-labelledby': 'dipl' },
-          h('h2', { id: 'dipl', className: 'h2' }, index.diplomas.length + ' leis e códigos'),
+          h('h2', { id: 'dipl', className: 'h2' }, h(R.Conta, { n: index.diplomas.length }), ' leis e códigos'),
           AREAS.concat(['Outros']).map(function (area) {
             var ds = index.diplomas.filter(function (d) { return (AREAS.indexOf(d.area) >= 0 ? d.area : 'Outros') === area; });
             if (!ds.length) return null;
@@ -1627,7 +1639,7 @@
     var acts = Object.keys(atos).map(function (k) { return atos[k]; })
       .filter(function (a) { return a.alteracoes.some(function (c) { return c.diploma === d.slug; }); })
       .sort(function (a, b) { return (b.publicacao || '') < (a.publicacao || '') ? -1 : 1; });
-    return h('div', { className: 'pagina-ato' },
+    return h('div', { className: 'pagina-ato' }, h(M.Progresso),
       h(Crumbs, { items: [['Leis e códigos', '#/'], [d.titulo]] }),
       em ? h('div', { className: 'note note-data', role: 'region', 'aria-label': 'Data escolhida' },
         h('p', null, 'Os artigos abrem como estavam a ', h('strong', null, extenso(em)), '. ', h('a', { href: link(['d', d.slug]) }, 'Voltar a hoje'))) : null,
@@ -2113,7 +2125,7 @@
           h('p', { className: 'oc-links' },
             (ref.passagem || {})[id] ? h('a', { href: link(['ato', id], { ir: 'generalidade' }) }, 'Ver a passagem no Parlamento') : null,
             h('button', { type: 'button', className: 'oc-copiar', onClick: function () { copiar(copiarTxt, function () { cop[1](copiarTxt); }); } },
-              h('span', { key: cop[0] === copiarTxt ? 'c' : 'n', className: 'troca' }, cop[0] === copiarTxt ? 'Ligação copiada' : 'Copiar ligação')),
+              h(R.Feito, { feito: cop[0] === copiarTxt, sim: 'Ligação copiada', nao: 'Copiar ligação' })),
             h('a', { href: 'https://github.com/andre15silva/pt-legal-git/issues/new?title=' + encodeURIComponent('Erro na origem do texto: ' + art.rotulo + ' ' + (d.genitivo || 'de ' + d.titulo) + ' (' + des + ')'), target: '_blank', rel: 'noopener' }, 'Reportar um erro ↗')))
       ];
     }
@@ -2139,6 +2151,9 @@
     var cp = useState(0);
     var df = useState(0);   // the change in focus in Alterações
     var fl = useState(false);  // the phone sheet
+    // Motion: the replay of the history (motion.js). The render below fills rpCfg; the clock reads it after.
+    var rpCfg = React.useRef({ i: -1, n: 0, ver: null, atosO: [], runs: null, href: null });
+    var rp = M.useReplay(rpCfg.current, function (hash, salto) { if (salto) vista.salto = true; substituir(hash); });
     if (!ri.data) return h(Loading, { error: ri.error });
     var d = ri.data[0];
     if (existe && !r.data) return h(Loading, { error: r.error });
@@ -2163,8 +2178,9 @@
     // Which way the reader moved: the new text comes from that side. After a step forward, the
     // words the newer redações wrote are marked for a moment.
     var chaveArt = d.slug + '/' + art.id;
-    if (vista.art !== chaveArt) vista.dir = vista.desde = null;
-    else if (sel && vista.i != null && vista.i !== sel.i) { vista.dir = sel.i > vista.i ? 'seguinte' : 'anterior'; vista.desde = sel.i > vista.i ? vista.i : null; }
+    // In Texto, the text turns into the new redação in place (M.Morph from vista.de), unless it jumped.
+    if (vista.art !== chaveArt) vista.dir = vista.desde = vista.de = null;
+    else if (sel && vista.i != null && vista.i !== sel.i) { vista.dir = sel.i > vista.i ? 'seguinte' : 'anterior'; vista.desde = sel.i > vista.i ? vista.i : null; vista.de = vista.salto ? null : vista.i; vista.salto = false; }
     vista.art = chaveArt; vista.i = sel ? sel.i : null;
     function versionHref(i, extra) {
       return link(['d', d.slug, art.id], Object.assign({ redacao: versionKey(art, i), ver: q.ver, lado: q.lado }, extra || {}));
@@ -2218,10 +2234,16 @@
       } };
     }
     var corpo, resumo = null;
+    var modeloO = cur && ver === 'origem' ? originModel(art, sel.i, atos, function (o) { return versionHref(o); }, nomeOriginal) : null;
+    // The replay in Origem brings in the acts that wrote the text on screen, oldest first.
+    var atosO = [];
+    if (cur) cur.linhas.forEach(function (l) { l.forEach(function (x) { if (atosO.indexOf(x[0]) < 0) atosO.push(x[0]); }); });
+    atosO.sort(function (a, b) { return a - b; });
+    Object.assign(rpCfg.current, { i: sel ? sel.i : -1, n: n, ver: ver, atosO: atosO, runs: modeloO ? modeloO.runs : null, href: function (k) { return versionHref(k); } });
     if (cur && ver === 'origem') {
       // Who wrote each part of the text, and the people behind each act (OrigemVista).
       corpo = h(OrigemVista, { key: art.id + sel.i, art: art, vi: sel.i, d: d, q: q, dados: ref, nomeOriginal: nomeOriginal, versionHref: versionHref,
-        model: originModel(art, sel.i, atos, function (o) { return versionHref(o); }, nomeOriginal) });
+        model: modeloO });
     } else if (cur && ver === 'mudou' && n > 1 && (sel.i > 0 || q.com)) {
       // Compare with the redação before, or with the one the reader chose ("Comparar com").
       var com = q.com ? resolve(art, q.com, base) : -1;
@@ -2253,7 +2275,7 @@
             h('button', { type: 'button', className: 'rd-btn', 'aria-disabled': foco === 0, onClick: function () { if (foco > 0) irDif(foco - 1); } }, h('span', { 'aria-hidden': 'true' }, '↑ '), 'Anterior'),
             h('span', { className: 'alt-pos', role: 'status' }, 'Alteração ' + (foco + 1) + ' de ' + alt.n),
             h('button', { type: 'button', className: 'rd-btn', 'aria-disabled': foco === alt.n - 1, onClick: function () { if (foco < alt.n - 1) irDif(foco + 1); } }, 'Seguinte', h('span', { 'aria-hidden': 'true' }, ' ↓'))) : null,
-          alt.n ? h('button', { type: 'button', className: 'rd-btn', onClick: copiarAlt }, h('span', { key: feito ? 'c' : 'n', className: 'troca' }, feito ? 'Alterações copiadas' : 'Copiar antes e depois')) : null),
+          alt.n ? h('button', { type: 'button', className: 'rd-btn', onClick: copiarAlt }, h(R.Feito, { feito: feito, sim: 'Alterações copiadas', nao: 'Copiar antes e depois' })) : null),
         lado ? h('div', { className: 'lado-head', 'aria-hidden': 'true' }, h('span', null, 'Antes · ' + nomeAto(art.versoes[a0], atos, d)), h('span', null, 'Depois · ' + nomeAto(art.versoes[a1], atos, d))) : null);
       corpo = h('div', { className: 'lei' + (lado ? ' lei-lado' : '') }, alt.nodes,
         h('p', { className: 'rd-redline-legend' }, h('span', { className: 'rd-key rd-key-ins' }, h('ins', null, 'acrescentado')), h('span', { className: 'rd-key rd-key-del' }, h('del', null, 'eliminado'))));
@@ -2261,11 +2283,13 @@
       if (ver === 'mudou' && n === 1) resumo = h('p', { className: 'resumo' }, 'Este artigo tem uma só redação: o texto nunca mudou.');
       else if (ver === 'mudou') resumo = h('p', { className: 'resumo' }, 'Esta é a primeira redação. Não há uma redação anterior. ',
         n > 1 ? h('a', { href: versionHref(0, { ver: 'mudou', com: versionKey(art, 1) }) }, 'Comparar com a redação seguinte') : null);
-      corpo = h('div', { className: 'lei' }, vista.desde != null
-        ? cur.linhas.map(function (l, k) { return linhaMarcada(l, k, marcas, vista.desde); })
-        : texto(cur).split('\n').map(function (t, k) { return linhaLei(t, k, marcas); }));
+      corpo = vista.de != null && art.versoes[vista.de] && ver === 'texto'
+        ? h(M.Morph, { key: vista.de + '>' + sel.i, de: texto(art.versoes[vista.de]), para: texto(cur), marca: marcas, novo: sel.i > vista.de })
+        : h('div', { className: 'lei' }, vista.desde != null
+          ? cur.linhas.map(function (l, k) { return linhaMarcada(l, k, marcas, vista.desde); })
+          : texto(cur).split('\n').map(function (t, k) { return linhaLei(t, k, marcas); }));
     }
-    var tabs = h(Abas, { items: VER, value: ver, onChange: function (v) { vista.dir = vista.desde = null; guardarVer(v); substituir(link(['d', d.slug, art.id], Object.assign({}, q, { ver: v }))); } });
+    var tabs = h(Abas, { items: VER, value: ver, onChange: function (v) { vista.dir = vista.desde = vista.de = null; rp.parar(); guardarVer(v); substituir(link(['d', d.slug, art.id], Object.assign({}, q, { ver: v }))); } });
     var dataPop = h(R.Popover, { label: 'Data', title: 'Ver o artigo noutra data', className: 'pop-data' },
       h(R.DateLens, { date: date, basis: base, today: hoje(), id: 'lente', onChange: go, bases: ['vigor', 'publicacao'] }));
     var f = cur ? formula(art, sel.i, atos, d) : null;
@@ -2318,7 +2342,9 @@
       var hx = (historias.historias || []).filter(function (y) { return y.slug === x.historia; })[0];
       if (hx) notas62.push(h('p', { key: 'h' + k, className: 'regra' }, h('strong', null, 'Nota: '), 'este artigo aparece na história «' + hx.titulo + '». ', h('a', { href: link(['historia', hx.slug], { ir: x.seccao }) }, 'Ler a história')));
     });
-    return h('div', { className: 'artigo', 'data-dir': vista.dir, 'data-passada': passada ? '' : undefined },
+    var morph = ver === 'texto' && vista.de != null;
+    var podeTocar = ver === 'origem' ? atosO.length > 1 : n > 1;
+    return h('div', { className: 'artigo' + (rp.tocando && ver !== 'origem' ? ' is-replay' : ''), 'data-dir': vista.dir, 'data-ver': ver, 'data-passada': passada ? '' : undefined },
       h('div', { className: 'corrida' },
         h('p', null, h('a', { href: link(['d', d.slug]) }, h('abbr', { title: d.titulo }, h('span', { 'aria-hidden': 'true' }, d.sigla), h('span', { className: 'rd-sr' }, d.titulo))),
           art.caminho.length ? ' · ' + art.caminho[art.caminho.length - 1] : ''),
@@ -2326,8 +2352,8 @@
       h('header', { className: 'art-head' },
         h('h1', { className: 'art-titulo' }, h('span', { className: 'art-num' }, art.rotulo), epigrafe ? h('span', { className: 'art-ep' }, epigrafe) : null),
         cur ? h('div', { className: 'art-acoes' },
-          h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } }, h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')),
-          h('button', { type: 'button', className: 'rd-btn', onClick: partilhar }, h('span', { key: copiado.chave === urlPartilha ? 'c' : 'n', className: 'troca' }, copiado.chave === urlPartilha ? 'Ligação copiada' : 'Partilhar')),
+          h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } }, h(R.Feito, { feito: copiado.chave === citacao, sim: 'Citação copiada', nao: 'Copiar citação' })),
+          h('button', { type: 'button', className: 'rd-btn', onClick: partilhar }, h(R.Feito, { feito: copiado.chave === urlPartilha, sim: 'Ligação copiada', nao: 'Partilhar' })),
           curAto && curAto.link ? h('a', { className: 'rd-link', href: curAto.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : d.link ? h('a', { className: 'rd-link', href: d.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null) : null),
       cur ? h('div', { className: 'estado' },
         h('p', { className: 'estado-formula' }, h('em', null, render(marcarTermos([f[0]], termosVistos, termosArt)), atos[f[2]] ? h('a', { href: link(['ato', f[2]]) }, f[1]) : f[1])),
@@ -2338,12 +2364,18 @@
         linhaVerificacao(cur, d, atos),
         notas62.length ? notas62 : null) : null,
       h(Guia, { tipo: 'artigo', fechada: estreito() }),
-      sel ? h(R.TimeRuler, { id: 'regua', current: sel.i, today: hoje(), onGo: function (k) { substituir(versionHref(k)); },
+      // The time ruler as a scrubber, with ▶ to replay the history (motion.js, «Rever o tempo»).
+      sel ? h(M.Maquina, { id: 'regua', current: sel.i, today: hoje(), date: date, acima: '.artigo > .estado',
+        tocando: rp.tocando, onTocar: podeTocar ? rp.tocar : null,
+        rotuloTocar: ver === 'origem' ? 'Ver quem escreveu, por ordem' : sel.i === last ? 'Rever a história' : 'Continuar até hoje',
+        rotuloCurto: ver === 'origem' ? 'Por ordem' : sel.i === last ? 'Rever' : 'Continuar',
+        agulha: rp.origemAte != null && art.versoes[rp.origemAte] ? startOf(art.versoes[rp.origemAte], base) : null,
+        onGo: function (k) { if (rp.tocando) rp.parar(); substituir(versionHref(k)); },
         versions: art.versoes.map(function (v, i) {
           return { start: startOf(v, base), technical: v.tipo === 'retificado' || periodo(art, i, base).fim === 'mesma', pending: hojeIdx == null || i > hojeIdx,
-            label: ordinal(i) + ' redação: ' + nomeAto(v, atos, d) + ', ' + intervalo(art, i, base, hojeIdx) };
+            curto: nomeAto(v, atos, d), label: ordinal(i) + ' redação: ' + nomeAto(v, atos, d) + ', ' + intervalo(art, i, base, hojeIdx) };
         }) }) : null,
-      sel ? h('p', { className: 'legenda legenda-regua' }, 'Cada traço é uma redação.') : null,
+      sel ? h('p', { className: 'legenda legenda-regua' }, 'Cada traço é uma redação. Para ver o texto mudar, arraste a agulha ou use as setas.') : null,
       h(R.VersionBar, { id: 'barra', current: sel ? sel.i : -1, count: n, status: status,
         onGo: function (k) { substituir(versionHref(k)); },
         onStatus: function () { if (estreito()) { fl[1](true); return; } var e = document.getElementById('historia'); if (e) { e.scrollIntoView(); e.focus(); } } },
@@ -2369,7 +2401,7 @@
           sel && sel.incerta ? h('aside', { className: 'regra regra-aviso' }, h('p', null, h('strong', null, 'Atenção: '), 'o Diário da República não indica a data de entrada em vigor desta redação. Contamos a partir da publicação (' + extenso(cur.publicacao) + ').' + (cur.vigor_regra === 'condicional' ? ' A entrada em vigor depende de outra legislação (' + cur.vigor_fonte + ').' : ''))) : null,
           !cur ? h('div', { className: 'vazio' }, h('p', null, 'Nesta data o artigo ainda não existia.'), h('p', null, 'A primeira redação é de ' + extenso(startOf(art.versoes[0], base)) + '. ', h('a', { href: versionHref(0) }, 'Ver a primeira redação'))) : null,
           // Keyed by redação and view: a new text arrives with a short fade from the side it came from.
-          h('div', { key: (sel ? sel.i : '-') + ver, className: 'art-lei' }, resumo, corpo),
+          h('div', { key: ver === 'texto' && cur ? 'texto' + (vista.de == null ? sel.i : '') : (sel ? sel.i : '-') + ver, className: 'art-lei' + (morph ? ' is-morph' : '') }, resumo, corpo),
           d.inicio_historia && cur && sel.i === 0 ? h('p', { className: 'nota-hist' }, d.inicio_historia.nota) : null,
           // Bills that would change this article: right under its text, where readers look.
           propostas.length ? h(NoParlamento, { lista: propostas, id: 'parl', secao: true }) : null,
@@ -2405,7 +2437,7 @@
           }))),
         propostas.length ? h('section', { className: 'folha-sec' }, h(NoParlamento, { lista: propostas, id: 'parl-folha', nivel: 'h3' })) : null,
         h('p', { className: 'folha-acoes' }, h('button', { type: 'button', className: 'rd-btn', onClick: function () { copiar(citacao + '\n' + permalink, function () { copiado.chave = citacao; cp[1](cp[0] + 1); }); } },
-          h('span', { key: copiado.chave === citacao ? 'c' : 'n', className: 'troca' }, copiado.chave === citacao ? 'Citação copiada' : 'Copiar citação')))) : null);
+          h(R.Feito, { feito: copiado.chave === citacao, sim: 'Citação copiada', nao: 'Copiar citação' })))) : null);
   }
   // ---- Bills now in Parliament (pipeline/pendentes.py) ----------------------------------------------
   // A bill that is not law yet: where it stands, its generalidade vote, and what it would change.
@@ -2612,7 +2644,7 @@
         h('caption', { id: 'tab-ini' }, props.titulo),
         h('thead', null, h('tr', null,
           h('th', { scope: 'col' }, 'Iniciativa'), h('th', { scope: 'col' }, 'Resultado'),
-          ordem.map(function (g) { return h('th', { key: g, scope: 'col', className: 'tv-g' }, h(Sigla, { sigla: g, nome: nomes[g] })); }),
+          ordem.map(function (g) { return h('th', { key: g, scope: 'col', className: 'tv-g', 'data-grupo': g }, h(Sigla, { sigla: g, nome: nomes[g] })); }),
           semGrupo ? h('th', { scope: 'col', className: 'tv-g' }, 'Sem grupo') : null)),
         h('tbody', null, inis.map(function (i) {
           var v = i.generalidade, meus = gruposDe(i);
@@ -2622,7 +2654,7 @@
             v ? ordem.map(function (g) {
               var s = v.unanime ? 'favor' : v.grupos[g], fora = (v.dissidencia || []).filter(function (d) { return d.grupo === g; });
               var txt = s ? CELULA[s] : (v.ausentes || []).indexOf(g) >= 0 ? 'Ausente' : '—';
-              return h('td', { key: g, className: 'tv-g' + (meus.indexOf(g) >= 0 ? ' tv-autor' : '') + (s ? '' : ' muted') }, txt,
+              return h('td', { key: g, 'data-grupo': g, className: 'tv-g' + (meus.indexOf(g) >= 0 ? ' tv-autor' : '') + (s ? '' : ' muted') }, txt,
                 fora.length ? h('span', { className: 'tv-quem' }, fora.map(function (d) { return (d.n || 1) + ' ' + CELULA[d.sentido].toLowerCase(); }).join(', ')) : null);
             }).concat(semGrupo ? [h('td', { key: 'sg', className: 'tv-g' }, contaSem(v))] : []) : h('td', { colSpan: ordem.length + 1 + (semGrupo ? 1 : 0), className: 'muted' }, i.baixa_sem_votacao ? 'Baixou à comissão sem votação na generalidade.' : 'Não temos o registo da votação.'));
         }))),
@@ -2696,7 +2728,7 @@
   }
   function Ato(props) {
     var r = useData(['atos.json', 'index.json', 'passagem.json', '?quem.json', '?governos.json']);
-    var sum = useState(false);
+    var sum = useState(false), fref = React.useRef(null);
     if (!r.data) return h(Loading, { error: r.error });
     var atos = r.data[0], index = r.data[1], ps = r.data[2], a = atos[props.id];
     // An old id of an act (a merged id the pipeline split, a heading prefix) opens the act it became.
@@ -2727,7 +2759,9 @@
       h('div', { className: 'duas' },
         h('section', { className: 'secao secao-1 quem-fez', id: 'quem', 'aria-labelledby': 'quem-h' },
           h('h2', { id: 'quem-h' }, tituloQuem(tipo)),
-          h('div', { className: 'quem-frases' }, h(Frases, { frases: frases })),
+          // The passage of the law, stage by stage, filled as its sentences are read (motion.js).
+          h(M.Passagem, { frases: frases, raiz: fref, orient: 'h', chave: a.id }),
+          h('div', { className: 'quem-frases', ref: fref }, h(Frases, { frases: frases })),
           aviso ? h(Frases, { frases: [aviso] }) : null,
           h('details', { className: 'dobra como-sabemos' }, h('summary', null, 'Como sabemos isto'),
             h('ul', { className: 'como-lista' }, comoSabemos(quem, p, a, ref).map(function (f, k) { return h('li', { key: k }, render(f)); })))),
@@ -2738,7 +2772,8 @@
             h('dd', null, inis.slice(0, 3).map(function (i) { return h('a', { key: i.id, className: 'factos-linha', href: hrefIni(i.id, p) }, i.designacao + (externo(hrefIni(i.id, p)) ? ' ↗' : '')); })
               .concat(inis.length > 3 ? [h('span', { key: 'mais', className: 'factos-sub' }, 'e mais ' + (inis.length - 3))] : []))) : null,
           h('p', { className: 'factos-links' },
-            a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null))),
+            a.link ? h('a', { href: a.link, target: '_blank', rel: 'noopener' }, 'Diário da República ↗') : null),
+          h(M.Passagem, { frases: frases, raiz: fref, orient: 'v', chave: a.id }))),
       a.alteracoes.length ? h('section', { className: 'secao secao-mudou', 'aria-labelledby': 'alterou' },
         h('h2', { id: 'alterou' }, 'O que este ato mudou'),
         Object.keys(by).map(function (slug) {
@@ -2824,13 +2859,14 @@
   }
   function LinhaAto(props) {
     var fs = props.frases;
-    return h('li', { className: 'linha-ato' },
+    return h('li', { className: 'linha-ato', id: props.id ? 'ato-' + props.id : undefined },
       props.semNome ? null : h('p', { className: 'linha-ato-nome' }, render(fs[0], props.ctx)),
       h('div', { className: 'linha-ato-mais' }, h(Frases, { frases: fs.slice(1), ctx: props.ctx })));
   }
   function Quem(props) {
     var slug = props.slug, por = props.q.por === 'legislatura' ? 'legislatura' : 'governo';
     var r = useData(['quem/' + slug + '.json', 'd/' + slug + '.json', 'atos.json', 'passagem.json', 'quem.json', 'governos.json', 'index.json']);
+    var praiz = React.useRef(null);
     if (!r.data) return h(Loading, { error: r.error });
     var t = r.data[0], d = r.data[1], gj = r.data[5];
     var ref = { atos: r.data[2], passagem: r.data[3], quem: r.data[4], governos: gj, index: r.data[6] };
@@ -2841,7 +2877,7 @@
       return lista.map(function (x) {
         var id = idAto(x);
         var fs = marcarFrases(linhaAto(id, ref, { slug: slug, governoPeriodo: governo, semDcm: k === 'publicados_sem_d_cm', retificacoes: (t.retificacoes || {})[id] }), 'periodo');
-        return h(LinhaAto, { key: id, frases: fs });
+        return h(LinhaAto, { key: id, id: id, frases: fs });
       });
     };
     var periodo = function (row) {
@@ -2849,7 +2885,7 @@
       var id = g ? 'governo-' + row.governo : 'legislatura-' + row.legislatura;
       var cab = g ? [gov(row.governo)] : [nomeLeg(row.legislatura)];
       var quando = g ? deA(g.inicio, g.fim) : l.inicio ? deA(l.inicio, l.fim) : '';
-      if (!row.total) return h('section', { key: id, className: 'periodo periodo-vazio', 'aria-labelledby': id },
+      if (!row.total) return h('section', { key: id, className: 'periodo periodo-vazio', 'aria-labelledby': id, 'data-per': id },
         h('h2', { id: id, className: 'periodo-h', tabIndex: -1 }, render(cab), quando ? ' · ' + quando.replace(/\.$/, '') + '.' : ''),
         h('p', { className: 'muted' }, 'Nenhuma alteração neste período.'));
       var meta = [];
@@ -2863,12 +2899,12 @@
       var ls = g ? legislaturasDe(g, gj) : [];
       var sub = g ? quando + (ls.length ? ' ' + (ls.length === 1 ? 'Legislatura ' : 'Legislaturas ') + lista(ls.map(function (x) { return x === 'Constituinte' ? 'Assembleia Constituinte' : x; })) + '.' : '')
         : null;
-      return h('section', { key: id, className: 'periodo', 'aria-labelledby': id },
+      return h('section', { key: id, className: 'periodo', 'aria-labelledby': id, 'data-per': id },
         h('h2', { id: id, className: 'periodo-h', tabIndex: -1 }, render(cab)),
         meta.length ? h('p', { className: 'periodo-meta' }, render(meta.reduce(function (a, m, k) { return a.concat(k ? [' · '] : []).concat(m); }, []))) : null,
         g ? h('p', { className: 'periodo-datas' }, sub)
           : h('p', { className: 'periodo-datas' }, quando, (row.governos || []).length ? render([' Governos: '].concat(juntarPartes(row.governos.map(function (n) { return [gov(n)]; }))).concat(['.'])) : null),
-        h('p', { className: 'periodo-total' }, row.total === 1 ? '1 ato neste período.' : row.total + ' atos neste período.'),
+        h('p', { className: 'periodo-total' }, row.total === 1 ? '1 ato neste período.' : [h(R.Conta, { key: 'n', n: row.total }), ' atos neste período.']),
         LISTAS[por].map(function (x) {
           var lista0 = (row.listas || {})[x[0]] || [];
           if (!lista0.length) return null;
@@ -2876,6 +2912,16 @@
         }));
     };
     var fora = t.fora || {};
+    // The strip of the diploma's acts, drawn once (motion.js, LinhaTempo): every act by date, and the
+    // bands of the Governments (or legislaturas) since the diploma began.
+    var vistos = {}, atosLT = [];
+    var juntarLT = function (l) { (l || []).forEach(function (x) { var id = idAto(x), a = ref.atos[id]; if (!a || !a.publicacao || vistos[id]) return; vistos[id] = 1; atosLT.push({ id: id, nome: a.designacao, data: a.publicacao, ret: /^Declaração/.test(a.designacao) }); }); };
+    (t.por_governo || []).forEach(function (row) { Object.keys(row.listas || {}).forEach(function (k) { juntarLT(row.listas[k]); }); });
+    Object.keys(fora).forEach(function (k) { juntarLT(fora[k]); });
+    atosLT.sort(function (a, b) { return a.data < b.data ? -1 : a.data > b.data ? 1 : 0; });
+    var faixas = por === 'governo'
+      ? (gj.governos || []).filter(function (g) { return (!g.fim || g.fim > t.desde) && g.inicio <= hoje(); }).map(function (g) { return { id: 'governo-' + g.numero, inicio: g.inicio, fim: g.fim, rotulo: romano(g.numero), titulo: romano(g.numero) + ' Governo Constitucional' }; })
+      : (gj.legislaturas || []).filter(function (l) { return l.inicio && (!l.fim || l.fim > t.desde) && l.inicio <= hoje(); }).map(function (l) { return { id: 'legislatura-' + l.sigla, inicio: l.inicio, fim: l.fim, rotulo: l.sigla, titulo: nomeLeg(l.sigla) }; });
     return h('div', { className: 'pagina-ato pagina-quem' },
       h(Crumbs, { items: [['Leis e códigos', '#/'], [d.sigla || d.titulo, link(['d', slug])], ['Quem fez cada alteração']] }),
       h('header', { className: 'ato-cabeca' },
@@ -2883,9 +2929,10 @@
         h('p', { className: 'subtitulo' }, d.titulo),
         h('p', { className: 'lead' }, 'Todos os atos que alteraram este diploma desde ' + extenso(t.desde) + ', do mais antigo para o mais recente.'),
         h(Guia, { tipo: 'quem' })),
+      atosLT.length && t.desde ? h(M.LinhaTempo, { atos: atosLT, faixas: faixas, desde: t.desde, raiz: praiz, chave: por }) : null,
       h('div', { className: 'quem-abas' }, h(Abas, { items: [['governo', 'Por Governo'], ['legislatura', 'Por legislatura']], value: por,
         onChange: function (v) { substituir(link(['quem', slug], { por: v === 'legislatura' ? 'legislatura' : null })); } })),
-      h('div', { className: 'periodos' }, (por === 'governo' ? t.por_governo : t.por_legislatura).map(periodo)),
+      h('div', { className: 'periodos', ref: praiz }, (por === 'governo' ? t.por_governo : t.por_legislatura).map(periodo)),
       FORA.map(function (x) {
         var l = fora[x[0]] || [];
         if (!l.length) return null;
@@ -3260,7 +3307,7 @@
       if (!s.i || (s.f && s.f <= props.desde) || s.i >= (props.ate || hoje())) return;
       var xi = Math.max(M, x(s.i)), xf = Math.min(W - M, x(s.f || props.ate || hoje()));
       if (xf - xi < 2) return;
-      out.push(h('path', { key: 'g' + k, d: 'M' + (xi + 1) + ' ' + (yG - 4) + 'V' + yG + 'H' + (xf - 1) + 'V' + (yG - 4), className: 'cr-gov' }));
+      out.push(h('path', { key: 'g' + k, pathLength: 1, d: 'M' + (xi + 1) + ' ' + (yG - 4) + 'V' + yG + 'H' + (xf - 1) + 'V' + (yG - 4), className: 'cr-gov' }));
       if (!telefone && xf - xi > s.t.length * 7 + 6) out.push(h('text', { key: 'gt' + k, x: (xi + xf) / 2, y: yG + 14, className: 'cr-gov-t', textAnchor: 'middle' }, s.t));
     });
     return h('svg', { width: W, height: yG + (telefone ? 6 : 20), viewBox: '0 0 ' + W + ' ' + (yG + (telefone ? 6 : 20)), className: 'cr-regua', 'aria-hidden': 'true', focusable: 'false' }, out);
@@ -3306,7 +3353,7 @@
     var b = props.b, ref = props.dados, Corpo = FIGURAS[b.tipo], tid = 'fig-' + b.id + '-t';
     var av = b.aviso && !b.retida ? b.aviso : null, avAto = av && (ref.atos || {})[av.ato];
     var imagem = b.tipo === 'imagem';
-    return h('figure', { id: 'fig-' + b.id, className: 'fig fig-' + b.tipo + ' fig-' + (b.largura || 'texto'), 'aria-labelledby': tid, tabIndex: -1 },
+    return h('figure', { id: 'fig-' + b.id, className: 'fig fig-' + b.tipo + ' fig-' + (b.largura || 'texto'), 'aria-labelledby': tid, tabIndex: -1, 'data-b': props.dataB },
       h('figcaption', { className: 'fig-cabeca' },
         h('p', { className: 'fig-n' }, 'Figura ' + b.n),
         h('p', { className: 'fig-titulo', id: tid }, b.titulo),
@@ -3316,7 +3363,7 @@
           : av.tipo === 'texto' ? 'o texto desta redação mudou depois do texto da história. '
           : 'este artigo tem uma redação mais recente (' + (avAto ? avAto.designacao : av.ato) + '). ',
         h('a', { href: av.href }, av.tipo === 'votos' ? 'Ver a votação' : 'Ver o texto em vigor')) : null,
-      h('div', { className: 'fig-corpo' }, b.retida || !Corpo ? h('p', { className: 'fig-retida' }, 'Esta figura está em revisão: os dados mudaram depois do texto.') : h(Corpo, { b: b, dados: ref })),
+      h('div', { className: 'fig-corpo' }, b.retida || !Corpo ? h('p', { className: 'fig-retida' }, 'Esta figura está em revisão: os dados mudaram depois do texto.') : h(Corpo, { b: b, dados: ref, ctx: props.ctx })),
       h('div', { className: 'fig-pe' },
         (b.legenda || []).length ? h('p', { className: 'fig-legenda' }, render(b.legenda, props.ctx)) : null,
         b.fonte ? h('p', { className: 'fig-fonte' }, 'Fonte: ' + b.fonte) : null,
@@ -3331,6 +3378,7 @@
   }
   function Historia(props) {
     var r = useData(['historias/' + props.slug + '.json', 'atos.json', 'passagem.json', '?quem.json', '?governos.json', 'index.json']);
+    var raiz = React.useRef(null);
     if (!r.data) return h(Loading, { error: r.error });
     var hx = r.data[0], ref = { atos: r.data[1], passagem: r.data[2], quem: r.data[3] || {}, governos: r.data[4], index: r.data[5] };
     document.title = tituloDe(['historia', hx.slug], { historia: hx });
@@ -3344,22 +3392,27 @@
       if (href.indexOf(link(['historia', hx.slug]) + '?ir=') === 0) { e.preventDefault(); substituir(href); }
     };
     var bloco = function (b, k) {
-      if (b.t === 'p') return h('p', { key: k, className: 'hist-p' }, render(b.partes, ctx));
-      if (b.t === 'h2') return h('h2', { key: k, id: b.id, className: 'hist-h2', tabIndex: -1 }, b.texto);
+      if (b.t === 'p') return h('p', { key: k, className: 'hist-p', 'data-b': k }, render(b.partes, ctx));
+      if (b.t === 'h2') return h('h2', { key: k, id: b.id, className: 'hist-h2', tabIndex: -1, 'data-b': k }, b.texto);
       if (b.t === 'h3') return h('h3', { key: k, id: b.id, className: 'hist-h3', tabIndex: -1 }, b.texto);
       if (b.t === 'citacao') return h('figure', { key: k, className: 'hist-citacao' },
         h('blockquote', null, h('p', null, render(b.partes, ctx))), h('figcaption', null, '— ', render(b.autor, ctx)));
-      if (b.t === 'figura') return h(Figura, { key: k, b: b, dados: ref, ctx: ctx });
+      if (b.t === 'figura') return h(Figura, { key: k, b: b, dados: ref, ctx: ctx, dataB: k });
       return null;
     };
     var fontesFig = [];
-    if (tipos.diff || tipos.origem) fontesFig.push('Diário da República (legislação consolidada)');
+    if (tipos.diff || tipos.origem || tipos.passos) fontesFig.push('Diário da República (legislação consolidada)');
     if (tipos.votacao || tipos.ficha || tipos.cronologia) fontesFig.push('Assembleia da República (dados abertos)');
     if (tipos.ficha || tipos.cronologia) fontesFig.push('tabelas de Governos e de Presidentes do site');
     var desat = hx.desatualizada || [];
     var aviso = (hx.aviso || '').replace(/ Data: [^.]+\./, '');
     var corpo = (hx.blocos || []).map(bloco);
-    return h('article', { className: 'hist', onClick: irNaPagina },
+    // After the first chronology, a slim ruler follows the reader to the notes (motion.js).
+    var iCrono = -1;
+    (hx.blocos || []).forEach(function (b, k) { if (iCrono < 0 && b.t === 'figura' && b.tipo === 'cronologia' && !b.retida && b.params && b.params.atos) iCrono = k; });
+    if (iCrono >= 0) corpo.splice(iCrono + 1, 0, h(M.ReguaHistoria, { key: 'regua', fig: hx.blocos[iCrono], dados: ref, raiz: raiz,
+      info: window.RedacaoMotion.leituraDe(hx.blocos, ref.atos || {}, hx.blocos[iCrono].params.atos) }));
+    return h('article', { className: 'hist', onClick: irNaPagina, ref: raiz },
       h('nav', { 'aria-label': 'Localização', className: 'crumbs' }, h('a', { href: '#/historias' }, 'Histórias'), h('span', { 'aria-hidden': 'true' }, '›')),
       h('header', { className: 'hist-cabeca' },
         h('h1', { className: 'hist-titulo' }, hx.titulo),
@@ -3638,5 +3691,10 @@
     origemLinhas: origemLinhas, notaOrigem: notaOrigem, escopoLinhas: escopoLinhas, rotuloOrigem: rotuloOrigem, resumoOrigem: resumoOrigem, contaOrigem: contaOrigem, linhaHonesta: linhaHonesta,
     glossa: glossa, linhaDiferencas: linhaDiferencas, votoNovoDecreto: votoNovoDecreto, confiancaOrigem: confiancaOrigem, textoCopiar: textoCopiar, catOrigem: catOrigem };
   if (!window.Redacao) return;  // node tests load this file without the design system or a page
+  // The motion layer's React parts (app/motion.js) draw with the app's own helpers.
+  M = window.RedacaoMotion.criar({ diffLines: diffLines, partes: partes, linhaTabela: linhaTabela, TABELA: TABELA, nbsp: nbsp, revogada: revogada,
+    segsLei: segsLei, hoje: hoje, extenso: extenso, curta: curta, curtoAto: curtoAto, anoDe: anoDe, useData: useData, FigCarregar: FigCarregar,
+    legendaRedline: legendaRedline, render: render, texto: texto, rotular: rotular });
+  FIGURAS.passos = M.FigPassos;
   ReactDOM.createRoot(document.getElementById('app')).render(h(App));
 })();

@@ -85,4 +85,21 @@ legenda: Uma imagem estática de teste, no lugar de um fac-símile do Diário da
 
 Esta história liga a si própria em [](historia:teste).
 
+O prazo do n.º 2 mudou três vezes, e a [](fig:prazo-passos) mostra cada mudança.
+
+```figura passos
+id: prazo-passos
+artigo: lei-teste/artigo-1
+legenda: Cada passo compara o n.º 2 do artigo 1.º com o passo anterior: as palavras sublinhadas são as
+  que cada ato escreveu, e as riscadas as que apagou.
+passo: decreto-lei-90001 2
+  Em 1970, o [](ato:decreto-lei-90001) fixou o prazo em cinco anos.
+passo: decreto-lei-90002 2
+  Em 1974, o [](ato:decreto-lei-90002) passou o prazo para seis anos.
+passo: lei-901-2020 2
+  Em 2020, a [](ato:lei-901-2020) passou o prazo para dez anos, contados da entrada.
+passo: lei-901-2022 2
+  Em 2022, a [](ato:lei-901-2022) baixou o prazo para oito anos.
+```
+
 [^dr]: *Diário da República*, I série. https://diariodarepublica.pt/dr/detalhe/lei/901-2020-900000

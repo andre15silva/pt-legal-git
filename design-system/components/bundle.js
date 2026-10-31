@@ -434,16 +434,27 @@
     xs.forEach(function (x, k) { if (k) out.push(', '); out.push(h(React.Fragment, { key: k }, x)); });
     return out;
   }
+  // A number that counts to its value once, when it scrolls into view (app/motion.js). The digits shown
+  // are aria-hidden; the value itself is always in the DOM, for screen readers and copy.
+  function Conta(props) {
+    var n = props.n;
+    return h('span', { className: 'conta', 'data-n': n, style: { minWidth: String(n).length + 'ch' } },
+      h('span', { className: 'conta-v', 'aria-hidden': 'true' }, String(n)), h('span', { className: 'rd-sr' }, String(n)));
+  }
   function Votacao(props) {
     var g = props.grupos || {}, cont = props.contagens || {}, dis = props.dissidencia || [], fora = props.foraDeGrupo || [];
     var nomes = props.nomes || {};
+    // Each sigla carries data-grupo: the page lights that group in every vote (app/motion.js). The
+    // block is one tab stop; the arrows move between its groups.
+    var paragem = 0;
     var ordem = (props.ordem || []).slice();
     Object.keys(g).forEach(function (k) { if (ordem.indexOf(k) < 0) ordem.push(k); });
     var ausentes = props.ausentes || [];
     // A sigla with its name: seen as the sigla, heard as the name.
     var destaque = props.destaque || [];
     function sigla(k) {
-      var s = nomes[k] ? h('abbr', { title: nomes[k] }, h('span', { 'aria-hidden': 'true' }, k), h('span', { className: 'rd-sr' }, nomes[k])) : k;
+      var foco = { 'data-grupo': k, tabIndex: paragem++ === 0 ? 0 : -1 };
+      var s = nomes[k] ? h('abbr', Object.assign({ title: nomes[k] }, foco), h('span', { 'aria-hidden': 'true' }, k), h('span', { className: 'rd-sr' }, nomes[k])) : h('span', foco, k);
       return destaque.indexOf(k) >= 0 ? h('strong', { className: 'rd-votos-destaque' }, s) : s;
     }
     function grupo(k) {
@@ -466,7 +477,8 @@
           ausentes.length ? [h('dt', { key: 'at' }, 'Ausente'), h('dd', { key: 'ad' }, juntar(ausentes.map(sigla)))] : null,
           semRegisto.length ? [h('dt', { key: 'st' }, 'Sem registo'), h('dd', { key: 'sd' }, juntar(semRegisto.map(sigla)))] : null),
       v && !v.ok ? h('p', { className: 'rd-votos-aviso' }, h('strong', null, 'Atenção: '), 'o resultado registado não corresponde aos votos registados. Consulte o Diário da Assembleia da República.') : null,
-      v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, (v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ') + v.favor + ' a favor, ' + v.contra + ' contra, ' + v.abstencao + (v.abstencao === 1 ? ' abstenção.' : ' abstenções.')) : null);
+      v && props.mostrarConta ? h('p', { className: 'rd-votos-nota' }, v.metodo === 'contagens' ? 'Deputados que votaram: ' : 'Conta pelos assentos de cada grupo nesse dia: ',
+        h(Conta, { n: v.favor }), ' a favor, ', h(Conta, { n: v.contra }), ' contra, ', h(Conta, { n: v.abstencao }), v.abstencao === 1 ? ' abstenção.' : ' abstenções.') : null);
   }
 
   // ---- Termo -----------------------------------------------------------------
@@ -550,6 +562,14 @@
         aberto ? h(TermoConteudo, { def: props.def, id: props.id }) : null));
   }
 
+  // ---- Feito -----------------------------------------------------------------
+  // A copy or share button's label: it swaps to the confirmation, and a tick draws itself beside it.
+  // props: {feito, sim (the confirmation), nao (the label)}
+  function Feito(props) {
+    return h('span', { key: props.feito ? 'c' : 'n', className: cx('troca', props.feito && 'rd-feito') },
+      props.feito ? [h('svg', { key: 'v', className: 'rd-visto', viewBox: '0 0 14 14', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M2.5 7.5l3 3 6-7' })), props.sim] : props.nao);
+  }
+
   // ---- Citation --------------------------------------------------------------
   function Citation(props) {
     var sc = React.useState('Copiar citação');
@@ -572,7 +592,7 @@
     return h('div', { className: 'rd-cite' },
       h('p', { className: 'rd-cite-text', ref: ref }, props.text),
       props.permalink ? h('p', { className: 'rd-cite-link' }, props.permalink) : null,
-      h(Button, { onClick: copy }, label));
+      h(Button, { onClick: copy }, h(Feito, { feito: label === 'Copiada', sim: label, nao: label })));
   }
 
   // ---- SourceNote ------------------------------------------------------------
@@ -721,7 +741,8 @@
             h('div', { className: 'rd-folha-andar' },
               h('button', { type: 'button', id: 'folha-origem-ant', disabled: !andar.ant, onClick: andar.ant || undefined }, '‹ Frase anterior'),
               h('button', { type: 'button', id: 'folha-origem-seg', disabled: !andar.seg, onClick: andar.seg || undefined }, andar.segRotulo || 'Frase seguinte ›'))),
-          h('div', { key: 'c', className: 'rd-folha-corpo' }, props.children)] : null));
+          // Keyed by the live text: a new phrase sets its lines again.
+          h('div', { key: 'c' + (props.vivo || ''), className: 'rd-folha-corpo' }, props.children)] : null));
   }
   // «Marcar o texto por:» Diploma (default) or Iniciativa da lei: a radiogroup with one tab stop;
   // the arrows move and choose. The initiative lens uses shapes, never a hue, and never a party.
@@ -752,6 +773,6 @@
         }))) : null);
   }
 
-  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Termo: Termo, TermoConteudo: TermoConteudo, Citation: Citation, SourceNote: SourceNote, OrigemTexto: OrigemTexto, NotaOrigem: NotaOrigem, FolhaOrigem: FolhaOrigem, LenteOrigem: LenteOrigem, dataPorExtenso: dataPorExtenso };
+  var api = { Button: Button, StatusPill: StatusPill, ActChip: ActChip, Redline: Redline, TextOrigin: TextOrigin, TimeRuler: TimeRuler, VersionBar: VersionBar, Register: Register, Popover: Popover, DateLens: DateLens, VersionTimeline: VersionTimeline, ProcessTrack: ProcessTrack, VoteBar: VoteBar, Votacao: Votacao, Conta: Conta, Feito: Feito, Termo: Termo, TermoConteudo: TermoConteudo, Citation: Citation, SourceNote: SourceNote, OrigemTexto: OrigemTexto, NotaOrigem: NotaOrigem, FolhaOrigem: FolhaOrigem, LenteOrigem: LenteOrigem, dataPorExtenso: dataPorExtenso };
   window.Redacao = Object.assign(window.Redacao || {}, api);
 })();
